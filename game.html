@@ -31,9 +31,8 @@ canvas{display:block;border:3px solid #e63946;border-radius:6px;box-shadow:0 0 4
 #tc-l{left:10px;bottom:10px}#tc-r{left:80px;bottom:10px}
 #tc-a{right:10px;bottom:10px}#tc-b{right:80px;bottom:10px}
 #tc-p{left:50%;bottom:14px;transform:translateX(-50%);width:42px;height:42px;font-size:.9rem}
-:fullscreen h1,:fullscreen #ctrl{display:none!important}
-:-webkit-full-screen h1,:-webkit-full-screen #ctrl{display:none!important}
-:fullscreen #hud{margin-bottom:4px}:-webkit-full-screen #hud{margin-bottom:4px}
+:fullscreen h1,:fullscreen #ctrl,:-webkit-full-screen h1,:-webkit-full-screen #ctrl{display:none!important}
+:fullscreen #hud,:-webkit-full-screen #hud{margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -56,7 +55,7 @@ canvas{display:block;border:3px solid #e63946;border-radius:6px;box-shadow:0 0 4
 <div id="ctrl">
   <span class="k">← →</span> mover &nbsp; <span class="k">↑</span><span class="k">Z</span><span class="k">Esp</span> saltar &nbsp; <span class="k">Shift</span> correr &nbsp; <span class="k">P</span> pausa
 </div>
-<button id="fs-btn" title="Pantalla completa">⛶</button>
+<button id="fs-btn" title="Pantalla completa">[]</button>
 <div id="tc">
   <div class="tcb" id="tc-l">◀</div>
   <div class="tcb" id="tc-r">▶</div>
@@ -319,7 +318,7 @@ function togglePause(){
 // ── INIT / RESET ────────────────────────────────────────────
 function initGame(){
   if(isTouchDevice&&!document.fullscreenElement)
-    document.documentElement.requestFullscreen().catch(()=>{});
+    requestFS(document.documentElement);
   score=0;coins=0;lives=3;tLeft=300;
   lvData=buildLevel();
   resetRound();
@@ -573,18 +572,26 @@ fr(0,0,CW,CH,'#0f0f1a');
 loop();
 
 // ── FULLSCREEN ──────────────────────────────────────────────
+function requestFS(el) {
+  try {
+    const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+    if (fn) fn.call(el);
+  } catch(e) {}
+}
+function exitFS() {
+  try {
+    const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+    if (fn) fn.call(document);
+  } catch(e) {}
+}
+function isFS() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
 const fsBtn = document.getElementById('fs-btn');
-fsBtn.addEventListener('click', () => {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen().catch(()=>{});
-  } else {
-    document.exitFullscreen().catch(()=>{});
-  }
-});
-document.addEventListener('fullscreenchange', () => {
-  fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
-  resize();
-});
+fsBtn.addEventListener('click', () => { isFS() ? exitFS() : requestFS(document.documentElement); });
+['fullscreenchange','webkitfullscreenchange'].forEach(ev =>
+  document.addEventListener(ev, () => { fsBtn.textContent = isFS() ? 'X' : '[]'; resize(); })
+);
 
 // ── TOUCH CONTROLS ──────────────────────────────────────────
 isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
