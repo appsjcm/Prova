@@ -23,6 +23,17 @@ canvas{display:block;border:3px solid #e63946;border-radius:6px;box-shadow:0 0 4
 #ov-btn:hover{transform:scale(1.05)}
 #ctrl{margin-top:10px;color:#333;font-size:.72rem;text-align:center;line-height:2}
 .k{display:inline-block;background:#111;border:1px solid #333;border-radius:3px;padding:1px 6px;color:#666}
+#fs-btn{position:fixed;top:8px;right:8px;z-index:300;background:rgba(0,0,0,.65);border:1.5px solid rgba(255,255,255,.3);color:#fff;width:36px;height:36px;font-size:1.1rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1}
+#fs-btn:hover{background:rgba(255,255,255,.18)}
+#tc{display:none;position:fixed;bottom:0;left:0;right:0;height:80px;pointer-events:none;z-index:200}
+.tcb{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.13);border:2px solid rgba(255,255,255,.4);color:rgba(255,255,255,.85);font-size:1.5rem;display:flex;align-items:center;justify-content:center;pointer-events:all;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .08s}
+.tcb.on{background:rgba(255,255,255,.32)}
+#tc-l{left:10px;bottom:10px}#tc-r{left:80px;bottom:10px}
+#tc-a{right:10px;bottom:10px}#tc-b{right:80px;bottom:10px}
+#tc-p{left:50%;bottom:14px;transform:translateX(-50%);width:42px;height:42px;font-size:.9rem}
+:fullscreen h1,:fullscreen #ctrl{display:none!important}
+:-webkit-full-screen h1,:-webkit-full-screen #ctrl{display:none!important}
+:fullscreen #hud{margin-bottom:4px}:-webkit-full-screen #hud{margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -45,6 +56,14 @@ canvas{display:block;border:3px solid #e63946;border-radius:6px;box-shadow:0 0 4
 <div id="ctrl">
   <span class="k">← →</span> mover &nbsp; <span class="k">↑</span><span class="k">Z</span><span class="k">Esp</span> saltar &nbsp; <span class="k">Shift</span> correr &nbsp; <span class="k">P</span> pausa
 </div>
+<button id="fs-btn" title="Pantalla completa">⛶</button>
+<div id="tc">
+  <div class="tcb" id="tc-l">◀</div>
+  <div class="tcb" id="tc-r">▶</div>
+  <div class="tcb" id="tc-p">⏸</div>
+  <div class="tcb" id="tc-b">B</div>
+  <div class="tcb" id="tc-a">▲</div>
+</div>
 
 <script>
 'use strict';
@@ -56,8 +75,12 @@ const GRAV = 0.52, JV = -12, WS = 2.6, RS = 4.8;
 
 // Scale canvas to window
 const wrap = document.getElementById('wrap');
+let tcH = 0, isTouchDevice = false;
 function resize() {
-  const s = Math.min((innerWidth - 32) / CW, (innerHeight - 120) / CH, 1.5);
+  const fs = !!document.fullscreenElement;
+  const topH = fs ? 38 : 120;
+  const maxS = fs ? 3 : 1.5;
+  const s = Math.min((innerWidth - 8) / CW, (innerHeight - topH - tcH) / CH, maxS);
   cv.style.width  = CW * s + 'px';
   cv.style.height = CH * s + 'px';
   wrap.style.width  = CW * s + 'px';
@@ -295,6 +318,8 @@ function togglePause(){
 
 // ── INIT / RESET ────────────────────────────────────────────
 function initGame(){
+  if(isTouchDevice&&!document.fullscreenElement)
+    document.documentElement.requestFullscreen().catch(()=>{});
   score=0;coins=0;lives=3;tLeft=300;
   lvData=buildLevel();
   resetRound();
@@ -546,6 +571,59 @@ cv.addEventListener('click',()=>{
 // Initial render
 fr(0,0,CW,CH,'#0f0f1a');
 loop();
+
+// ── FULLSCREEN ──────────────────────────────────────────────
+const fsBtn = document.getElementById('fs-btn');
+fsBtn.addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen().catch(()=>{});
+  }
+});
+document.addEventListener('fullscreenchange', () => {
+  fsBtn.textContent = document.fullscreenElement ? '✕' : '⛶';
+  resize();
+});
+
+// ── TOUCH CONTROLS ──────────────────────────────────────────
+isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);
+if (isTouchDevice) {
+  document.getElementById('tc').style.display = 'block';
+  document.getElementById('ctrl').style.display = 'none';
+  tcH = 80; resize();
+}
+function tcBind(id, key) {
+  const el = document.getElementById(id);
+  const press = e => {
+    e.preventDefault();
+    el.classList.add('on');
+    if (!K[key]) JP[key] = true;
+    K[key] = true;
+  };
+  const release = e => {
+    e.preventDefault();
+    el.classList.remove('on');
+    K[key] = false;
+  };
+  el.addEventListener('touchstart', press, {passive:false});
+  el.addEventListener('touchend',   release, {passive:false});
+  el.addEventListener('touchcancel',release, {passive:false});
+  el.addEventListener('mousedown',  press);
+  el.addEventListener('mouseup',    release);
+  el.addEventListener('mouseleave', release);
+}
+tcBind('tc-l', 'ArrowLeft');
+tcBind('tc-r', 'ArrowRight');
+tcBind('tc-a', 'ArrowUp');
+tcBind('tc-b', 'ShiftLeft');
+const tcpEl = document.getElementById('tc-p');
+const pausePress = e => { e.preventDefault(); tcpEl.classList.add('on'); togglePause(); };
+const pauseRelease = e => { e.preventDefault(); tcpEl.classList.remove('on'); };
+tcpEl.addEventListener('touchstart', pausePress, {passive:false});
+tcpEl.addEventListener('touchend',   pauseRelease, {passive:false});
+tcpEl.addEventListener('mousedown',  pausePress);
+tcpEl.addEventListener('mouseup',    pauseRelease);
 </script>
 </body>
 </html>
