@@ -2,13 +2,18 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a2040">
 <title>Cosmo Kid</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{background:#0a2040;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#fff;overflow:hidden}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{overscroll-behavior:none;touch-action:none}
+body{background:#0a2040;min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:monospace;color:#fff;overflow:hidden;touch-action:none;overscroll-behavior:none}
 h1{font-size:1.9rem;margin-bottom:5px;letter-spacing:4px;text-transform:uppercase;background:linear-gradient(135deg,#00ccff,#00ff88);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-#hud{display:flex;gap:14px;margin-bottom:7px;flex-wrap:wrap;justify-content:center}
+#hud{display:flex;gap:12px;margin-bottom:6px;flex-wrap:wrap;justify-content:center}
 .hb{text-align:center}
 .hl{font-size:8px;color:#6688aa;letter-spacing:2px;text-transform:uppercase}
 .hv{font-size:1.3rem;font-weight:bold;color:#00ccff}
@@ -27,30 +32,52 @@ canvas{display:block;border:2px solid #44aadd;border-radius:8px;box-shadow:0 0 5
 #ov-btn:hover,#ov-btn:active{transform:scale(1.05);box-shadow:0 0 50px rgba(0,200,255,.8),0 5px 20px rgba(0,0,0,.5)}
 #ctrl{margin-top:7px;color:#3a4a5a;font-size:.66rem;text-align:center;line-height:2}
 .k{display:inline-block;background:#0d1a2a;border:1px solid #2a3a4a;border-radius:3px;padding:1px 5px;color:#5a7a9a}
-#fs-btn{position:fixed;top:8px;right:8px;z-index:300;background:rgba(0,20,50,.7);border:1.5px solid rgba(0,200,255,.25);color:#888;width:36px;height:36px;font-size:.8rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-#fs-btn:hover{background:rgba(0,200,255,.15);color:#00ccff;border-color:rgba(0,200,255,.5)}
-#tc{display:none;position:fixed;bottom:0;left:0;right:0;height:112px;pointer-events:none;z-index:200}
-.tcb{position:absolute;width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.25);color:rgba(255,255,255,.7);font-size:1.4rem;display:flex;align-items:center;justify-content:center;pointer-events:all;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .08s,border-color .15s}
-.tcb.on{background:rgba(0,200,255,.22);border-color:rgba(0,200,255,.65)}
-#tc-l{left:10px;bottom:50px}#tc-r{left:80px;bottom:50px}#tc-d{left:45px;bottom:6px;width:50px;height:50px;font-size:1.2rem}
-#tc-a{right:10px;bottom:50px}#tc-b{right:80px;bottom:50px}
-#tc-x{right:45px;bottom:6px;width:50px;height:50px;font-size:1rem;color:rgba(0,200,255,.3);border-color:rgba(0,200,255,.15)}
-#tc-x.fire-on{color:rgba(0,230,255,.95);border-color:rgba(0,210,255,.75);box-shadow:0 0 14px rgba(0,200,255,.5)}
+#fs-btn{position:fixed;top:10px;right:10px;z-index:300;background:rgba(0,20,50,.75);border:1.5px solid rgba(0,200,255,.3);color:#99bbcc;width:40px;height:40px;font-size:.9rem;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+#fs-btn:hover,#fs-btn:active{background:rgba(0,200,255,.18);color:#00ccff;border-color:rgba(0,200,255,.6)}
+/* ── TOUCH CONTROL STRIP ── */
+#tc{display:none;position:fixed;bottom:0;left:0;right:0;height:134px;pointer-events:none;z-index:200;background:linear-gradient(transparent,rgba(0,4,18,.55) 38%);padding-bottom:env(safe-area-inset-bottom,0px)}
+.tcb{position:absolute;border-radius:50%;background:rgba(0,8,30,.62);border:2px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;pointer-events:all;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .06s,border-color .08s,box-shadow .08s,transform .06s;box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
+.tcb:active,.tcb.on{transform:scale(.9);background:rgba(0,130,215,.42);border-color:rgba(0,215,255,.92);box-shadow:0 0 18px rgba(0,180,255,.55),0 2px 6px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12)}
+/* Left: D-pad */
+#tc-l{left:8px;bottom:60px;width:66px;height:66px;font-size:1.65rem}
+#tc-r{left:82px;bottom:60px;width:66px;height:66px;font-size:1.65rem}
+#tc-d{left:45px;bottom:8px;width:56px;height:56px;font-size:1.3rem;color:rgba(255,255,255,.65)}
+/* Right: action buttons */
+#tc-a{right:6px;bottom:44px;width:80px;height:80px;font-size:2.2rem;background:rgba(0,30,90,.7);border-color:rgba(0,180,255,.4);box-shadow:0 0 24px rgba(0,140,255,.22),0 4px 16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+#tc-a.on{background:rgba(0,90,220,.52);border-color:rgba(0,225,255,.96);box-shadow:0 0 30px rgba(0,200,255,.75),0 2px 8px rgba(0,0,0,.4)}
+#tc-b{right:92px;bottom:60px;width:62px;height:62px;font-size:1rem;letter-spacing:.5px}
+#tc-x{right:46px;bottom:8px;width:56px;height:56px;font-size:1rem;color:rgba(0,200,255,.38);border-color:rgba(0,180,255,.18)}
+#tc-x.fire-on{color:rgba(0,235,255,.96);border-color:rgba(0,215,255,.82);box-shadow:0 0 18px rgba(0,200,255,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+#tc-p{right:163px;bottom:12px;width:42px;height:42px;font-size:.95rem;color:rgba(180,210,255,.65);border-color:rgba(100,150,200,.22);background:rgba(0,10,40,.55)}
+/* warnings */
 .warn{animation:wpulse .45s infinite}
 @keyframes wpulse{0%,100%{opacity:1}50%{opacity:.45}}
-#tc-p{left:50%;bottom:58px;transform:translateX(-50%);width:40px;height:40px;font-size:.82rem}
+/* ── RESPONSIVE ── */
+@media (max-width:480px){
+  h1{font-size:1.25rem;margin-bottom:2px;letter-spacing:2px}
+  .hv{font-size:.92rem}.hl{font-size:6px}
+  #hud{gap:8px;margin-bottom:3px}
+}
 @media (orientation:portrait) and (max-width:700px){
-  h1{font-size:1.3rem;margin-bottom:2px;letter-spacing:2px}
-  .hv{font-size:.95rem}.hl{font-size:6px}
-  #hud{gap:9px;margin-bottom:4px}
   #ov-t{font-size:2rem;letter-spacing:3px}
   #ov-btn{min-height:68px;font-size:1.05rem}
   #ov-m{font-size:.72rem}
 }
+@media (orientation:landscape) and (max-height:500px){
+  h1,#ctrl{display:none!important}
+  #hud{gap:10px;margin-bottom:2px}
+  .hv{font-size:.9rem}.hl{font-size:6px}
+  #tc{height:108px}
+  #tc-l{bottom:42px}#tc-r{bottom:42px}#tc-d{bottom:6px}
+  #tc-a{bottom:28px}#tc-b{bottom:42px}#tc-x{bottom:6px}#tc-p{bottom:8px}
+}
+/* Fullscreen */
 :fullscreen h1,:fullscreen #ctrl,:-webkit-full-screen h1,:-webkit-full-screen #ctrl{display:none!important}
 :fullscreen #hud,:-webkit-full-screen #hud{margin-bottom:3px}
 :fullscreen #ov-t,:-webkit-full-screen #ov-t{font-size:3.5rem}
 :fullscreen #ov-btn,:-webkit-full-screen #ov-btn{max-width:340px;min-height:74px;font-size:1.25rem}
+:fullscreen canvas,:-webkit-full-screen canvas{border-color:transparent;box-shadow:none}
+/* Cheat menu */
 #ch-ov{display:none;position:fixed;inset:0;background:rgba(0,0,20,.94);z-index:500;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px}
 #ch-ov.on{display:flex}
 .ch-t{font-size:1.4rem;font-weight:900;color:#ffee22;letter-spacing:4px;text-shadow:0 0 20px #ffcc00}
@@ -111,15 +138,15 @@ canvas{display:block;border:2px solid #44aadd;border-radius:8px;box-shadow:0 0 5
   <span class="k">Shift</span> correr &nbsp;
   <span class="k">P</span> pausa
 </div>
-<button id="fs-btn">[ ]</button>
+<button id="fs-btn" title="Pantalla completa">&#x26F6;</button>
 <div id="tc">
   <div class="tcb" id="tc-l">&#9664;</div>
   <div class="tcb" id="tc-r">&#9654;</div>
   <div class="tcb" id="tc-d">&#9660;</div>
-  <div class="tcb" id="tc-p">II</div>
-  <div class="tcb" id="tc-b">B</div>
+  <div class="tcb" id="tc-p">&#9646;&#9646;</div>
+  <div class="tcb" id="tc-b">RUN</div>
   <div class="tcb" id="tc-a">&#9650;</div>
-  <div class="tcb" id="tc-x">X</div>
+  <div class="tcb" id="tc-x">&#10022;</div>
 </div>
 <script>
 'use strict';
@@ -207,14 +234,29 @@ function isFS(){return!!(document.fullscreenElement||document.webkitFullscreenEl
 function requestFS(el){try{const f=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen;if(f){f.call(el);fsWanted=true;}}catch(e){}}
 function exitFS(){try{const f=document.exitFullscreen||document.webkitExitFullscreen;if(f){f.call(document);fsWanted=false;}}catch(e){}}
 const fsBtn=document.getElementById('fs-btn');
-fsBtn.addEventListener('click',()=>isFS()?exitFS():requestFS(document.documentElement));
-['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{if(!isFS()&&fsWanted)fsWanted=false;fsBtn.textContent=isFS()?'X':'[ ]';resize();}));
+fsBtn.addEventListener('click',()=>{initAC();isFS()?exitFS():requestFS(document.documentElement);});
+['fullscreenchange','webkitfullscreenchange'].forEach(ev=>document.addEventListener(ev,()=>{
+  const fs=isFS();if(!fs&&fsWanted)fsWanted=false;
+  fsBtn.innerHTML=fs?'&#x2715;':'&#x26F6;';
+  fsBtn.style.opacity=fs?.45:1;
+  resize();
+}));
 
 // ── RESIZE ──────────────────────────────────────────────────
 let tcH=0,isTouchDevice=false;
-function resize(){const fs=isFS(),topH=fs?36:118,maxS=fs?3:1.5;const s=Math.min((innerWidth-8)/CW,(innerHeight-topH-tcH)/CH,maxS);cv.style.width=CW*s+'px';cv.style.height=CH*s+'px';wrap.style.width=CW*s+'px';}
+function resize(){
+  const fs=isFS();
+  const land=innerWidth>innerHeight;
+  const topH=fs?32:118;
+  const botH=isTouchDevice?(land?108:134):0;
+  const maxS=fs?3.5:1.6;
+  const s=Math.min((innerWidth-4)/CW,(innerHeight-topH-botH)/CH,maxS);
+  cv.style.width=CW*s+'px';cv.style.height=CH*s+'px';wrap.style.width=CW*s+'px';
+}
 window.addEventListener('resize',resize);
-window.addEventListener('orientationchange',()=>setTimeout(()=>{resize();if(fsWanted&&!isFS())requestFS(document.documentElement);},350));
+window.addEventListener('orientationchange',()=>setTimeout(()=>{resize();if(fsWanted&&!isFS())requestFS(document.documentElement);},400));
+// Prevent default scroll/bounce
+document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 resize();
 
 // ── INPUT ───────────────────────────────────────────────────
@@ -1457,17 +1499,25 @@ requestAnimationFrame(loop);showMenu();
 
 // ── TOUCH CONTROLS ──────────────────────────────────────────
 isTouchDevice=('ontouchstart' in window||navigator.maxTouchPoints>0);
-if(isTouchDevice){document.getElementById('tc').style.display='block';document.getElementById('ctrl').style.display='none';tcH=112;resize();showMenu();}
-function tcBind(id,key){
+if(isTouchDevice){document.getElementById('tc').style.display='block';document.getElementById('ctrl').style.display='none';tcH=134;resize();showMenu();}
+function hap(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+function tcBind(id,key,hapMs){
   const el=document.getElementById(id);
-  const press=e=>{e.preventDefault();el.classList.add('on');if(!K[key])JP[key]=true;K[key]=true;};
+  const press=e=>{e.preventDefault();if(K[key])return;el.classList.add('on');JP[key]=true;K[key]=true;hap(hapMs||8);};
   const release=e=>{e.preventDefault();el.classList.remove('on');K[key]=false;};
-  el.addEventListener('touchstart',press,{passive:false});el.addEventListener('touchend',release,{passive:false});el.addEventListener('touchcancel',release,{passive:false});
+  el.addEventListener('touchstart',press,{passive:false});
+  el.addEventListener('touchend',release,{passive:false});
+  el.addEventListener('touchcancel',release,{passive:false});
   el.addEventListener('mousedown',press);el.addEventListener('mouseup',release);el.addEventListener('mouseleave',release);
 }
-tcBind('tc-l','ArrowLeft');tcBind('tc-r','ArrowRight');tcBind('tc-d','ArrowDown');tcBind('tc-a','ArrowUp');tcBind('tc-b','ShiftLeft');tcBind('tc-x','KeyX');
+tcBind('tc-l','ArrowLeft');
+tcBind('tc-r','ArrowRight');
+tcBind('tc-d','ArrowDown');
+tcBind('tc-a','ArrowUp',12);  // jump = stronger haptic
+tcBind('tc-b','ShiftLeft');
+tcBind('tc-x','KeyX',6);
 const tcpEl=document.getElementById('tc-p');
-const ppP=e=>{e.preventDefault();tcpEl.classList.add('on');togglePause();};
+const ppP=e=>{e.preventDefault();tcpEl.classList.add('on');togglePause();hap(15);};
 const ppR=e=>{e.preventDefault();tcpEl.classList.remove('on');};
 tcpEl.addEventListener('touchstart',ppP,{passive:false});tcpEl.addEventListener('touchend',ppR,{passive:false});
 tcpEl.addEventListener('mousedown',ppP);tcpEl.addEventListener('mouseup',ppR);
