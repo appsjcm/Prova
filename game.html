@@ -1534,11 +1534,12 @@ requestAnimationFrame(loop);showMenu();
     _code+=e.key.toUpperCase();if(_code.length>7)_code=_code.slice(-7);
     if(_code.includes('COSMO')){_code='';openCh();}
   });
-  function chkTap(){const now2=Date.now();if(now2-_tapT>2000)_taps=0;_tapT=now2;if(++_taps>=5){_taps=0;openCh();}}
+  function chkTap(e){if(e&&e.cancelable)e.preventDefault();const now2=Date.now();if(now2-_tapT>2000)_taps=0;_tapT=now2;_taps++;ovT.style.opacity=_taps>=4?'0.5':'';setTimeout(()=>ovT.style.opacity='',180);if(_taps>=5){_taps=0;openCh();}}
   const h1=document.querySelector('h1');
-  if(h1)h1.addEventListener('click',chkTap);
-  // Also works by tapping the overlay title (mobile)
+  if(h1){h1.addEventListener('click',chkTap);h1.addEventListener('touchend',chkTap,{passive:false});}
+  ovT.style.cursor='pointer';
   ovT.addEventListener('click',chkTap);
+  ovT.addEventListener('touchend',chkTap,{passive:false});
   ['inf','ghost','jump','turbo','nospk','star9'].forEach(k=>{const b=document.getElementById('ch-'+k);if(b)b.addEventListener('click',()=>{chts[k]=!chts[k];updCBtns();});});
   document.getElementById('ch-cl').addEventListener('click',closeCh);
   const wp=document.getElementById('ch-warp');
