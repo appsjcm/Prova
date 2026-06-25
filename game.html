@@ -65,12 +65,18 @@ canvas{display:block;border:2px solid #44aadd;border-radius:8px;box-shadow:0 0 5
 }
 @media (orientation:landscape) and (max-height:500px){
   h1,#ctrl{display:none!important}
-  #hud{gap:10px;margin-bottom:2px}
-  .hv{font-size:.9rem}.hl{font-size:6px}
-  #tc{height:90px}
-  #joy-base{left:4px;bottom:4px;width:82px;height:82px}
+  #hud{gap:5px;margin-bottom:1px;flex-wrap:nowrap}
+  .hv{font-size:.74rem}.hl{font-size:5px}
+  /* TC becomes full-height side overlay — no bottom strip */
+  #tc{top:0;height:100%;background:none;padding:0}
+  /* Joystick: vertically centered on left */
+  #joy-base{left:4px;top:50%;bottom:auto;transform:translateY(-50%);width:86px;height:86px}
   #joy-knob{width:36px;height:36px;margin:-18px 0 0 -18px}
-  #tc-a{bottom:8px}#tc-b{bottom:28px}#tc-x{bottom:4px}#tc-p{bottom:6px}
+  /* Action buttons: vertically centered on right */
+  #tc-a{right:6px;bottom:auto;top:calc(50% - 86px);width:72px;height:72px;font-size:1.9rem}
+  #tc-b{right:88px;bottom:auto;top:calc(50% - 31px);width:60px;height:60px}
+  #tc-x{right:6px;bottom:auto;top:calc(50% + 4px);width:54px;height:54px;font-size:.88rem}
+  #tc-p{right:156px;bottom:auto;top:8px;width:36px;height:36px;font-size:.8rem}
 }
 body.touch h1{display:none}
 /* Fullscreen */
@@ -254,10 +260,11 @@ let tcH=0,isTouchDevice=false;
 function resize(){
   const fs=isFS();
   const land=innerWidth>innerHeight;
-  const topH=fs?32:(isTouchDevice?72:118);
-  const botH=isTouchDevice?(land?90:120):0;
-  const maxS=fs?3.5:1.6;
-  const s=Math.min((innerWidth-4)/CW,(innerHeight-topH-botH)/CH,maxS);
+  const topH=fs?0:(isTouchDevice&&land?30:isTouchDevice?72:118);
+  const botH=isTouchDevice&&!land?120:0;
+  const sidePad=isTouchDevice&&land?196:0; // room for side controls
+  const maxS=fs?3.5:land&&isTouchDevice?2.2:1.6;
+  const s=Math.min((innerWidth-4-sidePad)/CW,(innerHeight-topH-botH)/CH,maxS);
   cv.style.width=CW*s+'px';cv.style.height=CH*s+'px';wrap.style.width=CW*s+'px';
 }
 window.addEventListener('resize',resize);
