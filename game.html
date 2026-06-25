@@ -277,6 +277,8 @@ resize();
 const K={},JP={};
 window.addEventListener('keydown',e=>{if(!K[e.code])JP[e.code]=true;K[e.code]=true;if(['Space','ArrowUp','ArrowLeft','ArrowRight','ArrowDown'].includes(e.code))e.preventDefault();if(e.code==='KeyP')togglePause();if(e.code==='KeyM'){musicMuted=!musicMuted;if(!musicMuted&&musicActive&&AC)musicNextT=AC.currentTime;setMusicIcon();}});
 window.addEventListener('keyup',e=>K[e.code]=false);
+window.addEventListener('blur',()=>{for(const k in K)K[k]=false;});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const k in K)K[k]=false;});
 const isL=()=>K.ArrowLeft||K.KeyA,isR=()=>K.ArrowRight||K.KeyD;
 const isJ=()=>K.ArrowUp||K.KeyZ||K.Space,isD=()=>K.ArrowDown||K.KeyS;
 const isRn=()=>K.ShiftLeft||K.ShiftRight;
