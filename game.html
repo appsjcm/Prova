@@ -372,9 +372,22 @@ function showMenu(){
 
 // ── BOSS ─────────────────────────────────────────────────────
 let boss=null,bossProjs=[];
-function mkBoss(x,hp){hp=Math.max(2,Math.round((hp||8)*df().bsc));return{x,y:60,w:56,h:56,hp,maxHp:hp,vx:-2,vy:0,onG:false,alive:true,inv:0,timer:0,rage:false};}
+function mkBoss(x,hp){hp=Math.max(2,Math.round((hp||8)*df().bsc));return{x,y:60,w:56,h:56,hp,maxHp:hp,vx:0,vy:0,onG:false,alive:true,inv:0,timer:0,rage:false,triggered:false};}
 function updBoss(sl){
   if(!boss||!boss.alive)return;
+  // Wait dormant until player enters boss arena
+  if(!boss.triggered){
+    boss.vy+=GRAV;if(boss.vy>16)boss.vy=16;
+    boss.y+=boss.vy;
+    for(const s of sl){if(!hit(boss,s))continue;if(boss.vy>=0){boss.y=s.y-boss.h;boss.vy=0;}break;}
+    if(player&&Math.abs(player.x-(boss.x+28))<520){
+      boss.triggered=true;boss.vx=-2;
+      shake(8);SFX.warn();
+      parts.push(new TextPop(boss.x+28,boss.y-24,'¡JEFE FINAL!','#ff4400'));
+      for(let i=0;i<20;i++)parts.push(new Pop(boss.x+28,boss.y+28,(Math.random()-.5)*12,-Math.random()*9,'#ff5500',44));
+    }
+    return;
+  }
   if(boss.inv>0)boss.inv--;
   boss.timer++;boss.vy+=GRAV;if(boss.vy>16)boss.vy=16;
   boss.x+=boss.vx;
@@ -410,6 +423,17 @@ function updBoss(sl){
 function drawBoss(ox){
   if(!boss||!boss.alive)return;
   const x=Math.round(boss.x-ox),y=Math.round(boss.y);
+  if(!boss.triggered){
+    // Dormant pulsing idle
+    const pulse=.6+.4*Math.sin(NOW*.04);
+    ct.globalAlpha=pulse;
+    ct.shadowColor='#880000';ct.shadowBlur=12*pulse;
+    sphere(x+28,y+28,28,'#661100','#330800','#993322');
+    ct.shadowBlur=0;ct.globalAlpha=1;
+    ct.fillStyle='rgba(255,60,0,.7)';ct.font='bold 9px monospace';ct.textAlign='center';
+    ct.fillText('???',x+28,y+28+4);
+    return;
+  }
   if(boss.inv>0&&(boss.inv/3|0)%2===1)return;
   const rp=boss.rage?(.5+.5*Math.sin(NOW*.09)):0;
   ct.shadowColor=boss.rage?`hsl(${20+rp*30|0},100%,55%)`:`hsl(${20-(1-boss.hp/boss.maxHp)*20|0},100%,50%)`;
