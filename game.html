@@ -38,14 +38,14 @@ canvas{display:block;border:2px solid #44aadd;border-radius:8px;box-shadow:0 0 5
 #tc{display:none;position:fixed;bottom:0;left:0;right:0;height:120px;pointer-events:none;z-index:200;background:linear-gradient(transparent,rgba(0,4,18,.52) 32%);padding-bottom:env(safe-area-inset-bottom,0px)}
 .tcb{position:absolute;border-radius:50%;background:rgba(0,8,30,.62);border:2px solid rgba(255,255,255,.2);color:rgba(255,255,255,.85);display:flex;align-items:center;justify-content:center;pointer-events:all;touch-action:none;user-select:none;-webkit-user-select:none;transition:background .06s,border-color .08s,box-shadow .08s,transform .06s;box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08)}
 .tcb:active,.tcb.on{transform:scale(.9);background:rgba(0,130,215,.42);border-color:rgba(0,215,255,.92);box-shadow:0 0 18px rgba(0,180,255,.55),0 2px 6px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.12)}
-/* Left: D-pad – ◄ and ► side by side, ▼ below-center */
-#tc-l{left:4px;bottom:52px;width:62px;height:62px;font-size:1.6rem}
-#tc-r{left:70px;bottom:52px;width:62px;height:62px;font-size:1.6rem}
-#tc-d{left:36px;bottom:4px;width:54px;height:44px;font-size:1.25rem;color:rgba(255,255,255,.75);border-radius:12px}
+/* Left: virtual joystick */
+#joy-base{position:absolute;left:8px;bottom:6px;width:108px;height:108px;border-radius:50%;background:rgba(0,6,24,.48);border:2px solid rgba(255,255,255,.1);pointer-events:all;touch-action:none;box-shadow:0 4px 18px rgba(0,0,0,.5),inset 0 0 30px rgba(0,30,80,.3)}
+#joy-knob{position:absolute;top:50%;left:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:radial-gradient(circle at 36% 36%,rgba(0,170,255,.9),rgba(0,80,210,.78));border:2px solid rgba(0,210,255,.65);box-shadow:0 0 14px rgba(0,150,255,.5),inset 0 1px 0 rgba(255,255,255,.25);pointer-events:none;will-change:transform;transition:transform .04s}
+#joy-knob.run{box-shadow:0 0 22px rgba(0,220,255,.8),inset 0 1px 0 rgba(255,255,255,.3)}
 /* Right: action buttons */
-#tc-a{right:6px;bottom:44px;width:80px;height:80px;font-size:2.2rem;background:rgba(0,30,90,.7);border-color:rgba(0,180,255,.4);box-shadow:0 0 24px rgba(0,140,255,.22),0 4px 16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
+#tc-a{right:6px;bottom:36px;width:80px;height:80px;font-size:2.2rem;background:rgba(0,30,90,.7);border-color:rgba(0,180,255,.4);box-shadow:0 0 24px rgba(0,140,255,.22),0 4px 16px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.1)}
 #tc-a.on{background:rgba(0,90,220,.52);border-color:rgba(0,225,255,.96);box-shadow:0 0 30px rgba(0,200,255,.75),0 2px 8px rgba(0,0,0,.4)}
-#tc-b{right:92px;bottom:60px;width:62px;height:62px;font-size:1rem;letter-spacing:.5px}
+#tc-b{right:92px;bottom:50px;width:62px;height:62px;font-size:1rem;letter-spacing:.5px}
 #tc-x{right:46px;bottom:8px;width:56px;height:56px;font-size:1rem;color:rgba(0,200,255,.38);border-color:rgba(0,180,255,.18)}
 #tc-x.fire-on{color:rgba(0,235,255,.96);border-color:rgba(0,215,255,.82);box-shadow:0 0 18px rgba(0,200,255,.6),inset 0 1px 0 rgba(255,255,255,.1)}
 #tc-p{right:163px;bottom:12px;width:42px;height:42px;font-size:.95rem;color:rgba(180,210,255,.65);border-color:rgba(100,150,200,.22);background:rgba(0,10,40,.55)}
@@ -68,11 +68,9 @@ canvas{display:block;border:2px solid #44aadd;border-radius:8px;box-shadow:0 0 5
   #hud{gap:10px;margin-bottom:2px}
   .hv{font-size:.9rem}.hl{font-size:6px}
   #tc{height:90px}
-  /* landscape: ◄ ► ▼ horizontal row – compact */
-  #tc-l{left:4px;bottom:8px;width:52px;height:52px;font-size:1.4rem}
-  #tc-r{left:60px;bottom:8px;width:52px;height:52px;font-size:1.4rem}
-  #tc-d{left:116px;bottom:10px;width:46px;height:40px;font-size:1.1rem;border-radius:10px}
-  #tc-a{bottom:10px}#tc-b{bottom:30px}#tc-x{bottom:6px}#tc-p{bottom:8px}
+  #joy-base{left:4px;bottom:4px;width:82px;height:82px}
+  #joy-knob{width:36px;height:36px;margin:-18px 0 0 -18px}
+  #tc-a{bottom:8px}#tc-b{bottom:28px}#tc-x{bottom:4px}#tc-p{bottom:6px}
 }
 body.touch h1{display:none}
 /* Fullscreen */
@@ -144,9 +142,7 @@ body.touch h1{display:none}
 </div>
 <button id="fs-btn" title="Pantalla completa">&#x26F6;</button>
 <div id="tc">
-  <div class="tcb" id="tc-l">&#9664;</div>
-  <div class="tcb" id="tc-r">&#9654;</div>
-  <div class="tcb" id="tc-d">&#9660;</div>
+  <div id="joy-base"><div id="joy-knob"></div></div>
   <div class="tcb" id="tc-p">&#9646;&#9646;</div>
   <div class="tcb" id="tc-b">RUN</div>
   <div class="tcb" id="tc-a">&#9650;</div>
@@ -287,7 +283,7 @@ let camX=0,tAccum=0,dTimer=0,wTimer=0;
 let player,enemies,coinList,blkList,powerUps,lasers,parts,lvData;
 let levelNum=0,lw=3600,nextLvlReady=false;
 let cpX=-1; // checkpoint respawn X (-1 = none)
-let comboMult=1,comboTimer=0;
+let comboMult=1,comboTimer=0,joyIsRunning=false;
 let hiScore=+localStorage.getItem('cosmoHi')||0;
 let bestTime=+localStorage.getItem('cosmoBT')||0;
 
@@ -566,7 +562,7 @@ function buildLevel8(){return buildLvGen(7600,3.9,0.7,true,12);}
 const LV_BUILDERS=[buildLevel1,buildLevel2,buildLevel3,buildLevel4,buildLevel5,buildLevel6,buildLevel7,buildLevel8];
 
 // ── FACTORIES ───────────────────────────────────────────────
-function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0};}
+function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0,slide:0};}
 function mkEnemies(defs){return defs.map(d=>{
   if(d.t==='f'){const by=d.y||(GY-120);return{t:'f',x:d.x,y:by,baseY:by,amp:d.amp||26,ph:Math.random()*6.28,w:26,h:20,vx:-(d.sp||1.0),vy:0,alive:true,stomp:false,sTimer:0,shell:false,dir:-1,fr:0,ft:0};}
   return{t:d.t,x:d.x,y:GY-(d.t==='k'?36:26),w:d.t==='k'?28:24,h:d.t==='k'?36:26,vx:-(d.sp||1.2),vy:0,alive:true,stomp:false,sTimer:0,shell:false,dir:-1,fr:0,ft:0};
@@ -609,10 +605,12 @@ function updPlayer(p,sl){
   if(p.star>0){p.star--;if(p.star===0&&!chts.star9){p.inv=0;updatePwrHUD();}}
   if(p.fireCool>0)p.fireCool--;
   const wantDuck=isD()&&p.onG,ch=crouchH(p),sh=standH(p);
-  if(wantDuck&&!p.crouch){p.crouch=true;p.h=ch;p.y+=(sh-ch);}
-  else if(!wantDuck&&p.crouch){const test={x:p.x,y:p.y-(sh-ch),w:p.w,h:sh};if(!sl.some(s=>hit(test,s))){p.crouch=false;p.h=sh;p.y-=(sh-ch);}}
-  const spd=(isRn()||chts.turbo||(p.star>0&&!p.crouch))?RS+(p.star>0?.6:0)+(chts.turbo?.8:0):WS;
-  if(!p.crouch){if(isL()){p.vx=-spd;p.dir=-1;}else if(isR()){p.vx=spd;p.dir=1;}else{p.vx*=.72;if(Math.abs(p.vx)<.1)p.vx=0;}}else{p.vx*=.6;if(Math.abs(p.vx)<.1)p.vx=0;}
+  if(wantDuck&&!p.crouch){p.crouch=true;p.h=ch;p.y+=(sh-ch);if(p.onG&&Math.abs(p.vx)>=RS*.75)p.slide=24;}
+  else if(!wantDuck&&p.crouch&&p.slide===0){const test={x:p.x,y:p.y-(sh-ch),w:p.w,h:sh};if(!sl.some(s=>hit(test,s))){p.crouch=false;p.h=sh;p.y-=(sh-ch);}}
+  const spd=(isRn()||joyIsRunning||chts.turbo||(p.star>0&&!p.crouch))?RS+(p.star>0?.6:0)+(chts.turbo?.8:0):WS;
+  if(!p.crouch){if(isL()){p.vx=-spd;p.dir=-1;}else if(isR()){p.vx=spd;p.dir=1;}else{p.vx*=.72;if(Math.abs(p.vx)<.1)p.vx=0;}}
+  else if(p.slide>0){p.slide--;p.vx*=.91;if(Math.abs(p.vx)<.4)p.slide=0;}
+  else{p.vx*=.6;if(Math.abs(p.vx)<.1)p.vx=0;}
   if(jpJ())p.jBuf=8;else if(p.jBuf>0)p.jBuf--;
   if(p.onG)p.coy=6;else if(p.coy>0)p.coy--;
   if(p.jBuf>0&&(p.onG||p.coy>0)&&!p.crouch){p.vy=chts.jump?JV*1.45:JV;p.jHeld=true;p.jBuf=0;p.coy=0;p.djump=0;SFX.jump();}
@@ -1528,9 +1526,36 @@ function tcBind(id,key,hapMs){
   el.addEventListener('touchcancel',release,{passive:false});
   el.addEventListener('mousedown',press);el.addEventListener('mouseup',release);el.addEventListener('mouseleave',release);
 }
-tcBind('tc-l','ArrowLeft');
-tcBind('tc-r','ArrowRight');
-tcBind('tc-d','ArrowDown');
+// ── VIRTUAL JOYSTICK ────────────────────────────────────────
+(function(){
+  const base=document.getElementById('joy-base');
+  const knob=document.getElementById('joy-knob');
+  const R=54,DEAD=14;
+  let tid=null,cx=0,cy=0;
+  function upd(tx,ty){
+    const dx=tx-cx,dy=ty-cy,d=Math.sqrt(dx*dx+dy*dy);
+    const kx=d>R?dx/d*R:dx,ky=d>R?dy/d*R:dy;
+    knob.style.marginLeft=(-23+kx)+'px';knob.style.marginTop=(-23+ky)+'px';
+    const nL=dx<-DEAD,nR=dx>DEAD,nD=dy>DEAD*1.5&&Math.abs(dx)<R*.55,nRun=d>R*.65;
+    if(K['ArrowLeft']!==nL){if(nL)JP['ArrowLeft']=true;K['ArrowLeft']=nL;}
+    if(K['ArrowRight']!==nR){if(nR)JP['ArrowRight']=true;K['ArrowRight']=nR;}
+    if(K['ArrowDown']!==nD){if(nD)JP['ArrowDown']=true;K['ArrowDown']=nD;}
+    joyIsRunning=nRun;knob.classList.toggle('run',nRun);
+  }
+  function rst(){
+    tid=null;knob.style.marginLeft='-23px';knob.style.marginTop='-23px';
+    K['ArrowLeft']=false;K['ArrowRight']=false;K['ArrowDown']=false;joyIsRunning=false;knob.classList.remove('run');
+  }
+  base.addEventListener('touchstart',e=>{e.preventDefault();if(tid!==null)return;const t=e.changedTouches[0];tid=t.identifier;const r=base.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;upd(t.clientX,t.clientY);hap(6);},{passive:false});
+  window.addEventListener('touchmove',e=>{if(tid===null)return;for(let i=0;i<e.changedTouches.length;i++){const t=e.changedTouches[i];if(t.identifier===tid){upd(t.clientX,t.clientY);break;}}},{passive:true});
+  window.addEventListener('touchend',e=>{if(tid===null)return;for(let i=0;i<e.changedTouches.length;i++){if(e.changedTouches[i].identifier===tid){rst();break;}}},{passive:true});
+  window.addEventListener('touchcancel',e=>{if(tid!==null)rst();},{passive:true});
+  // Mouse fallback for desktop testing
+  let md=false;
+  base.addEventListener('mousedown',e=>{md=true;const r=base.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;upd(e.clientX,e.clientY);});
+  document.addEventListener('mousemove',e=>{if(md)upd(e.clientX,e.clientY);});
+  document.addEventListener('mouseup',()=>{if(md){md=false;rst();}});
+})();
 tcBind('tc-a','ArrowUp',12);  // jump = stronger haptic
 tcBind('tc-b','ShiftLeft');
 tcBind('tc-x','KeyX',6);
