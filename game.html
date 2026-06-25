@@ -132,7 +132,7 @@ body.touch h1{display:none}
 </div>
 <div id="ch-ov">
   <div class="ch-t">&#9733; COSMO TRUCOS &#9733;</div>
-  <div class="ch-h">Escribe COSMO &middot; Toca titulo x5</div>
+  <div class="ch-h">Escribe COSMO &middot; Toca "COSMO KID" x5</div>
   <div id="ch-btns">
     <button class="ch-b" id="ch-inf">&#9829; Vidas Infinitas</button>
     <button class="ch-b" id="ch-ghost">&#128123; Modo Fantasma</button>
@@ -1534,8 +1534,11 @@ requestAnimationFrame(loop);showMenu();
     _code+=e.key.toUpperCase();if(_code.length>7)_code=_code.slice(-7);
     if(_code.includes('COSMO')){_code='';openCh();}
   });
+  function chkTap(){const now2=Date.now();if(now2-_tapT>2000)_taps=0;_tapT=now2;if(++_taps>=5){_taps=0;openCh();}}
   const h1=document.querySelector('h1');
-  if(h1)h1.addEventListener('click',()=>{const now2=Date.now();if(now2-_tapT>2000)_taps=0;_tapT=now2;if(++_taps>=5){_taps=0;openCh();}});
+  if(h1)h1.addEventListener('click',chkTap);
+  // Also works by tapping the overlay title (mobile)
+  ovT.addEventListener('click',chkTap);
   ['inf','ghost','jump','turbo','nospk','star9'].forEach(k=>{const b=document.getElementById('ch-'+k);if(b)b.addEventListener('click',()=>{chts[k]=!chts[k];updCBtns();});});
   document.getElementById('ch-cl').addEventListener('click',closeCh);
   const wp=document.getElementById('ch-warp');
