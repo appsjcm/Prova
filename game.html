@@ -226,7 +226,7 @@ const MELODIES=[
   [440,494,440,392,349,392,440,494,523,494,440,392,440,494,523,440],
 ];
 const MEL_IDX=[0,1,2,3,4,3,4,2];
-const BEAT_DUR=0.22;
+let BEAT_DUR=0.22;
 function scheduleMusicNotes(){
   if(musicMuted||!musicActive||!AC||AC.state!=='running')return;
   const now=AC.currentTime;if(musicNextT<now)musicNextT=now;
@@ -291,7 +291,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const k
 const isL=()=>K.ArrowLeft||K.KeyA,isR=()=>K.ArrowRight||K.KeyD;
 const isJ=()=>K.ArrowUp||K.KeyZ||K.Space,isD=()=>K.ArrowDown||K.KeyS;
 const isRn=()=>K.ShiftLeft||K.ShiftRight;
-const jpJ=()=>JP.ArrowUp||JP.KeyZ||JP.Space,jpX=()=>JP.KeyX||JP.KeyF;
+const jpJ=()=>JP.ArrowUp||JP.KeyZ||JP.Space,jpX=()=>JP.KeyX||JP.KeyF,jpD=()=>JP.ArrowDown||JP.KeyS;
 
 // ── DOM ─────────────────────────────────────────────────────
 const ov=document.getElementById('ov'),ovT=document.getElementById('ov-t');
@@ -310,7 +310,7 @@ let lvCountdown=0,lvGoTimer=0;
 let player,enemies,coinList,blkList,powerUps,lasers,parts,lvData;
 let levelNum=0,lw=3600,nextLvlReady=false;
 let cpX=-1; // checkpoint respawn X (-1 = none)
-let comboMult=1,comboTimer=0,joyIsRunning=false,dmgFlash=0;
+let comboMult=1,comboTimer=0,joyIsRunning=false,dmgFlash=0,oneupFlash=0;
 let tProjs=[];
 let difficulty=1;
 const DIFFS=[
@@ -339,7 +339,7 @@ function setHUD(){
 function addScore(n){score+=n;if(score>hiScores[difficulty]){hiScores[difficulty]=score;localStorage.setItem('cosmoHi'+difficulty,hiScores[difficulty]);}hsEl.textContent=String(score).padStart(6,'0');}
 function gainCoin(x,y){
   coins++;addScore(200);SFX.coin();hap(6);
-  if(coins>0&&coins%100===0){lives++;SFX.pu();parts.push(new TextPop(x,y-14,'1UP! +♥','#ff88aa'));shake(2);}
+  if(coins>0&&coins%100===0){lives++;SFX.pu();oneupFlash=28;parts.push(new TextPop(x,y-14,'1UP! +♥','#ff88aa'));shake(2);}
   setHUD();
 }
 function updatePwrHUD(){
@@ -713,7 +713,7 @@ function buildLevel8(){return buildLvGen(7600,3.9,0.7,true,12);}
 const LV_BUILDERS=[buildLevel1,buildLevel2,buildLevel3,buildLevel4,buildLevel5,buildLevel6,buildLevel7,buildLevel8];
 
 // ── FACTORIES ───────────────────────────────────────────────
-function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0,slide:0};}
+function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0,slide:0,pounding:false};}
 function mkEnemies(defs){const es=df().espd;return defs.map(d=>{
   if(d.t==='f'){const by=d.y||(GY-120);return{t:'f',x:d.x,y:by,baseY:by,amp:d.amp||26,ph:Math.random()*6.28,w:26,h:20,vx:-(d.sp||1.0)*es,vy:0,alive:true,stomp:false,sTimer:0,shell:false,dir:-1,fr:0,ft:0};}
   if(d.t==='s'){return{t:'s',x:d.x,y:GY-28,w:28,h:28,cooldown:45+Math.random()*30|0,dir:-1,alive:true,stomp:false,sTimer:0};}
@@ -745,7 +745,7 @@ function collectPU(type){
   if(type==='mushroom'){if(!player.pwr){growPlayer();parts.push(new TextPop(player.x+10,player.y-8,'+TANQUE','#4caf50'));}addScore(1000);}
   else if(type==='flower'){if(!player.pwr)growPlayer();player.fire=true;parts.push(new TextPop(player.x+10,player.y-8,'+LASER','#00ccff'));addScore(1000);updatePwrHUD();}
   else if(type==='star'){player.star=600;player.inv=600;SFX.star();parts.push(new TextPop(player.x+10,player.y-8,'NUCLEO!','#ffdd00'));addScore(1000);updatePwrHUD();}
-  else if(type==='1up'){lives++;setHUD();parts.push(new TextPop(player.x+10,player.y-8,'1UP! +♥','#ff88aa'));}
+  else if(type==='1up'){lives++;setHUD();oneupFlash=28;parts.push(new TextPop(player.x+10,player.y-8,'1UP! +♥','#ff88aa'));}
   else if(type==='shield'){player.shield=true;parts.push(new TextPop(player.x+10,player.y-8,'+ESCUDO','#00eeff'));addScore(1000);updatePwrHUD();}
   setHUD();
 }
@@ -773,7 +773,14 @@ function updPlayer(p,sl){
   if(hj&&p.jHeld&&p.vy<0){p.vy-=.28;if(p.vy<-14)p.vy=-14;}
   // Wall slide: slow fall while pressing into wall
   if(p.wallDir!==0&&!p.onG&&p.vy>1.5&&((p.wallDir<0&&isL())||(p.wallDir>0&&isR()))){p.vy=Math.min(p.vy,1.5);if(NOW%9===0)parts.push(new Pop(p.x+(p.wallDir>0?p.w:-1),p.y+p.h*.4+Math.random()*p.h*.5,p.wallDir*Math.random()*.8,-Math.random()*.5,'#8899bb',5));}
-  p.vy+=GRAV;if(p.vy>16)p.vy=16;
+  // Ground pound: tap Down while airborne
+  if(!p.onG&&!p.pounding&&jpD()&&!p.crouch&&p.vy>-6){
+    p.pounding=true;p.vy=15;p.vx*=.35;p.jHeld=false;
+    SFX.spring();hap(12);
+    for(let i=0;i<6;i++)parts.push(new Pop(p.x+10,p.y+p.h*.5,(Math.random()-.5)*6,-1.5-Math.random()*2,'#ffcc00',12));
+  }
+  if(p.pounding&&!p.onG){p.vy=Math.max(p.vy,15);if(NOW%3===0)parts.push(new Pop(p.x+10,p.y+p.h*.6,(Math.random()-.5)*2,.8,'#ffee44',6));}
+  p.vy+=GRAV;if(p.vy>18)p.vy=18;
   const prevOnG=p.onG,prevVY=p.vy;
   const preHorizVx=p.vx;
   p.x+=p.vx;p.x=Math.max(camX,Math.min(lw-p.w,p.x));resH(p,sl);
@@ -782,7 +789,13 @@ function updPlayer(p,sl){
   // Landing feedback
   if(!prevOnG&&p.onG){
     p.djump=0;
-    if(prevVY>2){
+    if(p.pounding){
+      p.pounding=false;shake(7);hap(55);SFX.stomp();
+      for(let i=0;i<14;i++)parts.push(new Pop(p.x+10,p.y+p.h,(i/7-.5)*18,-2.5-Math.random()*3,'#ffcc00',22));
+      parts.push(new TextPop(p.x+10,p.y-10,'¡IMPACTO!','#ffee22'));
+      enemies.forEach(e=>{if(!e.alive||e.stomp)return;const dx=e.x+e.w/2-(p.x+p.w/2);if(Math.abs(dx)<90&&e.y+e.h>=p.y+p.h-20)stompE(e);});
+      addScore(200);
+    } else if(prevVY>2){
       SFX.land();
       const n=Math.min(6,Math.ceil(prevVY/3));
       for(let i=0;i<n;i++)parts.push(new Dust(p.x+p.w/2,p.y+p.h));
@@ -923,6 +936,7 @@ function initGame(){
   score=0;coins=0;lives=df().lives;levelNum=0;nextLvlReady=false;cpX=-1;comboMult=1;comboTimer=0;levelEndTime=0;
   hdiffEl.textContent=df().nm;hdiffEl.style.color=df().col;
   lvData=LV_BUILDERS[0]();lw=lvData.lw;
+  BEAT_DUR=difficulty===2?.17:difficulty===0?.28:.22;
   resetRound();gst='playing';ov.classList.add('off');setHUD();updatePwrHUD();
   lvCountdown=180;lvGoTimer=0;startMusic();
 }
@@ -933,7 +947,7 @@ function resetRound(){
   enemies=mkEnemies(lvData.ens);
   coinList=lvData.cns.map(c=>({...c,col:false,fr:0,ft:0}));
   blkList=lvData.blks.map(b=>({...b,hit:false,bh:0}));
-  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;
+  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;oneupFlash=0;
   boss=lvData.bossX?mkBoss(lvData.bossX,lvData.bossHp,lvData.bossIsMini):null;
   updatePwrHUD();
 }
@@ -1672,6 +1686,13 @@ function render(){
   tProjs.forEach(tp=>{if(tp.active)drawTurretProj(tp,ox);});
   lasers.forEach(lb=>{if(lb.active)drawLaser(lb,ox);});
   if(player&&(!player.dead||player.y<CH+40))drawPlayer(player,ox);
+  // Sprint speed lines
+  if(player&&!player.dead&&!player.goal&&Math.abs(player.vx)>=RS*.9&&player.onG){
+    const sx=Math.round(player.x-ox),py=Math.round(player.y),dir=player.dir;
+    ct.globalAlpha=.28;ct.strokeStyle='#99bbff';ct.lineWidth=1.5;ct.lineCap='round';
+    for(let i=0;i<4;i++){const ly=py+5+i*8,x1=sx+(dir>0?-2-i*9:player.w+2+i*9);ct.beginPath();ct.moveTo(x1,ly);ct.lineTo(x1-dir*(5+i*5),ly);ct.stroke();}
+    ct.globalAlpha=1;ct.lineCap='butt';
+  }
   parts.forEach(p=>p.draw(ox));
   // Combo multiplier display
   if(gst==='playing'&&player&&comboMult>1&&comboTimer>0&&!player.dead&&!player.goal){
@@ -1716,6 +1737,13 @@ function render(){
     const vg=ct.createRadialGradient(CW/2,CH/2,40,CW/2,CH/2,Math.max(CW,CH)*.72);
     vg.addColorStop(0,'rgba(180,0,0,0)');vg.addColorStop(.55,'rgba(180,0,0,0)');vg.addColorStop(1,`rgba(180,0,0,${fa})`);
     ct.fillStyle=vg;ct.fillRect(0,0,CW,CH);
+  }
+  if(oneupFlash>0){
+    oneupFlash--;
+    const fg=(oneupFlash/28)*.4;
+    const vg2=ct.createRadialGradient(CW/2,CH/2,30,CW/2,CH/2,Math.max(CW,CH)*.7);
+    vg2.addColorStop(0,`rgba(0,255,120,${fg*.6})`);vg2.addColorStop(.5,'rgba(0,255,120,0)');vg2.addColorStop(1,`rgba(0,255,120,${fg})`);
+    ct.fillStyle=vg2;ct.fillRect(0,0,CW,CH);
   }
   // Level start countdown (3-2-1-GO!)
   if(lvCountdown>0||lvGoTimer>0){
