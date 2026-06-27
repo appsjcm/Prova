@@ -302,6 +302,32 @@ function addClouds() {
     scene.add(grp); clouds.push(grp);
   }
 }
+// Subtle ground grid (depth reference) on the base island
+function addGroundGrid(){
+  const cv=document.createElement('canvas'); cv.width=cv.height=128;
+  const x=cv.getContext('2d'); x.clearRect(0,0,128,128);
+  x.strokeStyle='rgba(255,255,255,0.5)'; x.lineWidth=3;
+  x.strokeRect(0,0,128,128);
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(10,10); t.colorSpace=THREE.SRGBColorSpace;
+  const grid=new THREE.Mesh(new THREE.PlaneGeometry(40,40), new THREE.MeshBasicMaterial({ map:t, transparent:true, opacity:0.12, depthWrite:false }));
+  grid.rotation.x=-Math.PI/2; grid.position.set(0,0.06,0); scene.add(grid);
+}
+// Decorative grass tufts and flowers (no collision)
+function addTuft(x,z){
+  const grp=new THREE.Group();
+  for(let i=0;i<3;i++){ const b=new THREE.Mesh(new THREE.ConeGeometry(0.06,0.5,5), mat(0x4fb84f,0.9)); b.position.set((Math.random()-0.5)*0.32,0.25,(Math.random()-0.5)*0.32); b.rotation.z=(Math.random()-0.5)*0.5; b.castShadow=true; grp.add(b); }
+  grp.position.set(x,0,z); scene.add(grp);
+}
+function addFlower(x,z,col){
+  const stem=new THREE.Mesh(new THREE.CylinderGeometry(0.03,0.03,0.4,5), mat(0x3a8a3a,0.9)); stem.position.set(x,0.2,z); scene.add(stem);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8), mat(col,0.5,0,col,0.35)); head.position.set(x,0.44,z); head.castShadow=true; scene.add(head);
+}
+function addDecor(){
+  addGroundGrid();
+  const flowerCols=[0xff6a8a,0xffd23c,0x8a6aff,0xffffff];
+  for(let i=0;i<16;i++){ const a=Math.random()*Math.PI*2, r=4+Math.random()*14; const x=Math.cos(a)*r, z=Math.sin(a)*r; if(Math.abs(x)<2&&z>2&&z<8) continue; addTuft(x,z); }
+  for(let i=0;i<10;i++){ const a=Math.random()*Math.PI*2, r=4+Math.random()*14; const x=Math.cos(a)*r, z=Math.sin(a)*r; if(Math.abs(x)<2&&z>2&&z<8) continue; addFlower(x,z,flowerCols[i%4]); }
+}
 // Distant decorative islands (no collision) for depth
 function addScenery(){
   const cols=[0x5fae5a,0x6fbf63,0x57a8d0];
@@ -366,6 +392,7 @@ function buildLevel() {
   refreshGoalLock();
   addClouds();
   addScenery();
+  addDecor();
 }
 
 // ── Player ──────────────────────────────────────────────
