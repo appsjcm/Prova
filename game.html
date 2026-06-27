@@ -934,7 +934,7 @@ const chts={inf:false,ghost:false,jump:false,turbo:false,nospk:false,star9:false
 
 // ── GAME ACTIONS ────────────────────────────────────────────
 function pDie(){if(player.dead||player.goal)return;lvNoHit=false;player.dead=true;player.dvy=-11;SFX.die();shake(6);hap(120);dmgFlash=30;if(!chts.inf)lives--;setHUD();dTimer=90;}
-function pHurt(){if(player.dead||player.goal||player.inv>0||player.star>0||chts.ghost)return;lvNoHit=false;if(player.shield){player.shield=false;player.inv=df().inv*.75|0;SFX.shield();shake(3);hap(20);dmgFlash=16;player.vx=-player.dir*5;player.vy=Math.min(player.vy,-3);parts.push(new TextPop(player.x+10,player.y-8,'ESCUDO ROTO','#00eeff'));updatePwrHUD();return;}SFX.hurt();shake(5);hap(35);dmgFlash=22;shrinkPlayer();player.vx=-player.dir*5;player.vy=Math.min(player.vy,-4);}
+function pHurt(){if(player.dead||player.goal||player.inv>0||player.star>0||player.dashTimer>0||chts.ghost)return;lvNoHit=false;if(player.shield){player.shield=false;player.inv=df().inv*.75|0;SFX.shield();shake(3);hap(20);dmgFlash=16;player.vx=-player.dir*5;player.vy=Math.min(player.vy,-3);parts.push(new TextPop(player.x+10,player.y-8,'ESCUDO ROTO','#00eeff'));updatePwrHUD();return;}SFX.hurt();shake(5);hap(35);dmgFlash=22;shrinkPlayer();player.vx=-player.dir*5;player.vy=Math.min(player.vy,-4);}
 function stompE(e){
   SFX.stomp();shake(2);hap(12);
   comboTimer=65;
@@ -1069,7 +1069,7 @@ function update(){
   }
   const tc=player.x-CW*.38;camX+=(tc-camX)*.14;camX=Math.max(0,Math.min(lw-CW,camX));
   enemies.forEach(e=>updEnemy(e,sl));
-  for(const e of enemies){if(!e.alive||e.stomp||!hit(player,e))continue;const pb=player.y+player.h-player.vy;if(player.vy>0&&pb<=e.y+8){if(e.t==='h'){player.vy=-6;if(player.inv<=0&&!chts.ghost)pHurt();}else{stompE(e);player.vy=-9;}}else if(player.star>0){stompE(e);player.vy=-6;addScore(100);}else if(player.inv<=0&&!chts.ghost){pHurt();break;}}
+  for(const e of enemies){if(!e.alive||e.stomp||!hit(player,e))continue;const pb=player.y+player.h-player.vy;if(player.dashTimer>0&&e.t!=='h'){stompE(e);parts.push(new Pop(e.x+e.w/2,e.y+e.h/2,player.dashDir*3,-2,'#66ddff',18));continue;}if(player.vy>0&&pb<=e.y+8){if(e.t==='h'){player.vy=-6;if(player.inv<=0&&!chts.ghost)pHurt();}else{stompE(e);player.vy=-9;}}else if(player.star>0){stompE(e);player.vy=-6;addScore(100);}else if(player.inv<=0&&!chts.ghost){pHurt();break;}}
   for(const c of coinList){
     if(c.col)continue;
     // Magnet pull during star mode or magnet power-up
@@ -1570,6 +1570,8 @@ function drawPlayer(p,ox){
   if(!p)return;
   if(p.inv>0&&p.star===0&&(p.inv/4|0)%2===0)return;
   if(!p.dead){ct.globalAlpha=.18;ct.fillStyle='#000';ct.beginPath();ct.ellipse(Math.round(p.x-ox)+10,GY+2,10,3,0,0,Math.PI*2);ct.fill();ct.globalAlpha=1;}
+  // Dash motion afterimages
+  if(p.dashTimer>0&&!p.dead){const px=Math.round(p.x-ox),py=Math.round(p.y);for(let i=1;i<=2;i++){ct.globalAlpha=.22/i;ct.save();ct.translate(-p.dashDir*i*7,0);drawAstronaut(px,py,p.pwr,p.fire,0,p.crouch,p.fr,p.dir);ct.restore();ct.globalAlpha=1;}}
   drawAstronaut(Math.round(p.x-ox),Math.round(p.y),p.pwr,p.fire,p.star,p.crouch,p.fr,p.dir);
   if(p.shield&&!p.dead){const sp=.5+.5*Math.sin(NOW*.009),px=Math.round(p.x-ox),py=Math.round(p.y);ct.shadowColor='#00eeff';ct.shadowBlur=12+6*sp;ct.strokeStyle=`rgba(0,230,255,${.55+.3*sp})`;ct.lineWidth=2;ct.beginPath();ct.ellipse(px+p.w/2,py+p.h/2,p.w/2+8,p.h/2+9,0,0,Math.PI*2);ct.stroke();ct.shadowBlur=0;}
 }
