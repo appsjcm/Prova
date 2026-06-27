@@ -86,7 +86,7 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.05;
+renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -104,7 +104,19 @@ scene.fog = new THREE.Fog(SKY, 50, 140);
 
 const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 400);
 
-// ── Post-processing: bloom (optional, loaded dynamically) ──
+// ── Image-based lighting (realistic ambient + reflections) ──
+async function initEnv(){
+  try{
+    const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    pmrem.compileEquirectangularShader();
+    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    scene.environment = envTex;
+    pmrem.dispose();
+  }catch(e){ /* keep light-only shading */ }
+}
+
+// ── Post-processing: HDR + MSAA + bloom (optional) ──────────
 let composer = null;
 async function initBloom(){
   try{
@@ -114,13 +126,16 @@ async function initBloom(){
       import('three/addons/postprocessing/UnrealBloomPass.js'),
       import('three/addons/postprocessing/OutputPass.js'),
     ]);
-    composer = new EffectComposer(renderer);
+    const pr = Math.min(devicePixelRatio, 2);
+    const size = renderer.getDrawingBufferSize(new THREE.Vector2());
+    let rt = null;
+    try { rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 4 }); } catch(_) { rt = null; }
+    composer = rt ? new EffectComposer(renderer, rt) : new EffectComposer(renderer);
+    composer.setPixelRatio(pr);
     composer.addPass(new RenderPass(scene, camera));
-    const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.5, 0.82);
-    composer.addPass(bloom);
+    composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.5, 0.5, 0.85));
     composer.addPass(new OutputPass());
     composer.setSize(innerWidth, innerHeight);
-    composer.setPixelRatio(Math.min(devicePixelRatio, 2));
   }catch(e){ composer = null; /* fall back to direct render */ }
 }
 
@@ -184,7 +199,7 @@ const sfx={
 };
 
 // ── Lighting ────────────────────────────────────────────
-const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x4a6a3a, 0.85);
+const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x4a6a3a, 0.5);
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff2d6, 1.55);
 sun.position.set(28, 46, 20);
@@ -206,6 +221,17 @@ scene.add(fill);
 // ── Materials ───────────────────────────────────────────
 const mat = (c, r=0.85, m=0.0, e=0x000000, ei=0) =>
   new THREE.MeshStandardMaterial({ color:c, roughness:r, metalness:m, emissive:e, emissiveIntensity:ei });
+// Procedural micro-surface noise (shared) for realistic, non-plastic surfaces
+let _noiseTex=null;
+function noiseTex(){
+  if(_noiseTex) return _noiseTex;
+  const s=64, cv=document.createElement('canvas'); cv.width=cv.height=s;
+  const ctx=cv.getContext('2d'), img=ctx.createImageData(s,s);
+  for(let i=0;i<img.data.length;i+=4){ const v=170+Math.random()*85|0; img.data[i]=img.data[i+1]=img.data[i+2]=v; img.data[i+3]=255; }
+  ctx.putImageData(img,0,0);
+  _noiseTex=new THREE.CanvasTexture(cv); _noiseTex.wrapS=_noiseTex.wrapT=THREE.RepeatWrapping; _noiseTex.repeat.set(3,3);
+  return _noiseTex;
+}
 
 // ── World / level data ──────────────────────────────────
 // Platforms are axis-aligned boxes: {x,y,z,w,h,d,color}
@@ -213,7 +239,9 @@ const colliders = []; // {min:Vec3, max:Vec3, mover?, base?, axis?, amp?, spd?}
 const movers = [];
 function addBox(x, y, z, w, h, d, color, opt={}) {
   const g = new THREE.BoxGeometry(w, h, d);
-  const mesh = new THREE.Mesh(g, mat(color, opt.rough ?? 0.9));
+  const mesh = new THREE.Mesh(g, mat(color, opt.rough ?? 0.92));
+  mesh.material.bumpMap = noiseTex(); mesh.material.bumpScale = 0.02;
+  mesh.material.envMapIntensity = 0.7;
   mesh.position.set(x, y, z);
   mesh.castShadow = true; mesh.receiveShadow = true;
   scene.add(mesh);
@@ -448,7 +476,7 @@ function buildPlayer() {
   const suit = mat(0x244a9a, 0.55);
   const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.5, 6, 14), suit);
   torso.position.y = 0.95; torso.castShadow = true; playerGrp.add(torso);
-  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.46, 22, 18), mat(0xe2e6f5, 0.3, 0.1));
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.46, 22, 18), mat(0xeef0fa, 0.16, 0.35));
   helm.position.y = 1.6; helm.castShadow = true; playerGrp.add(helm);
   const visor = new THREE.Mesh(new THREE.SphereGeometry(0.34, 18, 14, 0.5, 2.2, 0.7, 1.4), mat(0x0a2a55, 0.15, 0.6, 0x0a3a66, 0.4));
   visor.position.set(0, 1.6, 0.16); playerGrp.add(visor);
@@ -786,6 +814,7 @@ buildLevel();
 buildPlayer();
 resize();
 camPos.set(0, 7, 18);
+initEnv();
 initBloom();
 window.__cosmo3dBoot = true;
 document.getElementById('loading').style.display='none';
