@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#79c0f0">
+<title>Cosmo Kid 3D</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a1830;font-family:monospace;color:#fff;touch-action:none;overscroll-behavior:none}
+#c{display:block;width:100%;height:100%}
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;pointer-events:none;z-index:10;text-shadow:0 2px 6px rgba(0,0,0,.6)}
+.hud-l{font-size:1.1rem;font-weight:bold;letter-spacing:1px}
+.hud-r{text-align:right;font-size:1.1rem;font-weight:bold}
+#coins{color:#ffd23c}#lives{color:#ff6a8a}#timer{color:#bfe9ff;font-size:.95rem}
+/* Overlay */
+#ov{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:radial-gradient(ellipse at 50% 35%,rgba(20,50,100,.55),rgba(5,12,28,.92));z-index:30;padding:24px;text-align:center;backdrop-filter:blur(2px)}
+#ov.off{display:none}
+#ov-t{font-size:3rem;font-weight:900;letter-spacing:4px;background:linear-gradient(135deg,#7fd5ff,#7cff9b,#ffe66b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(120,210,255,.3);line-height:1}
+#ov-s{font-size:.8rem;color:#9fc2e0;letter-spacing:3px;text-transform:uppercase}
+#ov-m{font-size:.8rem;color:#bcd6ee;line-height:1.9;max-width:330px}
+#ov-m b{color:#ffe66b}
+#ov-btn{margin-top:6px;padding:16px 44px;font-size:1.25rem;font-weight:bold;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(160deg,#22a7e6,#1466c4);color:#fff;border:2px solid rgba(140,225,255,.6);border-radius:16px;cursor:pointer;font-family:monospace;box-shadow:0 0 36px rgba(0,140,230,.5),0 6px 22px rgba(0,0,0,.5);transition:transform .1s}
+#ov-btn:hover,#ov-btn:active{transform:scale(1.05)}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0a1830;z-index:40;font-size:1rem;color:#7fb6e0;letter-spacing:2px}
+/* Touch controls */
+#tc{display:none;position:fixed;inset:0;z-index:20;pointer-events:none}
+#joy{position:absolute;left:18px;bottom:24px;width:120px;height:120px;border-radius:50%;background:rgba(0,10,30,.4);border:2px solid rgba(255,255,255,.14);pointer-events:auto;touch-action:none}
+#knob{position:absolute;top:50%;left:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:radial-gradient(circle at 36% 36%,rgba(80,190,255,.95),rgba(0,90,210,.85));border:2px solid rgba(120,225,255,.7);box-shadow:0 0 16px rgba(0,150,255,.5)}
+.btn3d{position:absolute;border-radius:50%;background:rgba(0,30,80,.55);border:2px solid rgba(120,200,255,.45);color:#cfeaff;display:flex;align-items:center;justify-content:center;font-weight:bold;pointer-events:auto;touch-action:none;user-select:none;font-family:monospace}
+.btn3d:active{background:rgba(0,120,230,.5);border-color:rgba(140,235,255,.95)}
+#bJump{right:24px;bottom:40px;width:92px;height:92px;font-size:.95rem}
+#bCam1{right:130px;bottom:96px;width:52px;height:52px;font-size:1.3rem}
+#bCam2{right:130px;bottom:34px;width:52px;height:52px;font-size:1.3rem}
+@media (max-width:520px){#ov-t{font-size:2.1rem}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="loading">Cargando motor 3D…</div>
+<div id="hud">
+  <div class="hud-l"><span id="coins">★ 0</span><span style="color:#5a86ad"> / <span id="coinTot">0</span></span></div>
+  <div class="hud-r"><div id="lives">♥♥♥</div><div id="timer">0s</div></div>
+</div>
+<div id="tc">
+  <div id="joy"><div id="knob"></div></div>
+  <div class="btn3d" id="bJump">SALTO</div>
+  <div class="btn3d" id="bCam1">⟲</div>
+  <div class="btn3d" id="bCam2">⟳</div>
+</div>
+<div id="ov">
+  <div id="ov-t">COSMO KID 3D</div>
+  <div id="ov-s">Aventura Espacial · WebGL</div>
+  <div id="ov-m"></div>
+  <button id="ov-btn">JUGAR</button>
+</div>
+
+<script>
+// Offline fallback: if the 3D engine never boots (no internet for the CDN), tell the player.
+window.__cosmo3dBoot = false;
+setTimeout(function(){
+  if (!window.__cosmo3dBoot){
+    var l = document.getElementById('loading');
+    if (l){ l.style.display='flex'; l.innerHTML='No se pudo cargar el motor 3D.<br>Necesita conexión a internet (Three.js vía CDN).'; }
+  }
+}, 7000);
+</script>
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+
+// ════════════════════════════════════════════════════════
+//  COSMO KID 3D — real-time WebGL platformer (Three.js)
+// ════════════════════════════════════════════════════════
+const canvas = document.getElementById('c');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+const scene = new THREE.Scene();
+const SKY = new THREE.Color(0x86c5f0);
+scene.background = SKY;
+scene.fog = new THREE.Fog(SKY, 45, 130);
+
+const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 400);
+
+// ── Lighting ────────────────────────────────────────────
+const hemi = new THREE.HemisphereLight(0xbfe3ff, 0x4a6a3a, 0.85);
+scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2d6, 1.55);
+sun.position.set(28, 46, 20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 1; sun.shadow.camera.far = 160;
+const sc = 70; Object.assign(sun.shadow.camera, { left:-sc, right:sc, top:sc, bottom:-sc });
+sun.shadow.camera.updateProjectionMatrix();
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.02;
+scene.add(sun);
+scene.add(sun.target);
+
+// ── Materials ───────────────────────────────────────────
+const mat = (c, r=0.85, m=0.0, e=0x000000, ei=0) =>
+  new THREE.MeshStandardMaterial({ color:c, roughness:r, metalness:m, emissive:e, emissiveIntensity:ei });
+
+// ── World / level data ──────────────────────────────────
+// Platforms are axis-aligned boxes: {x,y,z,w,h,d,color}
+const colliders = []; // {min:Vec3, max:Vec3, mover?, base?, axis?, amp?, spd?}
+const movers = [];
+function addBox(x, y, z, w, h, d, color, opt={}) {
+  const g = new THREE.BoxGeometry(w, h, d);
+  const mesh = new THREE.Mesh(g, mat(color, opt.rough ?? 0.9));
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true; mesh.receiveShadow = true;
+  scene.add(mesh);
+  const col = { mesh, hw:w/2, hh:h/2, hd:d/2,
+                min:new THREE.Vector3(), max:new THREE.Vector3() };
+  const refresh = () => {
+    col.min.set(mesh.position.x-w/2, mesh.position.y-h/2, mesh.position.z-d/2);
+    col.max.set(mesh.position.x+w/2, mesh.position.y+h/2, mesh.position.z+d/2);
+  };
+  col.refresh = refresh; refresh();
+  colliders.push(col);
+  if (opt.move) {
+    col.base = mesh.position.clone();
+    col.axis = opt.move.axis; col.amp = opt.move.amp; col.spd = opt.move.spd; col.phase = opt.move.phase||0;
+    movers.push(col);
+  }
+  // decorative bright top cap for a "3D World" tile look
+  if (opt.cap !== false) {
+    const cg = new THREE.BoxGeometry(w*1.001, 0.18, d*1.001);
+    const cap = new THREE.Mesh(cg, mat(opt.capColor ?? lighten(color,0.18), 0.7));
+    cap.position.set(0, h/2+0.001, 0); cap.receiveShadow = true;
+    mesh.add(cap);
+  }
+  return col;
+}
+function lighten(hex, f){ const c=new THREE.Color(hex); c.lerp(new THREE.Color(0xffffff), f); return c.getHex(); }
+
+// Coins
+const coins = [];
+function addCoin(x, y, z) {
+  const g = new THREE.TorusGeometry(0.42, 0.16, 12, 22);
+  const m = new THREE.Mesh(g, mat(0xffcc22, 0.35, 0.4, 0xffae00, 0.55));
+  m.position.set(x, y, z); m.castShadow = true;
+  m.rotation.x = Math.PI/2;
+  scene.add(m);
+  coins.push({ mesh:m, got:false, y });
+}
+// Enemies
+const enemies = [];
+function addEnemy(x, y, z, range, axis='x') {
+  const grp = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.SphereGeometry(0.7, 20, 16), mat(0xd13b22, 0.6));
+  body.castShadow = true; body.position.y = 0.7; grp.add(body);
+  const eyeMat = mat(0xffffff, 0.3);
+  for (const sx of [-0.26, 0.26]) {
+    const e = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), eyeMat);
+    e.position.set(sx, 0.95, 0.55); grp.add(e);
+    const p = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 6), mat(0x110000, 0.4));
+    p.position.set(sx, 0.95, 0.68); grp.add(p);
+  }
+  grp.position.set(x, y, z); scene.add(grp);
+  enemies.push({ grp, alive:true, base:new THREE.Vector3(x,y,z), range, axis, dir:1, t:Math.random()*6 });
+}
+// Goal
+let goal;
+function addGoal(x, y, z) {
+  const grp = new THREE.Group();
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.16, 16, 40), mat(0x00ff9a, 0.3, 0.2, 0x00ff88, 0.7));
+  ring.position.y = 2.2; grp.add(ring);
+  const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.12,4.4,10), mat(0xddddee,0.5));
+  pole.position.y = 2.2; pole.castShadow = true; grp.add(pole);
+  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,40,8), mat(0x00ff9a,0.3,0,0x00ff9a,1.2));
+  beam.position.y = 22; grp.add(beam);
+  grp.position.set(x,y,z); scene.add(grp);
+  goal = { grp, ring, x, y, z };
+}
+
+// ── Build the level ─────────────────────────────────────
+let coinTotal = 0;
+function buildLevel() {
+  // Big ground island
+  addBox(0, -1, 0, 40, 2, 40, 0x57b45a, { capColor:0x76d06a });
+  // Path of rising platforms
+  const path = [
+    [0,0.6,-8, 6,1,6, 0x4f9bd6],
+    [6,1.6,-15, 5,1,5, 0x4f9bd6],
+    [0,2.8,-22, 5,1,5, 0xd6a24f],
+    [-7,3.8,-28, 4.5,1,4.5, 0xd6a24f],
+    [0,5.0,-34, 5,1,5, 0xb05fce],
+    [8,6.0,-40, 4.5,1,4.5, 0xb05fce],
+  ];
+  for (const p of path) addBox(...p);
+  // Moving platform bridging a gap
+  addBox(2, 6.6, -48, 4, 0.8, 4, 0x46c7c0, { move:{axis:'x', amp:6, spd:0.7} });
+  // Final tower platforms
+  addBox(2, 7.6, -56, 6, 1, 6, 0xe2c84a, { capColor:0xfff07a });
+  addBox(2, 9.0, -62, 5, 1, 5, 0xe2c84a, { capColor:0xfff07a });
+
+  // Floating bonus pad
+  addBox(-12, 3.2, -16, 3.5, 0.8, 3.5, 0xff7eb0, { capColor:0xffa9cd });
+
+  // Coins along the path
+  const coinSpots = [
+    [0,1.8,-8],[6,2.8,-15],[0,4.0,-22],[-7,5.0,-28],[0,6.2,-34],[8,7.2,-40],
+    [2,9.0,-56],[2,10.4,-62],[-12,4.4,-16],[-12,4.4,-16],
+    [3,1.5,0],[-3,1.5,2],[0,1.5,5],[5,1.5,4],[-5,1.5,-2]
+  ];
+  for (const c of coinSpots) addCoin(...c);
+  coinTotal = coins.length;
+  document.getElementById('coinTot').textContent = coinTotal;
+
+  // Enemies patrolling
+  addEnemy(0, 1.6, -8, 2.2, 'x');
+  addEnemy(0, 3.8, -22, 1.8, 'z');
+  addEnemy(2, 8.6, -56, 2.0, 'x');
+  addEnemy(0, 1.0, 3, 6, 'x');
+
+  // Goal at the top
+  addGoal(2, 10.0, -62);
+}
+
+// ── Player ──────────────────────────────────────────────
+const player = {
+  pos: new THREE.Vector3(0, 1.4, 6),
+  vel: new THREE.Vector3(),
+  grounded: false, hx:0.42, hy:0.9, hz:0.42,
+  facing: 0, coins:0, lives:3, inv:0, dead:false, win:false, anim:0
+};
+const playerGrp = new THREE.Group();
+function buildPlayer() {
+  const suit = mat(0x244a9a, 0.55);
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 0.5, 6, 14), suit);
+  torso.position.y = 0.95; torso.castShadow = true; playerGrp.add(torso);
+  const helm = new THREE.Mesh(new THREE.SphereGeometry(0.46, 22, 18), mat(0xe2e6f5, 0.3, 0.1));
+  helm.position.y = 1.6; helm.castShadow = true; playerGrp.add(helm);
+  const visor = new THREE.Mesh(new THREE.SphereGeometry(0.34, 18, 14, 0.5, 2.2, 0.7, 1.4), mat(0x0a2a55, 0.15, 0.6, 0x0a3a66, 0.4));
+  visor.position.set(0, 1.6, 0.16); playerGrp.add(visor);
+  const packs = mat(0xb9c2d8, 0.5);
+  for (const sx of [-0.5, 0.5]) {
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.16,0.45,4,8), suit);
+    arm.position.set(sx, 0.95, 0); arm.name='arm'+(sx<0?'L':'R'); arm.castShadow=true; playerGrp.add(arm);
+  }
+  for (const sx of [-0.22, 0.22]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.17,0.4,4,8), mat(0x142a5a,0.5));
+    leg.position.set(sx, 0.4, 0); leg.name='leg'+(sx<0?'L':'R'); leg.castShadow=true; playerGrp.add(leg);
+  }
+  // little antenna light
+  const ant = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), mat(0xff5566,0.3,0,0xff3344,1.0));
+  ant.position.set(0,2.05,0); playerGrp.add(ant);
+  scene.add(playerGrp);
+}
+
+// ── Input ───────────────────────────────────────────────
+const keys = {};
+addEventListener('keydown', e=>{ keys[e.code]=true; if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault(); });
+addEventListener('keyup', e=>{ keys[e.code]=false; });
+let jumpQueued = false;
+addEventListener('keydown', e=>{ if(e.code==='Space') jumpQueued = true; });
+
+// touch joystick
+const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints>0;
+let joyX=0, joyY=0, joyActive=false;
+let camRotInput = 0;
+if (isTouch) {
+  document.getElementById('tc').style.display='block';
+  const joy=document.getElementById('joy'), knob=document.getElementById('knob');
+  let jid=null, cx=0, cy=0; const R=52;
+  const set=(tx,ty)=>{ let dx=tx-cx, dy=ty-cy; const d=Math.hypot(dx,dy); if(d>R){dx=dx/d*R; dy=dy/d*R;} knob.style.transform=`translate(${dx}px,${dy}px)`; joyX=dx/R; joyY=dy/R; };
+  joy.addEventListener('touchstart', e=>{ e.preventDefault(); const t=e.changedTouches[0]; jid=t.identifier; const r=joy.getBoundingClientRect(); cx=r.left+r.width/2; cy=r.top+r.height/2; joyActive=true; set(t.clientX,t.clientY); }, {passive:false});
+  addEventListener('touchmove', e=>{ if(jid===null) return; for(const t of e.changedTouches) if(t.identifier===jid){ set(t.clientX,t.clientY); } }, {passive:false});
+  addEventListener('touchend', e=>{ for(const t of e.changedTouches) if(t.identifier===jid){ jid=null; joyActive=false; joyX=joyY=0; knob.style.transform=''; } });
+  const bind=(id,on,off)=>{ const el=document.getElementById(id); el.addEventListener('touchstart',e=>{e.preventDefault();on();},{passive:false}); el.addEventListener('touchend',e=>{e.preventDefault();off&&off();},{passive:false}); };
+  bind('bJump', ()=>{ jumpQueued=true; keys['Space']=true; }, ()=>{ keys['Space']=false; });
+  bind('bCam1', ()=>camRotInput=-1, ()=>camRotInput=0);
+  bind('bCam2', ()=>camRotInput=1, ()=>camRotInput=0);
+}
+
+// ── Camera control ──────────────────────────────────────
+let camYaw = 0;
+const camDist = 11, camHeight = 6.2;
+const camPos = new THREE.Vector3();
+
+// ── Collision helpers ───────────────────────────────────
+function overlaps(px, py, pz) {
+  const r = [];
+  for (const c of colliders) {
+    if (px+player.hx > c.min.x && px-player.hx < c.max.x &&
+        py+player.hy > c.min.y && py-player.hy < c.max.y &&
+        pz+player.hz > c.min.z && pz-player.hz < c.max.z) r.push(c);
+  }
+  return r;
+}
+
+// ── Effects ─────────────────────────────────────────────
+const pops = [];
+function pop(pos, color, n=10) {
+  for (let i=0;i<n;i++){
+    const m=new THREE.Mesh(new THREE.SphereGeometry(0.12,6,5), mat(color,0.4,0,color,0.8));
+    m.position.copy(pos);
+    const a=Math.random()*Math.PI*2, sp=2+Math.random()*4;
+    m.userData.v=new THREE.Vector3(Math.cos(a)*sp,2+Math.random()*4,Math.sin(a)*sp);
+    m.userData.life=0.6+Math.random()*0.3;
+    scene.add(m); pops.push(m);
+  }
+}
+
+// ── Game state / flow ───────────────────────────────────
+const ov=document.getElementById('ov'), ovT=document.getElementById('ov-t'), ovM=document.getElementById('ov-m'), ovBtn=document.getElementById('ov-btn'), ovS=document.getElementById('ov-s');
+let state='menu', startTime=0, elapsed=0;
+const coinsEl=document.getElementById('coins'), livesEl=document.getElementById('lives'), timerEl=document.getElementById('timer');
+function updHUD(){
+  coinsEl.textContent='★ '+player.coins;
+  livesEl.textContent = player.lives>0 ? '♥'.repeat(player.lives) : '—';
+  timerEl.textContent = Math.floor(elapsed)+'s';
+}
+function showMenu(){
+  state='menu'; ov.classList.remove('off');
+  ovT.textContent='COSMO KID 3D'; ovS.textContent='Aventura Espacial · WebGL';
+  ovM.innerHTML='Explora el mundo flotante y llega a la <b>meta verde</b>.<br><br>'+
+    (isTouch ? 'Joystick para moverte · <b>SALTO</b> para saltar<br>⟲ ⟳ giran la cámara'
+             : '<b>WASD</b>/flechas mover · <b>Espacio</b> saltar · <b>Shift</b> correr<br><b>Q</b>/<b>E</b> giran la cámara');
+  ovBtn.textContent='JUGAR';
+}
+function startGame(){
+  state='play'; ov.classList.add('off');
+  player.pos.set(0,1.4,6); player.vel.set(0,0,0);
+  player.coins=0; player.lives=3; player.dead=false; player.win=false; player.inv=0;
+  for (const c of coins){ c.got=false; c.mesh.visible=true; }
+  for (const e of enemies){ if(!e.alive){ e.alive=true; scene.add(e.grp);} e.grp.position.copy(e.base); }
+  startTime=performance.now(); elapsed=0; updHUD();
+}
+function loseLife(){
+  player.lives--; updHUD();
+  if (player.lives<=0){ endGame(false); }
+  else { player.pos.set(0,1.4,6); player.vel.set(0,0,0); player.inv=1.2; }
+}
+function endGame(won){
+  state='over'; ov.classList.remove('off');
+  if (won){ ovT.textContent='¡META!'; ovS.textContent=`${player.coins}/${coinTotal} estrellas · ${Math.floor(elapsed)}s`;
+    ovM.innerHTML = player.coins===coinTotal ? '¡Perfecto! Todas las estrellas.' : '¡Bien hecho!'; }
+  else { ovT.textContent='FIN'; ovS.textContent=`${player.coins} estrellas`; ovM.innerHTML='Vuelve a intentarlo.'; }
+  ovBtn.textContent='JUGAR DE NUEVO';
+}
+ovBtn.addEventListener('click', startGame);
+canvas.addEventListener('click', ()=>{ if(state==='menu') startGame(); });
+
+// ── Main loop ───────────────────────────────────────────
+const clock = new THREE.Clock();
+const GRAV=30, JUMP=11.5, WALK=6.5, RUN=11;
+function tick(){
+  requestAnimationFrame(tick);
+  let dt = clock.getDelta(); if (dt>1/30) dt=1/30;
+  const t = performance.now()*0.001;
+
+  // Animate world (coins, goal, movers) regardless of state
+  for (const c of coins){ if(!c.got){ c.mesh.rotation.z += dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
+  if (goal){ goal.ring.rotation.z += dt*1.5; goal.grp.rotation.y += dt*0.6; }
+  for (const m of movers){
+    const off = Math.sin(t*m.spd + m.phase) * m.amp;
+    const prev = m.mesh.position.clone();
+    if (m.axis==='x') m.mesh.position.x = m.base.x + off;
+    else if (m.axis==='z') m.mesh.position.z = m.base.z + off;
+    else m.mesh.position.y = m.base.y + off;
+    m.delta = m.mesh.position.clone().sub(prev);
+    m.refresh();
+  }
+
+  if (state==='play') updatePlay(dt, t);
+
+  // Effects
+  for (let i=pops.length-1;i>=0;i--){ const p=pops[i]; p.userData.life-=dt; p.userData.v.y-=GRAV*dt; p.position.addScaledVector(p.userData.v, dt); p.scale.multiplyScalar(1-dt*1.5); if(p.userData.life<=0){ scene.remove(p); pops.splice(i,1);} }
+
+  renderer.render(scene, camera);
+}
+
+function updatePlay(dt, t){
+  elapsed = (performance.now()-startTime)/1000;
+
+  // Camera yaw from input
+  if (keys['KeyQ']) camYaw += dt*2.2;
+  if (keys['KeyE']) camYaw -= dt*2.2;
+  camYaw += camRotInput * dt*2.2;
+
+  // Movement input relative to camera
+  let ix=0, iz=0;
+  if (keys['KeyW']||keys['ArrowUp']) iz-=1;
+  if (keys['KeyS']||keys['ArrowDown']) iz+=1;
+  if (keys['KeyA']||keys['ArrowLeft']) ix-=1;
+  if (keys['KeyD']||keys['ArrowRight']) ix+=1;
+  if (joyActive){ ix+=joyX; iz+=joyY; }
+
+  const fwdX=-Math.sin(camYaw), fwdZ=-Math.cos(camYaw);
+  const rightX=-fwdZ, rightZ=fwdX;
+  let mx = fwdX*(-iz) + rightX*ix;
+  let mz = fwdZ*(-iz) + rightZ*ix;
+  const ml = Math.hypot(mx,mz);
+  const running = keys['ShiftLeft']||keys['ShiftRight'];
+  const speed = running ? RUN : WALK;
+  if (ml>0.01){ mx/=ml; mz/=ml; const s=Math.min(1,ml)*speed;
+    player.vel.x = mx*s; player.vel.z = mz*s;
+    player.facing = Math.atan2(mx, mz);
+  } else { player.vel.x*=0.6; player.vel.z*=0.6; }
+
+  // Jump
+  if ((jumpQueued || keys['Space']) && player.grounded){ player.vel.y = JUMP; player.grounded=false; jumpQueued=false; }
+  if (!keys['Space'] && player.vel.y>4) player.vel.y = 4; // variable jump height
+  jumpQueued=false;
+
+  // Gravity
+  player.vel.y -= GRAV*dt;
+  if (player.vel.y < -40) player.vel.y = -40;
+  if (player.inv>0) player.inv-=dt;
+
+  // Carry on moving platforms (if standing on one)
+  // Integrate with axis-separated collision
+  const P = player.pos;
+  let standingMover = null;
+
+  // --- Y axis ---
+  P.y += player.vel.y*dt;
+  player.grounded=false;
+  for (const c of overlaps(P.x, P.y, P.z)){
+    if (player.vel.y<=0){ P.y = c.max.y + player.hy; player.vel.y=0; player.grounded=true; if(c.delta) standingMover=c; }
+    else { P.y = c.min.y - player.hy; player.vel.y=0; }
+  }
+  // --- X axis ---
+  P.x += player.vel.x*dt + (standingMover&&standingMover.delta?standingMover.delta.x:0);
+  for (const c of overlaps(P.x, P.y, P.z)){
+    if (player.vel.x>0) P.x = c.min.x - player.hx; else if (player.vel.x<0) P.x = c.max.x + player.hx;
+    player.vel.x=0;
+  }
+  // --- Z axis ---
+  P.z += player.vel.z*dt + (standingMover&&standingMover.delta?standingMover.delta.z:0);
+  for (const c of overlaps(P.x, P.y, P.z)){
+    if (player.vel.z>0) P.z = c.min.z - player.hz; else if (player.vel.z<0) P.z = c.max.z + player.hz;
+    player.vel.z=0;
+  }
+
+  // Fell off the world
+  if (P.y < -12){ loseLife(); }
+
+  // Update player visual
+  playerGrp.position.copy(P);
+  playerGrp.position.y -= player.hy; // group origin at feet
+  // smooth turn toward facing
+  let df = player.facing - playerGrp.rotation.y;
+  while (df> Math.PI) df-=Math.PI*2; while (df<-Math.PI) df+=Math.PI*2;
+  playerGrp.rotation.y += df*Math.min(1,dt*12);
+  // blink when invulnerable
+  playerGrp.visible = !(player.inv>0 && (Math.floor(t*12)%2===0));
+  // simple run bob + leg swing
+  const moving = Math.hypot(player.vel.x,player.vel.z)>0.5;
+  player.anim += dt*(moving?12:4);
+  const swing = moving ? Math.sin(player.anim)*0.5 : 0;
+  const lL=playerGrp.getObjectByName('legL'), lR=playerGrp.getObjectByName('legR');
+  const aL=playerGrp.getObjectByName('armL'), aR=playerGrp.getObjectByName('armR');
+  if(lL){ lL.rotation.x=swing; lR.rotation.x=-swing; aL.rotation.x=-swing*0.7; aR.rotation.x=swing*0.7; }
+  if(!player.grounded){ if(lL){lL.rotation.x=-0.5;lR.rotation.x=0.4;} }
+
+  // Coins
+  for (const c of coins){ if(c.got) continue; if (P.distanceToSquared(c.mesh.position) < 1.7){ c.got=true; c.mesh.visible=false; player.coins++; updHUD(); pop(c.mesh.position, 0xffd23c, 12);} }
+
+  // Enemies
+  for (const e of enemies){
+    if(!e.alive) continue;
+    e.t += dt;
+    const off = Math.sin(e.t*1.4)*e.range;
+    if (e.axis==='x') e.grp.position.x = e.base.x + off; else e.grp.position.z = e.base.z + off;
+    e.grp.position.y = e.base.y + Math.abs(Math.sin(e.t*4))*0.12;
+    e.grp.rotation.y += dt*1.5;
+    const d2 = P.distanceToSquared(e.grp.position);
+    if (d2 < 1.6){
+      const stomp = player.vel.y < -0.5 && P.y - e.grp.position.y > 0.9;
+      if (stomp){ e.alive=false; scene.remove(e.grp); player.vel.y = JUMP*0.7; pop(e.grp.position, 0xff5533, 14); }
+      else if (player.inv<=0){ loseLife(); pop(P.clone(), 0xff3344, 8); }
+    }
+  }
+
+  // Goal reached
+  if (goal && P.distanceToSquared(new THREE.Vector3(goal.x, P.y, goal.z)) < 4 && Math.abs(P.y-goal.y)<3){
+    pop(new THREE.Vector3(goal.x,goal.y+2,goal.z), 0x00ff9a, 26); endGame(true);
+  }
+
+  // Camera follow
+  const desired = new THREE.Vector3(
+    P.x + Math.sin(camYaw)*camDist,
+    P.y + camHeight,
+    P.z + Math.cos(camYaw)*camDist
+  );
+  camPos.lerp(desired, 1 - Math.pow(0.0015, dt));
+  if (camPos.lengthSq()===0) camPos.copy(desired);
+  camera.position.copy(camPos);
+  camera.lookAt(P.x, P.y+1.0, P.z);
+
+  // keep sun shadow centered on player
+  sun.position.set(P.x+28, P.y+46, P.z+20);
+  sun.target.position.copy(P);
+}
+
+// ── Resize ──────────────────────────────────────────────
+function resize(){
+  renderer.setSize(innerWidth, innerHeight);
+  camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+}
+addEventListener('resize', resize);
+
+// ── Boot ────────────────────────────────────────────────
+buildLevel();
+buildPlayer();
+resize();
+camPos.set(0, 7, 18);
+window.__cosmo3dBoot = true;
+document.getElementById('loading').style.display='none';
+showMenu();
+tick();
+</script>
+</body>
+</html>
