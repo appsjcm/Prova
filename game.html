@@ -157,6 +157,8 @@ body.touch h1{display:none}
   <span class="k">&#8595;</span> agachar &nbsp;
   <span class="k">X</span> laser &nbsp;
   <span class="k">Shift</span> correr &nbsp;
+  <span class="k">&#8595;</span> aire = caída &nbsp;
+  <span class="k">&#8592;&#8592;</span> dash &nbsp;
   <span class="k">P</span> pausa
 </div>
 <button id="fs-btn" title="Pantalla completa">&#x26F6;</button>
@@ -292,6 +294,7 @@ const isL=()=>K.ArrowLeft||K.KeyA,isR=()=>K.ArrowRight||K.KeyD;
 const isJ=()=>K.ArrowUp||K.KeyZ||K.Space,isD=()=>K.ArrowDown||K.KeyS;
 const isRn=()=>K.ShiftLeft||K.ShiftRight;
 const jpJ=()=>JP.ArrowUp||JP.KeyZ||JP.Space,jpX=()=>JP.KeyX||JP.KeyF,jpD=()=>JP.ArrowDown||JP.KeyS;
+const jpL=()=>JP.ArrowLeft||JP.KeyA,jpR=()=>JP.ArrowRight||JP.KeyD;
 
 // ── DOM ─────────────────────────────────────────────────────
 const ov=document.getElementById('ov'),ovT=document.getElementById('ov-t');
@@ -725,7 +728,7 @@ function buildLevel8(){return buildLvGen(7600,3.9,0.7,true,12);}
 const LV_BUILDERS=[buildLevel1,buildLevel2,buildLevel3,buildLevel4,buildLevel5,buildLevel6,buildLevel7,buildLevel8];
 
 // ── FACTORIES ───────────────────────────────────────────────
-function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0,slide:0,pounding:false};}
+function mkPlayer(){return{x:60,y:GY-34,w:20,h:34,vx:0,vy:0,dir:1,onG:false,coy:0,jBuf:0,jHeld:false,crouch:false,pwr:false,fire:false,star:0,fr:0,ft:0,inv:0,dead:false,dvy:-11,goal:false,fireCool:0,djump:0,shield:false,wallDir:0,slide:0,pounding:false,dashCool:0,dashTimer:0,dashDir:1,lastTapDir:0,lastTapT:0};}
 function mkEnemies(defs){const es=df().espd;return defs.map(d=>{
   if(d.t==='f'){const by=d.y||(GY-120);return{t:'f',x:d.x,y:by,baseY:by,amp:d.amp||26,ph:Math.random()*6.28,w:26,h:20,vx:-(d.sp||1.0)*es,vy:0,alive:true,stomp:false,sTimer:0,shell:false,dir:-1,fr:0,ft:0};}
   if(d.t==='s'){return{t:'s',x:d.x,y:GY-28,w:28,h:28,cooldown:45+Math.random()*30|0,dir:-1,alive:true,stomp:false,sTimer:0};}
@@ -770,11 +773,27 @@ function updPlayer(p,sl){
   if(chts.star9&&p.star===0){p.star=10;p.inv=10;updatePwrHUD();}
   if(p.star>0){p.star--;if(p.star===0&&!chts.star9){p.inv=0;updatePwrHUD();}}
   if(p.fireCool>0)p.fireCool--;
+  // Dash: double-tap a direction for a quick horizontal burst
+  if(p.dashCool>0)p.dashCool--;
+  if(p.dashTimer>0)p.dashTimer--;
+  if(!p.crouch&&p.dashCool<=0){
+    const tapR=jpR(),tapL=jpL();
+    if(tapR||tapL){
+      const dir=tapR?1:-1;
+      if(p.lastTapDir===dir&&(NOW-p.lastTapT)<260){
+        p.dashTimer=9;p.dashCool=34;p.dashDir=dir;p.dir=dir;p.vx=dir*RS*2.3;
+        SFX.laser();hap(16);p.lastTapDir=0;p.lastTapT=0;
+        for(let i=0;i<7;i++)parts.push(new Pop(p.x+p.w/2-dir*4,p.y+p.h*.4+Math.random()*p.h*.4,-dir*(1+Math.random()*3),(Math.random()-.5)*1.5,'#66ddff',16));
+        parts.push(new TextPop(p.x+10,p.y-6,'DASH','#66ddff'));
+      }else{p.lastTapDir=dir;p.lastTapT=NOW;}
+    }
+  }
   const wantDuck=isD()&&p.onG,ch=crouchH(p),sh=standH(p);
   if(wantDuck&&!p.crouch){p.crouch=true;p.h=ch;p.y+=(sh-ch);if(p.onG&&Math.abs(p.vx)>=RS*.75)p.slide=24;}
   else if(!wantDuck&&p.crouch&&p.slide===0){const test={x:p.x,y:p.y-(sh-ch),w:p.w,h:sh};if(!sl.some(s=>hit(test,s))){p.crouch=false;p.h=sh;p.y-=(sh-ch);}}
   const spd=(isRn()||joyIsRunning||chts.turbo||(p.star>0&&!p.crouch))?RS+(p.star>0?.6:0)+(chts.turbo?.8:0):WS;
-  if(!p.crouch){if(isL()){p.vx=-spd;p.dir=-1;}else if(isR()){p.vx=spd;p.dir=1;}else{p.vx*=.72;if(Math.abs(p.vx)<.1)p.vx=0;}}
+  if(p.dashTimer>0){p.vx=p.dashDir*RS*2.3;p.dir=p.dashDir;if(NOW%2===0)parts.push(new Pop(p.x+p.w/2,p.y+p.h*.45,-p.dashDir*1.5,(Math.random()-.5),'#aaeeff',12));}
+  else if(!p.crouch){if(isL()){p.vx=-spd;p.dir=-1;}else if(isR()){p.vx=spd;p.dir=1;}else{p.vx*=.72;if(Math.abs(p.vx)<.1)p.vx=0;}}
   else if(p.slide>0){p.slide--;p.vx*=.91;if(Math.abs(p.vx)<.4)p.slide=0;}
   else{p.vx*=.6;if(Math.abs(p.vx)<.1)p.vx=0;}
   if(jpJ())p.jBuf=8;else if(p.jBuf>0)p.jBuf--;
@@ -793,7 +812,8 @@ function updPlayer(p,sl){
     for(let i=0;i<6;i++)parts.push(new Pop(p.x+10,p.y+p.h*.5,(Math.random()-.5)*6,-1.5-Math.random()*2,'#ffcc00',12));
   }
   if(p.pounding&&!p.onG){p.vy=Math.max(p.vy,15);if(NOW%3===0)parts.push(new Pop(p.x+10,p.y+p.h*.6,(Math.random()-.5)*2,.8,'#ffee44',6));}
-  p.vy+=GRAV;if(p.vy>18)p.vy=18;
+  if(p.dashTimer>0&&!p.onG){p.vy*=.7;}
+  p.vy+=GRAV*(p.dashTimer>0?.35:1);if(p.vy>18)p.vy=18;
   const prevOnG=p.onG,prevVY=p.vy;
   const preHorizVx=p.vx;
   p.x+=p.vx;p.x=Math.max(camX,Math.min(lw-p.w,p.x));resH(p,sl);
