@@ -703,7 +703,8 @@ function buildLvGen(lw,spd,seed,hasBoss,bossHp){
     const x=(180+t*(lw-380))|0;
     const y=Math.max(88,Math.min(272,(200+(rng(i)-.5)*100)|0));
     const w=48+(rng(i*2.1)*36|0);
-    plats.push({x,y,w,h:16});
+    const crumble=i>2&&i<n-1&&rng(i*31.7)<.16;
+    plats.push(crumble?{x,y,w,h:16,crumble:true,cst:0,ctimer:0,respawnT:0}:{x,y,w,h:16});
     if(rng(i*3.7)<.38*df().edens){const isF=rng(i*5.1)<.3;const isS=!isF&&i>2&&rng(i*17.3)<.18;const isH=!isF&&!isS&&i>3&&rng(i*23.7)<.12;const isK=!isF&&!isS&&!isH&&rng(i*7.3)<.5;const armor=isK&&spd>=3.2&&rng(i*29.3)<.4;ens.push(isH?{t:'h',x:x+w/2,y:y-70}:isS?{t:'s',x:x+w/2-14}:{t:isF?'f':isK?'k':'g',x:x+w/2,sp:spd,y:isF?y-55:undefined,amp:isF?(24+rng(i*9)*16|0):undefined,hp:armor?2:1});}
     if(rng(i*4.1)<.55){cns.push({x:x+4,y:y-22,w:14,h:18,col:false,fr:0,ft:0});if(rng(i*6.7)<.6)cns.push({x:x+22,y:y-22,w:14,h:18,col:false,fr:0,ft:0});}
     if(rng(i*8.3)<.2)springs.push({x:x+w/2-10,y:GY-16});
@@ -733,7 +734,7 @@ function mkEnemies(defs){const es=df().espd;return defs.map(d=>{
 });}
 function getSolids(lv){
   const s=[{x:0,y:GY,w:lw,h:200}];
-  lv.plats.forEach(p=>s.push(p));
+  lv.plats.forEach(p=>{if(p.cst!==2)s.push(p);});
   lv.blks.forEach(b=>s.push(b));
   lv.tubes.forEach(p=>s.push(p));
   if(lv.movPlats)lv.movPlats.forEach(mp=>s.push(mp));
@@ -974,6 +975,7 @@ function resetRound(){
   coinList=lvData.cns.map(c=>({...c,col:false,fr:0,ft:0}));
   blkList=lvData.blks.map(b=>({...b,hit:false,bh:0}));
   powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;oneupFlash=0;magnetTimer=0;coinStreak=0;coinStreakTimer=0;
+  if(lvData.plats)lvData.plats.forEach(p=>{if(p.crumble){p.cst=0;p.ctimer=0;p.respawnT=0;}});
   boss=lvData.bossX?mkBoss(lvData.bossX,lvData.bossHp,lvData.bossIsMini):null;
   updatePwrHUD();
 }
@@ -1037,6 +1039,14 @@ function update(){
     updPlayer(player,[]);return;
   }
   updPlayer(player,sl);
+  // Crumbling platforms
+  for(const p of lvData.plats){
+    if(!p.crumble)continue;
+    if(p.cst===2){if(--p.respawnT<=0&&!hit(player,{x:p.x,y:p.y-3,w:p.w,h:p.h+6})){p.cst=0;p.ctimer=0;for(let i=0;i<5;i++)parts.push(new Pop(p.x+Math.random()*p.w,p.y+6,(Math.random()-.5)*2,-Math.random()*1.5,'#88ccff',16));}continue;}
+    const standing=player.onG&&player.y+player.h>=p.y-2&&player.y+player.h<=p.y+8&&player.x+player.w>p.x+2&&player.x<p.x+p.w-2;
+    if(p.cst===0&&standing){p.cst=1;p.ctimer=38;hap(8);}
+    if(p.cst===1&&--p.ctimer<=0){p.cst=2;p.respawnT=150;shake(2);hap(12);SFX.brk();for(let i=0;i<9;i++)parts.push(new Pop(p.x+Math.random()*p.w,p.y+8,(Math.random()-.5)*4,-Math.random()*2,'#998877',24+Math.random()*10|0));}
+  }
   const tc=player.x-CW*.38;camX+=(tc-camX)*.14;camX=Math.max(0,Math.min(lw-CW,camX));
   enemies.forEach(e=>updEnemy(e,sl));
   for(const e of enemies){if(!e.alive||e.stomp||!hit(player,e))continue;const pb=player.y+player.h-player.vy;if(player.vy>0&&pb<=e.y+8){if(e.t==='h'){player.vy=-6;if(player.inv<=0&&!chts.ghost)pHurt();}else{stompE(e);player.vy=-9;}}else if(player.star>0){stompE(e);player.vy=-6;addScore(100);}else if(player.inv<=0&&!chts.ghost){pHurt();break;}}
@@ -1276,7 +1286,14 @@ function drawBG(){
 // ── PLATFORMS ───────────────────────────────────────────────
 const PLAT_COLS=[['#f0d060','#d4aa30','#a07820'],['#e07840','#c05820','#903810'],['#9070e0','#7050c0','#503098'],['#e030d0','#b010b0','#7a0090'],['#e04010','#c02000','#801000'],['#30c0e0','#1090b0','#006880'],['#8030e0','#6010c0','#400890'],['#e0c010','#c09000','#806000']];
 function drawPlat(p,ox){
-  const x=Math.round(p.x-ox);
+  // Crumbling platform: broken = faint respawn outline
+  if(p.crumble&&p.cst===2){
+    const rp=1-p.respawnT/150,bx=Math.round(p.x-ox);
+    ct.globalAlpha=.1+.18*rp;ct.strokeStyle='#aaccee';ct.lineWidth=1;ct.setLineDash([4,4]);
+    ct.strokeRect(bx,p.y,p.w,12);ct.setLineDash([]);ct.globalAlpha=1;return;
+  }
+  const shx=(p.crumble&&p.cst===1)?Math.round((Math.random()-.5)*3):0;
+  const x=Math.round(p.x-ox)+shx;
   ct.globalAlpha=.2;ct.fillStyle='#000';ct.fillRect(x+3,p.y+18,p.w,5);ct.globalAlpha=1;
   const [cT,cF,cS]=PLAT_COLS[Math.min(levelNum,7)]||PLAT_COLS[0];
   ct.fillStyle=lg(x,p.y-4,x,p.y,cT,cF);
@@ -1298,6 +1315,23 @@ function drawPlat(p,ox){
     ct.strokeStyle='rgba(255,80,0,.35)';ct.lineWidth=1;
     ct.beginPath();ct.moveTo(x+3,p.y+6);ct.lineTo(x+p.w*.45,p.y+11);ct.lineTo(x+p.w-3,p.y+6);ct.stroke();
     ct.shadowBlur=0;
+  }
+  // Crumble markers
+  if(p.crumble){
+    if(p.cst===1){
+      // Active: warning glow + cracks
+      const wf=p.ctimer/38;
+      ct.shadowColor='#ff5500';ct.shadowBlur=6*(1-wf);
+      ct.strokeStyle=`rgba(255,${90+120*wf|0},0,${.85-.3*wf})`;ct.lineWidth=1.4;
+      ct.beginPath();ct.moveTo(x+p.w*.3,p.y);ct.lineTo(x+p.w*.42,p.y+8);ct.lineTo(x+p.w*.36,p.y+16);ct.stroke();
+      ct.beginPath();ct.moveTo(x+p.w*.66,p.y);ct.lineTo(x+p.w*.58,p.y+9);ct.lineTo(x+p.w*.7,p.y+16);ct.stroke();
+      ct.shadowBlur=0;
+    }else{
+      // Idle: subtle hairline cracks to telegraph fragility
+      ct.strokeStyle='rgba(0,0,0,.3)';ct.lineWidth=1;
+      ct.beginPath();ct.moveTo(x+p.w*.35,p.y+2);ct.lineTo(x+p.w*.45,p.y+12);ct.stroke();
+      ct.beginPath();ct.moveTo(x+p.w*.65,p.y+2);ct.lineTo(x+p.w*.6,p.y+12);ct.stroke();
+    }
   }
 }
 
