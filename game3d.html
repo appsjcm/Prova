@@ -207,8 +207,41 @@ function addEnemy(x, y, z, range, axis='x') {
   grp.position.set(x, y, z); scene.add(grp);
   enemies.push({ grp, alive:true, base:new THREE.Vector3(x,y,z), range, axis, dir:1, t:Math.random()*6 });
 }
+// Flying enemy (UFO drone) — circles in XZ and bobs in Y
+function addFlyer(x, y, z, radius=3) {
+  const grp = new THREE.Group();
+  const saucer = new THREE.Mesh(new THREE.SphereGeometry(0.8, 18, 12), mat(0x8a3bd1, 0.5, 0.2));
+  saucer.scale.y = 0.4; saucer.position.y = 0.8; saucer.castShadow = true; grp.add(saucer);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 10, 0, Math.PI*2, 0, Math.PI/2), mat(0xcaa0ff, 0.25, 0.4, 0x6622aa, 0.4));
+  dome.position.y = 0.95; grp.add(dome);
+  for (let i=0;i<4;i++){ const a=i/4*Math.PI*2; const light=new THREE.Mesh(new THREE.SphereGeometry(0.1,8,6), mat(0xffee44,0.3,0,0xffcc00,1.0)); light.position.set(Math.cos(a)*0.7,0.78,Math.sin(a)*0.7); grp.add(light); }
+  grp.position.set(x, y, z); scene.add(grp);
+  enemies.push({ grp, alive:true, base:new THREE.Vector3(x,y,z), range:radius, axis:'fly', fly:true, t:Math.random()*6 });
+}
 // Goal
 let goal;
+function makeLabel(text, color){
+  const cv=document.createElement('canvas'); cv.width=256; cv.height=64;
+  const x=cv.getContext('2d'); x.clearRect(0,0,256,64);
+  x.font='bold 40px monospace'; x.textAlign='center'; x.textBaseline='middle';
+  x.shadowColor=color; x.shadowBlur=14; x.fillStyle=color;
+  x.fillText(text,128,34);
+  const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; return tex;
+}
+function setGoalLabel(text, color){
+  if(!goal||!goal.sprite) return;
+  const t=makeLabel(text,color); if(goal.sprite.material.map) goal.sprite.material.map.dispose();
+  goal.sprite.material.map=t; goal.sprite.material.needsUpdate=true;
+}
+function refreshGoalLock(){
+  if(!goal) return;
+  const locked = player.coins < coinTotal;
+  const col = locked ? 0xff5a3c : 0x00ff9a;
+  goal.ring.material.color.setHex(col); goal.ring.material.emissive.setHex(col);
+  goal.beam.material.color.setHex(col); goal.beam.material.emissive.setHex(col);
+  setGoalLabel(locked ? '★ '+(coinTotal-player.coins) : 'META', locked ? '#ff8a5c' : '#00ff9a');
+  goal.locked = locked;
+}
 function addGoal(x, y, z) {
   const grp = new THREE.Group();
   const ring = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.16, 16, 40), mat(0x00ff9a, 0.3, 0.2, 0x00ff88, 0.7));
@@ -217,8 +250,10 @@ function addGoal(x, y, z) {
   pole.position.y = 2.2; pole.castShadow = true; grp.add(pole);
   const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,40,8), mat(0x00ff9a,0.3,0,0x00ff9a,1.2));
   beam.position.y = 22; grp.add(beam);
+  const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map:makeLabel('META','#00ff9a'), transparent:true, depthTest:false }));
+  spr.scale.set(3, 0.75, 1); spr.position.y = 4.4; grp.add(spr);
   grp.position.set(x,y,z); scene.add(grp);
-  goal = { grp, ring, x, y, z };
+  goal = { grp, ring, beam, sprite:spr, locked:false, x, y, z };
 }
 
 // Clouds (decorative, drifting)
@@ -294,9 +329,13 @@ function buildLevel() {
   addEnemy(0, 3.8, -22, 1.8, 'z');
   addEnemy(2, 8.6, -56, 2.0, 'x');
   addEnemy(0, 1.0, 3, 6, 'x');
+  // Flying drones
+  addFlyer(0, 5.5, -34, 3.5);
+  addFlyer(2, 9.0, -50, 3.0);
 
   // Goal at the top
   addGoal(2, 10.0, -62);
+  refreshGoalLock();
   addClouds();
   addScenery();
 }
@@ -403,7 +442,7 @@ function updHUD(){
 function showMenu(){
   state='menu'; ov.classList.remove('off');
   ovT.textContent='COSMO KID 3D'; ovS.textContent='Aventura Espacial · WebGL';
-  ovM.innerHTML='Explora el mundo flotante, coge la <b>estrella</b> (invencible) y llega a la <b>meta verde</b>.<br><br>'+
+  ovM.innerHTML='Reúne todas las <b>estrellas</b> ★ para abrir la <b>meta</b>. El <b>núcleo</b> ⚡ te hace invencible.<br><br>'+
     (isTouch ? 'Joystick para moverte · <b>SALTO</b> (toca 2 veces = doble salto)<br>⟲ ⟳ giran la cámara · pisa a los enemigos'
              : '<b>WASD</b>/flechas mover · <b>Espacio</b> saltar (x2 = doble salto)<br><b>Shift</b> correr · <b>Q</b>/<b>E</b> cámara · pisa a los enemigos');
   ovBtn.textContent='JUGAR';
@@ -417,6 +456,7 @@ function startGame(){
   for (const s of powerups){ s.got=false; s.mesh.visible=true; }
   for (const e of enemies){ if(!e.alive){ e.alive=true; scene.add(e.grp);} e.grp.position.copy(e.base); }
   const aura0=playerGrp.getObjectByName('aura'); if(aura0) aura0.visible=false;
+  refreshGoalLock();
   startTime=performance.now(); elapsed=0; updHUD();
 }
 function loseLife(){
@@ -570,7 +610,7 @@ function updatePlay(dt, t){
   if(!player.grounded){ if(lL){lL.rotation.x=-0.5;lR.rotation.x=0.4;} }
 
   // Coins
-  for (const c of coins){ if(c.got) continue; if (P.distanceToSquared(c.mesh.position) < 1.7){ c.got=true; c.mesh.visible=false; player.coins++; updHUD(); sfx.coin(); pop(c.mesh.position, 0xffd23c, 12);} }
+  for (const c of coins){ if(c.got) continue; if (P.distanceToSquared(c.mesh.position) < 1.7){ c.got=true; c.mesh.visible=false; player.coins++; updHUD(); refreshGoalLock(); sfx.coin(); pop(c.mesh.position, 0xffd23c, 12);} }
 
   // Power-up stars
   for (const s of powerups){ if(s.got) continue; if (P.distanceToSquared(s.mesh.position) < 2.0){ s.got=true; s.mesh.visible=false; player.power=8; updHUD(); sfx.win(); pop(s.mesh.position, 0xffe23c, 22); } }
@@ -579,10 +619,17 @@ function updatePlay(dt, t){
   for (const e of enemies){
     if(!e.alive) continue;
     e.t += dt;
-    const off = Math.sin(e.t*1.4)*e.range;
-    if (e.axis==='x') e.grp.position.x = e.base.x + off; else e.grp.position.z = e.base.z + off;
-    e.grp.position.y = e.base.y + Math.abs(Math.sin(e.t*4))*0.12;
-    e.grp.rotation.y += dt*1.5;
+    if (e.fly){
+      e.grp.position.x = e.base.x + Math.cos(e.t*1.1)*e.range;
+      e.grp.position.z = e.base.z + Math.sin(e.t*1.1)*e.range;
+      e.grp.position.y = e.base.y + Math.sin(e.t*2)*0.4;
+      e.grp.rotation.y += dt*3;
+    } else {
+      const off = Math.sin(e.t*1.4)*e.range;
+      if (e.axis==='x') e.grp.position.x = e.base.x + off; else e.grp.position.z = e.base.z + off;
+      e.grp.position.y = e.base.y + Math.abs(Math.sin(e.t*4))*0.12;
+      e.grp.rotation.y += dt*1.5;
+    }
     const d2 = P.distanceToSquared(e.grp.position);
     if (d2 < 1.6){
       const stomp = player.vel.y < -0.5 && P.y - e.grp.position.y > 0.9;
@@ -592,8 +639,8 @@ function updatePlay(dt, t){
     }
   }
 
-  // Goal reached
-  if (goal && P.distanceToSquared(new THREE.Vector3(goal.x, P.y, goal.z)) < 4 && Math.abs(P.y-goal.y)<3){
+  // Goal reached (only when all stars are collected → ring is green)
+  if (goal && !goal.locked && P.distanceToSquared(new THREE.Vector3(goal.x, P.y, goal.z)) < 4 && Math.abs(P.y-goal.y)<3){
     pop(new THREE.Vector3(goal.x,goal.y+2,goal.z), 0x00ff9a, 26); endGame(true);
   }
 
