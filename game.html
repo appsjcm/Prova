@@ -312,6 +312,7 @@ let levelNum=0,lw=3600,nextLvlReady=false;
 let cpX=-1; // checkpoint respawn X (-1 = none)
 let comboMult=1,comboTimer=0,joyIsRunning=false,dmgFlash=0,oneupFlash=0,magnetTimer=0;
 let coinStreak=0,coinStreakTimer=0;
+let runKills=0,runMaxCombo=1,lvNoHit=true,lastLvPerfect=false;
 let tProjs=[];
 let difficulty=1;
 const DIFFS=[
@@ -423,7 +424,7 @@ function updBoss(sl){
       boss.hp--;boss.inv=22;shake(3);SFX.hurt();
       parts.push(new Pop(boss.x+20,boss.y+20,(Math.random()-.5)*6,-Math.random()*5,'#00ff66',20));
       parts.push(new TextPop(boss.x+20,boss.y,'-1','#ff4444'));
-      if(boss.hp<=0){boss.alive=false;SFX.win();shake(8);hap(80);addScore(5000);
+      if(boss.hp<=0){boss.alive=false;runKills++;SFX.win();shake(8);hap(80);addScore(5000);
         for(let i=0;i<20;i++)parts.push(new Pop(boss.x+20,boss.y+20,(Math.random()-.5)*10,-Math.random()*8,'#00ff66',40));
         parts.push(new TextPop(boss.x+20,boss.y-24,'+5000','#ffcc00'));return;}
       if(!boss.rage&&boss.hp<=boss.maxHp*df().rage){boss.rage=true;shake(5);hap(60);SFX.warn();parts.push(new TextPop(boss.x+20,boss.y-20,'¡FURIA!','#00ff44'));}
@@ -468,7 +469,7 @@ function updBoss(sl){
     boss.hp--;boss.inv=28;shake(4);SFX.hurt();
     parts.push(new TextPop(boss.x+28,boss.y,'-1','#ff4444'));
     for(let i=0;i<8;i++)parts.push(new Pop(boss.x+28,boss.y+28,(Math.random()-.5)*7,-Math.random()*5,'#ff6600',24));
-    if(boss.hp<=0){boss.alive=false;SFX.win();shake(10);addScore(9000);
+    if(boss.hp<=0){boss.alive=false;runKills++;SFX.win();shake(10);addScore(9000);
       for(let i=0;i<24;i++)parts.push(new Pop(boss.x+Math.random()*56,boss.y+Math.random()*56,(Math.random()-.5)*10,-Math.random()*9,'#ffcc00',50));
       parts.push(new TextPop(boss.x+28,boss.y-30,'¡JEFE VENCIDO!','#ffdd00'));}
     if(!boss.rage&&boss.alive&&boss.hp<=boss.maxHp*df().rage){boss.rage=true;shake(8);hap(80);SFX.warn();parts.push(new TextPop(boss.x+28,boss.y-28,'¡FURIA!','#ff4400'));for(let i=0;i<16;i++)parts.push(new Pop(boss.x+28,boss.y+28,(Math.random()-.5)*12,-Math.random()*9,'#ff5500',36));}
@@ -911,11 +912,12 @@ class Dust{
 const chts={inf:false,ghost:false,jump:false,turbo:false,nospk:false,star9:false};
 
 // ── GAME ACTIONS ────────────────────────────────────────────
-function pDie(){if(player.dead||player.goal)return;player.dead=true;player.dvy=-11;SFX.die();shake(6);hap(120);dmgFlash=30;if(!chts.inf)lives--;setHUD();dTimer=90;}
-function pHurt(){if(player.dead||player.goal||player.inv>0||player.star>0||chts.ghost)return;if(player.shield){player.shield=false;player.inv=df().inv*.75|0;SFX.shield();shake(3);hap(20);dmgFlash=16;player.vx=-player.dir*5;player.vy=Math.min(player.vy,-3);parts.push(new TextPop(player.x+10,player.y-8,'ESCUDO ROTO','#00eeff'));updatePwrHUD();return;}SFX.hurt();shake(5);hap(35);dmgFlash=22;shrinkPlayer();player.vx=-player.dir*5;player.vy=Math.min(player.vy,-4);}
+function pDie(){if(player.dead||player.goal)return;lvNoHit=false;player.dead=true;player.dvy=-11;SFX.die();shake(6);hap(120);dmgFlash=30;if(!chts.inf)lives--;setHUD();dTimer=90;}
+function pHurt(){if(player.dead||player.goal||player.inv>0||player.star>0||chts.ghost)return;lvNoHit=false;if(player.shield){player.shield=false;player.inv=df().inv*.75|0;SFX.shield();shake(3);hap(20);dmgFlash=16;player.vx=-player.dir*5;player.vy=Math.min(player.vy,-3);parts.push(new TextPop(player.x+10,player.y-8,'ESCUDO ROTO','#00eeff'));updatePwrHUD();return;}SFX.hurt();shake(5);hap(35);dmgFlash=22;shrinkPlayer();player.vx=-player.dir*5;player.vy=Math.min(player.vy,-4);}
 function stompE(e){
   SFX.stomp();shake(2);hap(12);
   comboTimer=65;
+  if(comboMult>runMaxCombo)runMaxCombo=comboMult;
   if(e.t==='k'&&!e.shell){
     if(e.hp>1){
       e.hp--;e.hpFlash=14;SFX.blk();shake(2);hap(10);
@@ -930,7 +932,7 @@ function stompE(e){
     for(let i=0;i<4;i++)parts.push(new Pop(e.x+12,e.y+8,(Math.random()-.5)*4,-Math.random()*3,'#4488ff',16));
     if(comboMult<8)comboMult*=2;return;
   }
-  e.stomp=true;e.sTimer=22;
+  e.stomp=true;e.sTimer=22;runKills++;
   const base=e.t==='g'?100:e.t==='h'?300:200;
   const pts=base*comboMult;
   addScore(pts);
@@ -949,12 +951,15 @@ function pWin(){
   levelEndTime=tLeft;
   const el=LEVEL_TIME[levelNum]-tLeft;
   if(bestTimes[difficulty]===0||el<bestTimes[difficulty]){bestTimes[difficulty]=el;localStorage.setItem('cosmoBT'+difficulty,bestTimes[difficulty]);}
+  lastLvPerfect=lvNoHit;
+  if(lvNoHit){addScore(2000);parts.push(new TextPop(player.x+10,player.y-26,'SIN DAÑO +2000','#88ffcc'));}
   addScore(Math.ceil(tLeft)*5);tLeft=0;setHUD();
 }
 function showEnd(title,col,msg,badge,btnTxt){gst='stop';ov.classList.remove('off');ovT.textContent=title;ovT.style.color=col;ovHi.textContent='';ovM.innerHTML=msg;ovB.textContent=badge;ovBtn.textContent=btnTxt;ovBtn.style.display='';ovDiff.style.display='none';}
 function initGame(){
   if(isTouchDevice&&!isFS())requestFS(document.documentElement);
   score=0;coins=0;lives=df().lives;levelNum=0;nextLvlReady=false;cpX=-1;comboMult=1;comboTimer=0;levelEndTime=0;
+  runKills=0;runMaxCombo=1;
   hdiffEl.textContent=df().nm;hdiffEl.style.color=df().col;
   lvData=LV_BUILDERS[0]();lw=lvData.lw;
   BEAT_DUR=difficulty===2?.17:difficulty===0?.28:.22;
@@ -962,7 +967,7 @@ function initGame(){
   lvCountdown=180;lvGoTimer=0;startMusic();
 }
 function resetRound(){
-  camX=0;tAccum=0;dTimer=0;wTimer=0;tLeft=Math.round(LEVEL_TIME[levelNum]*df().tsc);comboMult=1;comboTimer=0;
+  camX=0;tAccum=0;dTimer=0;wTimer=0;tLeft=Math.round(LEVEL_TIME[levelNum]*df().tsc);comboMult=1;comboTimer=0;lvNoHit=true;
   player=mkPlayer();
   if(cpX>=0){player.x=cpX;camX=Math.max(0,Math.min(lw-CW,cpX-CW*.38));}
   enemies=mkEnemies(lvData.ens);
@@ -1004,7 +1009,7 @@ function update(){
   if(player.dead){
     updPlayer(player,[]);
     if(--dTimer<=0){
-      if(lives<=0){SFX.over();stopMusic();showEnd('MISION FALLIDA','#ff4466','Puntuacion: '+String(score).padStart(6,'0'),'Record: '+String(hiScores[difficulty]).padStart(6,'0'),'INTENTAR DE NUEVO');}
+      if(lives<=0){SFX.over();stopMusic();showEnd('MISION FALLIDA','#ff4466','Puntuacion: '+String(score).padStart(6,'0')+'<br>Enemigos: '+runKills+'&nbsp;&nbsp;Combo máx: x'+runMaxCombo,'Record: '+String(hiScores[difficulty]).padStart(6,'0'),'INTENTAR DE NUEVO');}
       else resetRound();
     }
     return;
@@ -1014,16 +1019,17 @@ function update(){
       const st=levelEndTime/LEVEL_TIME[levelNum];
       const nSt=st>.5?3:st>.25?2:1;
       const stStr='<span style="color:#ffcc00;font-size:1.3rem">'+'★'.repeat(nSt)+'☆'.repeat(3-nSt)+'</span>';
+      const perfStr=lastLvPerfect?'<br><span style="color:#88ffcc">✦ SIN DAÑO ✦</span>':'';
       if(levelNum<MAX_LV-1){
         nextLvlReady=true;
         showEnd(LEVEL_NAMES[levelNum]+' OK','#00ff88',
-          stStr+'<br>Puntos: '+String(score).padStart(6,'0')+'&nbsp;&nbsp;Cristales: x'+String(coins).padStart(2,'0'),
+          stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'&nbsp;&nbsp;Cristales: x'+String(coins).padStart(2,'0'),
           'Record: '+String(hiScores[difficulty]).padStart(6,'0')+(bestTimes[difficulty]>0?' | Mejor: '+fmtTime(bestTimes[difficulty]):''),
           'MISION '+(levelNum+2));
       }else{
         nextLvlReady=false;stopMusic();
         showEnd('JUEGO COMPLETO!','#ffdd00',
-          stStr+'<br>Puntos: '+String(score).padStart(6,'0')+'<br>Cristales: x'+String(coins).padStart(2,'0'),
+          stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'<br>Cristales: x'+String(coins).padStart(2,'0')+'<br>Enemigos: '+runKills+'&nbsp;&nbsp;Combo máx: x'+runMaxCombo,
           'Record: '+String(hiScores[difficulty]).padStart(6,'0')+(bestTimes[difficulty]>0?' | Mejor: '+fmtTime(bestTimes[difficulty]):''),
           'JUGAR DE NUEVO');
       }
