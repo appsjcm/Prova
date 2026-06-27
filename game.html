@@ -109,6 +109,19 @@ body.touch h1{display:none}
 .ch-w:hover{background:rgba(120,0,160,.6);border-color:#dd44ff;color:#ee88ff}
 .ch-c{margin-top:6px;background:rgba(80,0,0,.8);border:1px solid rgba(255,80,80,.4);color:#ff8888;font-size:.7rem;padding:5px 16px;border-radius:6px;cursor:pointer;font-family:monospace}
 .ch-c:hover{background:rgba(160,0,0,.5);border-color:#ff4444}
+/* How-to-play overlay */
+#help-open{margin-top:6px;background:none;border:1px solid rgba(0,200,255,.3);color:#7abbe0;font-size:.72rem;letter-spacing:1px;cursor:pointer;font-family:monospace;padding:7px 16px;border-radius:8px;min-height:40px}
+#help-open:hover,#help-open:active{color:#00ccff;border-color:rgba(0,200,255,.7)}
+#help-ov{display:none;position:fixed;inset:0;background:rgba(0,4,20,.97);z-index:520;flex-direction:column;align-items:center;gap:4px;padding:16px 14px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#help-ov.on{display:flex}
+.hp-t{font-size:1.25rem;font-weight:900;color:#00ccff;letter-spacing:3px;text-shadow:0 0 18px #00aaff;margin:2px 0 4px}
+.hp-sec{width:100%;max-width:400px}
+.hp-h{font-size:.66rem;color:#ffcc00;letter-spacing:2px;text-transform:uppercase;margin:9px 0 3px;border-bottom:1px solid rgba(255,200,0,.22);padding-bottom:3px}
+.hp-r{font-size:.72rem;color:#a8c8e8;line-height:1.5;margin:2px 0}
+.hp-k{color:#00ffaa;font-weight:bold;display:inline-block;min-width:104px}
+.hp-r b{color:#ffd866}
+.hp-c{margin:12px 0 4px;background:rgba(0,60,90,.85);border:1.5px solid rgba(0,200,255,.45);color:#bfefff;font-size:.85rem;letter-spacing:2px;padding:10px 28px;border-radius:10px;cursor:pointer;font-family:monospace;min-height:48px}
+.hp-c:hover,.hp-c:active{background:rgba(0,110,160,.6);border-color:#00ccff}
 </style>
 </head>
 <body>
@@ -134,7 +147,46 @@ body.touch h1{display:none}
     <div id="ov-b"></div>
     <div id="ov-diff"></div>
     <button id="ov-btn">JUGAR</button>
+    <button id="help-open">&#128218; CÓMO JUGAR</button>
   </div>
+</div>
+<div id="help-ov">
+  <div class="hp-t">CÓMO JUGAR</div>
+  <div class="hp-sec">
+    <div class="hp-h">Movimiento</div>
+    <div class="hp-r"><span class="hp-k">&#8592; &#8594; / Joystick</span> Moverse</div>
+    <div class="hp-r"><span class="hp-k">Shift / B</span> Correr (más velocidad y salto)</div>
+    <div class="hp-r"><span class="hp-k">&#8593; / Z / A</span> Saltar &middot; en pared = salto de pared</div>
+    <div class="hp-r"><span class="hp-k">Doble salto</span> Con mejora activa, salta otra vez en el aire</div>
+    <div class="hp-r"><span class="hp-k">&#8595;</span> Agacharse &middot; corriendo = deslizar</div>
+    <div class="hp-r"><span class="hp-k">&#8595; en el aire</span> <b>Pisotón</b>: caída fuerte que aplasta el área</div>
+    <div class="hp-r"><span class="hp-k">Doble toque &#8592;/&#8594;</span> <b>Dash</b>: impulso veloz, esquiva (invulnerable) y embiste</div>
+    <div class="hp-r"><span class="hp-k">X</span> Disparar láser (con mejora Láser o Núcleo)</div>
+  </div>
+  <div class="hp-sec">
+    <div class="hp-h">Mejoras</div>
+    <div class="hp-r"><span class="hp-k">&#129529; Tanque</span> Creces y aguantas un golpe</div>
+    <div class="hp-r"><span class="hp-k">&#127801; Láser</span> Disparas con X</div>
+    <div class="hp-r"><span class="hp-k">&#11088; Núcleo</span> Invencible un rato</div>
+    <div class="hp-r"><span class="hp-k">&#128737; Escudo</span> Bloquea un golpe</div>
+    <div class="hp-r"><span class="hp-k">&#9673; Imán</span> Atrae los cristales cercanos</div>
+    <div class="hp-r"><span class="hp-k">&#128154; 1UP</span> Vida extra &middot; 100 cristales = vida extra</div>
+  </div>
+  <div class="hp-sec">
+    <div class="hp-h">Enemigos y peligros</div>
+    <div class="hp-r">Salta encima, usa el <b>dash</b> o el láser para vencerlos</div>
+    <div class="hp-r"><span class="hp-k">Droide blindado</span> Necesita 2 golpes</div>
+    <div class="hp-r"><span class="hp-k">&#128123; Fantasma</span> Solo cae con láser o dash</div>
+    <div class="hp-r"><span class="hp-k">Torreta</span> Dispara de lejos</div>
+    <div class="hp-r"><span class="hp-k">Pinchos</span> Muerte instantánea</div>
+    <div class="hp-r"><span class="hp-k">Plataformas frágiles</span> Se rompen al pisarlas: ¡no te pares!</div>
+    <div class="hp-r"><span class="hp-k">Jefes</span> El anillo brillante avisa el ataque: salta o haz dash</div>
+  </div>
+  <div class="hp-sec">
+    <div class="hp-h">Objetivo</div>
+    <div class="hp-r">Llega a la baliza antes de que acabe el tiempo. Consigue rango <b>S</b> siendo rápido y sin recibir daño.</div>
+  </div>
+  <button class="hp-c" id="help-close">&#x2715; VOLVER</button>
 </div>
 <div id="ch-ov">
   <div class="ch-t">&#9733; COSMO TRUCOS &#9733;</div>
@@ -280,8 +332,8 @@ function resize(){
 }
 window.addEventListener('resize',resize);
 window.addEventListener('orientationchange',()=>setTimeout(()=>{resize();if(fsWanted&&!isFS())requestFS(document.documentElement);},400));
-// Prevent default scroll/bounce
-document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+// Prevent default scroll/bounce (but allow scrolling inside the help overlay)
+document.addEventListener('touchmove',e=>{if(helpOv&&helpOv.classList.contains('on')&&helpOv.contains(e.target))return;e.preventDefault();},{passive:false});
 resize();
 
 // ── INPUT ───────────────────────────────────────────────────
@@ -305,6 +357,9 @@ const hlEl=document.getElementById('hl'),htEl=document.getElementById('ht');
 const hnEl=document.getElementById('hn'),hpwrEl=document.getElementById('hpwr');
 const hdiffEl=document.getElementById('hdiff');
 const tcXBtn=document.getElementById('tc-x');
+const helpOpenBtn=document.getElementById('help-open'),helpOv=document.getElementById('help-ov');
+helpOpenBtn.addEventListener('click',e=>{e.stopPropagation();helpOv.classList.add('on');});
+document.getElementById('help-close').addEventListener('click',e=>{e.stopPropagation();helpOv.classList.remove('on');});
 
 // ── STATE ───────────────────────────────────────────────────
 let gst='menu',score=0,coins=0,lives=3,tLeft=300,levelEndTime=0;
@@ -390,10 +445,11 @@ function showMenu(){
   ovT.textContent='COSMO KID';ovT.style.color='#00ccff';
   updateMenuRecord();
   const iosHint=/iphone|ipad|ipod/i.test(navigator.userAgent)?'<br><span style="color:#336655;font-size:.6rem;letter-spacing:.5px">iOS: Compartir &#8679; → Añadir a inicio = pantalla completa</span>':'';
-  ovM.innerHTML=(isTouchDevice?'&#9664; &#9654; mover &nbsp;&#183;&nbsp; &#9650; saltar &nbsp;&#183;&nbsp; &#9660; agachar<br>B correr &nbsp;&#183;&nbsp; X laser &nbsp;&#183;&nbsp; II pausa':'&#8592;&#8594; mover &nbsp;&#183;&nbsp; &#8593;/Z saltar &nbsp;&#183;&nbsp; &#8595; agachar<br>Shift correr &nbsp;&#183;&nbsp; X laser &nbsp;&#183;&nbsp; P pausa')+iosHint;
-  ovB.innerHTML='8 Mundos &nbsp;&#9670;&nbsp; Jefe Final &nbsp;&#9670;&nbsp; Escudo &amp; Doble Salto &nbsp;&#9670;&nbsp; 100 cristales = &#9829;';
+  ovM.innerHTML=(isTouchDevice?'&#9664; &#9654; mover &nbsp;&#183;&nbsp; &#9650; saltar &nbsp;&#183;&nbsp; &#9660; agachar<br>B correr &nbsp;&#183;&nbsp; X laser &nbsp;&#183;&nbsp; doble toque = dash':'&#8592;&#8594; mover &nbsp;&#183;&nbsp; &#8593;/Z saltar &nbsp;&#183;&nbsp; &#8595; agachar<br>Shift correr &nbsp;&#183;&nbsp; X laser &nbsp;&#183;&nbsp; doble toque &#8592;/&#8594; = dash')+iosHint;
+  ovB.innerHTML='8 Mundos &nbsp;&#9670;&nbsp; Jefes &nbsp;&#9670;&nbsp; Dash &amp; Pisotón &nbsp;&#9670;&nbsp; Rango S';
   renderDiffBtns();ovDiff.style.display='';
   ovBtn.textContent='JUGAR';ovBtn.style.display='';
+  helpOpenBtn.style.display='';
 }
 
 // ── BOSS ─────────────────────────────────────────────────────
@@ -993,7 +1049,7 @@ function stompE(e){
   if(comboMult<8)comboMult*=2;
   if(Math.random()<.3)coinList.push({x:e.x+e.w/2-7,y:e.y-4,w:14,h:18,col:false,fr:0,ft:0});
 }
-function togglePause(){if(gst==='playing'){gst='paused';ov.classList.remove('off');ovT.textContent='PAUSA';ovT.style.color='#00ccff';ovHi.textContent='';ovM.textContent='';ovB.textContent='';ovBtn.textContent='CONTINUAR';ovBtn.style.display='';ovDiff.style.display='none';}else if(gst==='paused'){gst='playing';ov.classList.add('off');}}
+function togglePause(){if(gst==='playing'){gst='paused';ov.classList.remove('off');ovT.textContent='PAUSA';ovT.style.color='#00ccff';ovHi.textContent='';ovM.innerHTML='&#8595; en aire = pisotón &nbsp;&#183;&nbsp; doble toque = dash';ovB.textContent='';ovBtn.textContent='CONTINUAR';ovBtn.style.display='';ovDiff.style.display='none';helpOpenBtn.style.display='';}else if(gst==='paused'){gst='playing';ov.classList.add('off');}}
 function pWin(){
   if(player.goal)return;player.goal=true;wTimer=180;SFX.win();shake(3);hap(60);
   const wCols=['#ffcc00','#ff4488','#00ff88','#00ccff','#ff8800','#ffffff'];
@@ -1005,7 +1061,7 @@ function pWin(){
   if(lvNoHit){addScore(2000);parts.push(new TextPop(player.x+10,player.y-26,'SIN DAÑO +2000','#88ffcc'));}
   addScore(Math.ceil(tLeft)*5);tLeft=0;setHUD();
 }
-function showEnd(title,col,msg,badge,btnTxt){gst='stop';ov.classList.remove('off');ovT.textContent=title;ovT.style.color=col;ovHi.textContent='';ovM.innerHTML=msg;ovB.textContent=badge;ovBtn.textContent=btnTxt;ovBtn.style.display='';ovDiff.style.display='none';}
+function showEnd(title,col,msg,badge,btnTxt){gst='stop';ov.classList.remove('off');ovT.textContent=title;ovT.style.color=col;ovHi.textContent='';ovM.innerHTML=msg;ovB.textContent=badge;ovBtn.textContent=btnTxt;ovBtn.style.display='';ovDiff.style.display='none';helpOpenBtn.style.display='none';}
 function initGame(){
   if(isTouchDevice&&!isFS())requestFS(document.documentElement);
   score=0;coins=0;lives=df().lives;levelNum=0;nextLvlReady=false;cpX=-1;comboMult=1;comboTimer=0;levelEndTime=0;
