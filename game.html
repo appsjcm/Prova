@@ -311,6 +311,7 @@ let player,enemies,coinList,blkList,powerUps,lasers,parts,lvData;
 let levelNum=0,lw=3600,nextLvlReady=false;
 let cpX=-1; // checkpoint respawn X (-1 = none)
 let comboMult=1,comboTimer=0,joyIsRunning=false,dmgFlash=0,oneupFlash=0,magnetTimer=0;
+let coinStreak=0,coinStreakTimer=0;
 let tProjs=[];
 let difficulty=1;
 const DIFFS=[
@@ -339,6 +340,8 @@ function setHUD(){
 function addScore(n){score+=n;if(score>hiScores[difficulty]){hiScores[difficulty]=score;localStorage.setItem('cosmoHi'+difficulty,hiScores[difficulty]);}hsEl.textContent=String(score).padStart(6,'0');}
 function gainCoin(x,y){
   coins++;addScore(200);SFX.coin();hap(6);
+  coinStreak++;coinStreakTimer=80;
+  if(coinStreak>0&&coinStreak%10===0){const bonus=coinStreak*50;addScore(bonus);SFX.combo(Math.min(5,(coinStreak/10|0)+1));parts.push(new TextPop(x,y-24,'RACHA x'+coinStreak+'! +'+bonus,'#ffdd44'));shake(2);}
   if(coins>0&&coins%100===0){lives++;SFX.pu();oneupFlash=28;parts.push(new TextPop(x,y-14,'1UP! +♥','#ff88aa'));shake(2);}
   setHUD();
 }
@@ -502,6 +505,9 @@ function drawBoss(ox){
     });
     ct.strokeStyle='rgba(255,255,255,.8)';ct.lineWidth=1.5;ct.lineCap='round';
     ct.beginPath();ct.moveTo(x+11,y+30);ct.bezierCurveTo(x+15,y+37,x+25,y+37,x+29,y+30);ct.stroke();
+    // Fire telegraph: contracting ring in last 15 frames before shot
+    const mc=boss.timer%65;
+    if(mc>=50){const cp=(mc-49)/15;ct.shadowColor='#66ffaa';ct.shadowBlur=8+6*cp;ct.strokeStyle=`rgba(120,255,150,${.3+.6*cp})`;ct.lineWidth=2;ct.beginPath();ct.arc(x+20,y+20,4+15*(1-cp),0,Math.PI*2);ct.stroke();ct.shadowBlur=0;}
     const bw=52,bh=7,bx2=x+20-26,by2=y-16;
     ct.fillStyle='rgba(0,0,0,.7)';ct.fillRect(bx2-1,by2-1,bw+2,bh+2);
     ct.fillStyle='#002200';ct.fillRect(bx2,by2,bw,bh);
@@ -537,6 +543,9 @@ function drawBoss(ox){
   ct.strokeStyle='#fff';ct.lineWidth=2;ct.lineCap='round';
   ct.beginPath();ct.moveTo(x+14,y+40);ct.bezierCurveTo(x+20,y+48,x+36,y+48,x+42,y+40);ct.stroke();
   for(let t=0;t<4;t++){ct.fillStyle='#ff8800';const tx=x+16+t*7;ct.beginPath();ct.moveTo(tx,y+43);ct.lineTo(tx+3,y+49);ct.lineTo(tx+6,y+43);ct.closePath();ct.fill();}
+  // Fire telegraph: contracting ring in the 15 frames before the shot
+  const bfiD=boss.rage?55:90,fc=boss.timer%bfiD,fStart=bfiD-50;
+  if(fc>=fStart&&fc<bfiD-35){const cp=(fc-fStart)/15;ct.shadowColor='#ff8800';ct.shadowBlur=8+8*cp;ct.strokeStyle=`rgba(255,${150-100*cp|0},0,${.3+.6*cp})`;ct.lineWidth=2.5;ct.beginPath();ct.arc(x+28,y+28,6+20*(1-cp),0,Math.PI*2);ct.stroke();ct.shadowBlur=0;}
   // HP bar
   const bw=70,bh=8,bx2=x+28-35,by2=y-20;
   ct.fillStyle='rgba(0,0,0,.7)';ct.fillRect(bx2-1,by2-1,bw+2,bh+2);
@@ -959,7 +968,7 @@ function resetRound(){
   enemies=mkEnemies(lvData.ens);
   coinList=lvData.cns.map(c=>({...c,col:false,fr:0,ft:0}));
   blkList=lvData.blks.map(b=>({...b,hit:false,bh:0}));
-  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;oneupFlash=0;magnetTimer=0;
+  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;oneupFlash=0;magnetTimer=0;coinStreak=0;coinStreakTimer=0;
   boss=lvData.bossX?mkBoss(lvData.bossX,lvData.bossHp,lvData.bossIsMini):null;
   updatePwrHUD();
 }
@@ -979,6 +988,7 @@ function update(){
   if(lvCountdown>0){lvCountdown--;if(lvCountdown===0){lvGoTimer=40;SFX.cp();}}
   if(lvGoTimer>0)lvGoTimer--;
   if(magnetTimer>0)magnetTimer--;
+  if(coinStreakTimer>0){coinStreakTimer--;}else coinStreak=0;
   // Move platforms and carry player
   if(lvData.movPlats&&!player.dead&&!player.goal){
     for(const mp of lvData.movPlats){
