@@ -1417,13 +1417,16 @@ function drawPlat(p,ox){
   }
   const shx=(p.crumble&&p.cst===1)?Math.round((Math.random()-.5)*3):0;
   const x=Math.round(p.x-ox)+shx;
-  ct.globalAlpha=.2;ct.fillStyle='#000';ct.fillRect(x+3,p.y+18,p.w,5);ct.globalAlpha=1;
+  // Soft blurred contact shadow (depth)
+  ct.save();ct.globalAlpha=.34;ct.fillStyle='#000';ct.shadowColor='rgba(0,0,0,.55)';ct.shadowBlur=8;ct.shadowOffsetX=2;ct.shadowOffsetY=6;rr(x+4,p.y+14,p.w-2,6,3);ct.fill();ct.restore();
   const [cT,cF,cS]=PLAT_COLS[Math.min(levelNum,7)]||PLAT_COLS[0];
   ct.fillStyle=lg(x,p.y-4,x,p.y,cT,cF);
   ct.beginPath();ct.moveTo(x,p.y);ct.lineTo(x+p.w,p.y);ct.lineTo(x+p.w+4,p.y-4);ct.lineTo(x+4,p.y-4);ct.closePath();ct.fill();
   ct.fillStyle=cS;ct.beginPath();ct.moveTo(x+p.w,p.y);ct.lineTo(x+p.w+4,p.y-4);ct.lineTo(x+p.w+4,p.y+12);ct.lineTo(x+p.w,p.y+16);ct.closePath();ct.fill();
   ct.fillStyle=lg(x,p.y,x,p.y+16,cF,cS);ct.fillRect(x,p.y,p.w,16);
-  ct.strokeStyle='rgba(255,255,255,.45)';ct.lineWidth=1;ct.beginPath();ct.moveTo(x,p.y+.5);ct.lineTo(x+p.w,p.y+.5);ct.stroke();
+  // Glossy sheen on upper front face (3D plastic look)
+  ct.fillStyle=lg(x,p.y,x,p.y+9,'rgba(255,255,255,.24)','rgba(255,255,255,0)');ct.fillRect(x,p.y,p.w,9);
+  ct.strokeStyle='rgba(255,255,255,.5)';ct.lineWidth=1;ct.beginPath();ct.moveTo(x,p.y+.5);ct.lineTo(x+p.w,p.y+.5);ct.stroke();
   // Level-specific surface detail
   const bgt2=BG_TYPE[Math.min(levelNum,7)]||0;
   if(bgt2===0){
@@ -1486,6 +1489,7 @@ function drawBlock(b,ox){
       ct.strokeStyle='#aaa890';ct.lineWidth=1;ct.strokeRect(x+.5,y+.5,31,31);
     }else{
       box3d(x,y,32,32,d,'#ffee22','#ffcc00','#cc9900');
+      ct.fillStyle=lg(x,y,x,y+12,'rgba(255,255,255,.3)','rgba(255,255,255,0)');ct.fillRect(x,y,32,12);
       ct.shadowColor='#ffaa00';ct.shadowBlur=8;ct.strokeStyle='#ff8800';ct.lineWidth=2;ct.strokeRect(x+.5,y+.5,31,31);ct.shadowBlur=0;
       ct.strokeStyle='#ffe060';ct.lineWidth=1;ct.strokeRect(x+3.5,y+3.5,25,25);
       ct.fillStyle='#883300';ct.font='bold 20px monospace';ct.textAlign='center';ct.textBaseline='middle';ct.fillText('?',x+16,y+18);
@@ -1493,6 +1497,7 @@ function drawBlock(b,ox){
     }
   }else{
     box3d(x,y,32,32,d,'#d09050','#c07030','#8b4e18');
+    ct.fillStyle=lg(x,y,x,y+11,'rgba(255,255,255,.18)','rgba(255,255,255,0)');ct.fillRect(x,y,32,11);
     ct.strokeStyle='#a06028';ct.lineWidth=1;
     [[x,y+15,x+32,y+15],[x+16,y,x+16,y+15],[x+8,y+15,x+8,y+32],[x+24,y+15,x+24,y+32]].forEach(([x1,y1,x2,y2])=>{ct.beginPath();ct.moveTo(x1,y1);ct.lineTo(x2,y2);ct.stroke();});
     ct.globalAlpha=.1;ct.fillStyle='#fff';ct.beginPath();ct.moveTo(x+d,y-d);ct.lineTo(x+32+d,y-d);ct.lineTo(x+32,y);ct.lineTo(x,y);ct.closePath();ct.fill();ct.globalAlpha=1;
@@ -1672,7 +1677,7 @@ function drawAstronaut(bx,sy,pwr,fire,star,crouch,fr,dir){
 function drawPlayer(p,ox){
   if(!p)return;
   if(p.inv>0&&p.star===0&&(p.inv/4|0)%2===0)return;
-  if(!p.dead){ct.globalAlpha=.18;ct.fillStyle='#000';ct.beginPath();ct.ellipse(Math.round(p.x-ox)+10,GY+2,10,3,0,0,Math.PI*2);ct.fill();ct.globalAlpha=1;}
+  if(!p.dead){const px=Math.round(p.x-ox)+10,air=Math.max(0,Math.min(1,(GY-(p.y+p.h))/170)),sr=10-air*5.5;ct.save();ct.globalAlpha=.24-air*.15;ct.fillStyle='#000';ct.shadowColor='rgba(0,0,0,.5)';ct.shadowBlur=6;ct.beginPath();ct.ellipse(px,GY+2,Math.max(3,sr),Math.max(1.4,sr*.3),0,0,Math.PI*2);ct.fill();ct.restore();}
   // Dash motion afterimages
   if(p.dashTimer>0&&!p.dead){const px=Math.round(p.x-ox),py=Math.round(p.y);for(let i=1;i<=2;i++){ct.globalAlpha=.22/i;ct.save();ct.translate(-p.dashDir*i*7,0);drawAstronaut(px,py,p.pwr,p.fire,0,p.crouch,p.fr,p.dir);ct.restore();ct.globalAlpha=1;}}
   drawAstronaut(Math.round(p.x-ox),Math.round(p.y),p.pwr,p.fire,p.star,p.crouch,p.fr,p.dir);
@@ -1861,6 +1866,22 @@ function drawMobileHUD(){
   ct.textAlign='right';ct.fillText(ts+'s'+pwrIco,CW-pad,mid);
   ct.restore();
 }
+// ── ATMOSPHERE (key light + cinematic vignette) ─────────────
+let _atmTop=null,_atmVig=null;
+function drawAtmosphere(){
+  if(!_atmTop){
+    _atmTop=ct.createLinearGradient(0,0,0,CH);
+    _atmTop.addColorStop(0,'rgba(255,255,255,.075)');
+    _atmTop.addColorStop(.42,'rgba(255,255,255,0)');
+    _atmTop.addColorStop(1,'rgba(0,0,26,.2)');
+    _atmVig=ct.createRadialGradient(CW/2,CH*.44,CH*.34,CW/2,CH*.5,CH*1.02);
+    _atmVig.addColorStop(0,'rgba(0,0,0,0)');
+    _atmVig.addColorStop(.7,'rgba(0,0,16,.07)');
+    _atmVig.addColorStop(1,'rgba(0,0,20,.46)');
+  }
+  ct.fillStyle=_atmTop;ct.fillRect(0,0,CW,CH);
+  ct.fillStyle=_atmVig;ct.fillRect(0,0,CW,CH);
+}
 // ── AMBIENT PARTICLES ──────────────────────────────────────
 function drawAmbient(){
   const li=Math.min(levelNum,7);
@@ -1973,6 +1994,8 @@ function render(){
     // Goal flag dot
     ct.shadowColor='#ffcc00';ct.shadowBlur=4;ct.fillStyle='#ffcc00';ct.fillRect(bx+bw-2,CH-12,4,10);ct.shadowBlur=0;
   }
+  // Atmospheric grade: key light + cinematic vignette (depth)
+  if(lvData)drawAtmosphere();
   if(dmgFlash>0){
     dmgFlash--;
     const fa=(dmgFlash/30)*.5;
