@@ -1071,16 +1071,23 @@ function update(){
       const nSt=st>.5?3:st>.25?2:1;
       const stStr='<span style="color:#ffcc00;font-size:1.3rem">'+'★'.repeat(nSt)+'☆'.repeat(3-nSt)+'</span>';
       const perfStr=lastLvPerfect?'<br><span style="color:#88ffcc">✦ SIN DAÑO ✦</span>':'';
+      let rank,rcol;
+      if(nSt===3&&lastLvPerfect){rank='S';rcol='#ffdd00';}
+      else if(nSt===3||(nSt>=2&&lastLvPerfect)){rank='A';rcol='#00ff88';}
+      else if(nSt>=2||lastLvPerfect){rank='B';rcol='#00ccff';}
+      else{rank='C';rcol='#ff8844';}
+      const rankStr='RANGO <span style="font-size:2rem;font-weight:900;color:'+rcol+';text-shadow:0 0 14px '+rcol+'">'+rank+'</span><br>';
+      if(rank==='S')SFX.combo(5);
       if(levelNum<MAX_LV-1){
         nextLvlReady=true;
         showEnd(LEVEL_NAMES[levelNum]+' OK','#00ff88',
-          stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'&nbsp;&nbsp;Cristales: x'+String(coins).padStart(2,'0'),
+          rankStr+stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'&nbsp;&nbsp;Cristales: x'+String(coins).padStart(2,'0'),
           'Record: '+String(hiScores[difficulty]).padStart(6,'0')+(bestTimes[difficulty]>0?' | Mejor: '+fmtTime(bestTimes[difficulty]):''),
           'MISION '+(levelNum+2));
       }else{
         nextLvlReady=false;stopMusic();
         showEnd('JUEGO COMPLETO!','#ffdd00',
-          stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'<br>Cristales: x'+String(coins).padStart(2,'0')+'<br>Enemigos: '+runKills+'&nbsp;&nbsp;Combo máx: x'+runMaxCombo,
+          rankStr+stStr+perfStr+'<br>Puntos: '+String(score).padStart(6,'0')+'<br>Cristales: x'+String(coins).padStart(2,'0')+'<br>Enemigos: '+runKills+'&nbsp;&nbsp;Combo máx: x'+runMaxCombo,
           'Record: '+String(hiScores[difficulty]).padStart(6,'0')+(bestTimes[difficulty]>0?' | Mejor: '+fmtTime(bestTimes[difficulty]):''),
           'JUGAR DE NUEVO');
       }
