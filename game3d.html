@@ -183,6 +183,14 @@ function addCoin(x, y, z) {
   scene.add(m);
   coins.push({ mesh:m, got:false, y });
 }
+// Power-up star (temporary invincibility + speed)
+const powerups = [];
+function addStar(x, y, z) {
+  const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 0), mat(0xffe23c, 0.25, 0.3, 0xffcc00, 0.9));
+  m.position.set(x, y, z); m.castShadow = true;
+  scene.add(m);
+  powerups.push({ mesh:m, got:false, y });
+}
 // Enemies
 const enemies = [];
 function addEnemy(x, y, z, range, axis='x') {
@@ -272,12 +280,14 @@ function buildLevel() {
   // Coins along the path
   const coinSpots = [
     [0,1.8,-8],[6,2.8,-15],[0,4.0,-22],[-7,5.0,-28],[0,6.2,-34],[8,7.2,-40],
-    [2,9.0,-56],[2,10.4,-62],[-12,4.4,-16],[-12,4.4,-16],
+    [2,9.0,-56],[2,10.4,-62],
     [3,1.5,0],[-3,1.5,2],[0,1.5,5],[5,1.5,4],[-5,1.5,-2]
   ];
   for (const c of coinSpots) addCoin(...c);
   coinTotal = coins.length;
   document.getElementById('coinTot').textContent = coinTotal;
+  // Power-up star on the pink bonus pad
+  addStar(-12, 4.7, -16);
 
   // Enemies patrolling
   addEnemy(0, 1.6, -8, 2.2, 'x');
@@ -296,7 +306,7 @@ const player = {
   pos: new THREE.Vector3(0, 1.4, 6),
   vel: new THREE.Vector3(),
   grounded: false, hx:0.42, hy:0.9, hz:0.42, jumps:0,
-  facing: 0, coins:0, lives:3, inv:0, dead:false, win:false, anim:0
+  facing: 0, coins:0, lives:3, inv:0, power:0, dead:false, win:false, anim:0
 };
 const playerGrp = new THREE.Group();
 function buildPlayer() {
@@ -319,6 +329,10 @@ function buildPlayer() {
   // little antenna light
   const ant = new THREE.Mesh(new THREE.SphereGeometry(0.08,8,8), mat(0xff5566,0.3,0,0xff3344,1.0));
   ant.position.set(0,2.05,0); playerGrp.add(ant);
+  // invincibility aura (hidden until a star is collected)
+  const aura = new THREE.Mesh(new THREE.SphereGeometry(1.15, 18, 14),
+    new THREE.MeshStandardMaterial({ color:0xffe23c, emissive:0xffcc00, emissiveIntensity:0.8, transparent:true, opacity:0.25, depthWrite:false }));
+  aura.position.y = 1.0; aura.name='aura'; aura.visible=false; playerGrp.add(aura);
   scene.add(playerGrp);
 }
 
@@ -351,6 +365,7 @@ if (isTouch) {
 let camYaw = 0;
 const camDist = 11, camHeight = 6.2;
 const camPos = new THREE.Vector3();
+const camLook = new THREE.Vector3(0, 1, 0);
 
 // ── Collision helpers ───────────────────────────────────
 function overlaps(px, py, pz) {
@@ -383,12 +398,12 @@ const coinsEl=document.getElementById('coins'), livesEl=document.getElementById(
 function updHUD(){
   coinsEl.textContent='★ '+player.coins;
   livesEl.textContent = player.lives>0 ? '♥'.repeat(player.lives) : '—';
-  timerEl.textContent = Math.floor(elapsed)+'s';
+  timerEl.textContent = Math.floor(elapsed)+'s' + (player.power>0 ? '  ⚡'+Math.ceil(player.power) : '');
 }
 function showMenu(){
   state='menu'; ov.classList.remove('off');
   ovT.textContent='COSMO KID 3D'; ovS.textContent='Aventura Espacial · WebGL';
-  ovM.innerHTML='Explora el mundo flotante y llega a la <b>meta verde</b>.<br><br>'+
+  ovM.innerHTML='Explora el mundo flotante, coge la <b>estrella</b> (invencible) y llega a la <b>meta verde</b>.<br><br>'+
     (isTouch ? 'Joystick para moverte · <b>SALTO</b> (toca 2 veces = doble salto)<br>⟲ ⟳ giran la cámara · pisa a los enemigos'
              : '<b>WASD</b>/flechas mover · <b>Espacio</b> saltar (x2 = doble salto)<br><b>Shift</b> correr · <b>Q</b>/<b>E</b> cámara · pisa a los enemigos');
   ovBtn.textContent='JUGAR';
@@ -397,9 +412,11 @@ function startGame(){
   initAudio();
   state='play'; ov.classList.add('off');
   player.pos.set(0,1.4,6); player.vel.set(0,0,0);
-  player.coins=0; player.lives=3; player.dead=false; player.win=false; player.inv=0;
+  player.coins=0; player.lives=3; player.dead=false; player.win=false; player.inv=0; player.power=0;
   for (const c of coins){ c.got=false; c.mesh.visible=true; }
+  for (const s of powerups){ s.got=false; s.mesh.visible=true; }
   for (const e of enemies){ if(!e.alive){ e.alive=true; scene.add(e.grp);} e.grp.position.copy(e.base); }
+  const aura0=playerGrp.getObjectByName('aura'); if(aura0) aura0.visible=false;
   startTime=performance.now(); elapsed=0; updHUD();
 }
 function loseLife(){
@@ -428,6 +445,7 @@ function tick(){
 
   // Animate world (coins, goal, movers) regardless of state
   for (const c of coins){ if(!c.got){ c.mesh.rotation.z += dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
+  for (const s of powerups){ if(!s.got){ s.mesh.rotation.y += dt*2.0; s.mesh.rotation.x += dt*1.1; s.mesh.position.y = s.y + Math.sin(t*2.5)*0.2; } }
   if (goal){ goal.ring.rotation.z += dt*1.5; goal.grp.rotation.y += dt*0.6; }
   for (const cl of clouds){ cl.position.x += dt*cl.userData.spd; if (cl.position.x > 100) cl.position.x = -100; }
   for (const m of movers){
@@ -470,7 +488,7 @@ function updatePlay(dt, t){
   let mz = fwdZ*(-iz) + rightZ*ix;
   const ml = Math.hypot(mx,mz);
   const running = keys['ShiftLeft']||keys['ShiftRight'];
-  const speed = running ? RUN : WALK;
+  const speed = (running ? RUN : WALK) * (player.power>0 ? 1.3 : 1);
   if (ml>0.01){ mx/=ml; mz/=ml; const s=Math.min(1,ml)*speed;
     player.vel.x = mx*s; player.vel.z = mz*s;
     player.facing = Math.atan2(mx, mz);
@@ -489,6 +507,7 @@ function updatePlay(dt, t){
   player.vel.y -= GRAV*dt;
   if (player.vel.y < -40) player.vel.y = -40;
   if (player.inv>0) player.inv-=dt;
+  if (player.power>0) player.power-=dt;
 
   // Carry on moving platforms (if standing on one)
   // Integrate with axis-separated collision
@@ -531,6 +550,16 @@ function updatePlay(dt, t){
   playerGrp.rotation.y += df*Math.min(1,dt*12);
   // blink when invulnerable
   playerGrp.visible = !(player.inv>0 && (Math.floor(t*12)%2===0));
+  // invincibility aura (rainbow pulse while powered)
+  const aura = playerGrp.getObjectByName('aura');
+  if (aura){
+    if (player.power>0){
+      aura.visible = true;
+      const hue = (t*0.6)%1; aura.material.color.setHSL(hue,1,0.6); aura.material.emissive.setHSL(hue,1,0.5);
+      const sc = 1 + Math.sin(t*10)*0.06; aura.scale.setScalar(sc);
+      aura.material.opacity = player.power<1.5 ? 0.25*(0.4+0.6*Math.abs(Math.sin(t*14))) : 0.25; // flicker out near end
+    } else aura.visible = false;
+  }
   // simple run bob + leg swing
   const moving = Math.hypot(player.vel.x,player.vel.z)>0.5;
   player.anim += dt*(moving?12:4);
@@ -543,6 +572,9 @@ function updatePlay(dt, t){
   // Coins
   for (const c of coins){ if(c.got) continue; if (P.distanceToSquared(c.mesh.position) < 1.7){ c.got=true; c.mesh.visible=false; player.coins++; updHUD(); sfx.coin(); pop(c.mesh.position, 0xffd23c, 12);} }
 
+  // Power-up stars
+  for (const s of powerups){ if(s.got) continue; if (P.distanceToSquared(s.mesh.position) < 2.0){ s.got=true; s.mesh.visible=false; player.power=8; updHUD(); sfx.win(); pop(s.mesh.position, 0xffe23c, 22); } }
+
   // Enemies
   for (const e of enemies){
     if(!e.alive) continue;
@@ -554,7 +586,8 @@ function updatePlay(dt, t){
     const d2 = P.distanceToSquared(e.grp.position);
     if (d2 < 1.6){
       const stomp = player.vel.y < -0.5 && P.y - e.grp.position.y > 0.9;
-      if (stomp){ e.alive=false; scene.remove(e.grp); player.vel.y = JUMP*0.7; player.jumps=1; sfx.stomp(); pop(e.grp.position, 0xff5533, 14); }
+      if (player.power>0){ e.alive=false; scene.remove(e.grp); player.vel.y = Math.max(player.vel.y, JUMP*0.5); sfx.stomp(); pop(e.grp.position, 0xffe23c, 16); }
+      else if (stomp){ e.alive=false; scene.remove(e.grp); player.vel.y = JUMP*0.7; player.jumps=1; sfx.stomp(); pop(e.grp.position, 0xff5533, 14); }
       else if (player.inv<=0){ loseLife(); pop(P.clone(), 0xff3344, 8); }
     }
   }
@@ -564,7 +597,7 @@ function updatePlay(dt, t){
     pop(new THREE.Vector3(goal.x,goal.y+2,goal.z), 0x00ff9a, 26); endGame(true);
   }
 
-  // Camera follow
+  // Camera follow (with gentle look-ahead toward movement)
   const desired = new THREE.Vector3(
     P.x + Math.sin(camYaw)*camDist,
     P.y + camHeight,
@@ -573,7 +606,8 @@ function updatePlay(dt, t){
   camPos.lerp(desired, 1 - Math.pow(0.0015, dt));
   if (camPos.lengthSq()===0) camPos.copy(desired);
   camera.position.copy(camPos);
-  camera.lookAt(P.x, P.y+1.0, P.z);
+  camLook.lerp(new THREE.Vector3(P.x + player.vel.x*0.18, P.y+1.0, P.z + player.vel.z*0.18), 1 - Math.pow(0.002, dt));
+  camera.lookAt(camLook);
 
   // keep sun shadow centered on player
   sun.position.set(P.x+28, P.y+46, P.z+20);
