@@ -1,8 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=game.html">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0a2040">
+<title>Cosmo Kid — Elige versión</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:radial-gradient(ellipse at 50% 30%,#143a72,#0a1830 70%,#060d1f);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;font-family:monospace;color:#fff;overflow:hidden;padding:24px;text-align:center}
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+h1{position:relative;z-index:1;font-size:clamp(2rem,9vw,3.6rem);font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,#7fd5ff,#7cff9b,#ffe66b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 50px rgba(120,210,255,.3);line-height:1}
+.sub{position:relative;z-index:1;font-size:.72rem;color:#7fa8cf;letter-spacing:4px;text-transform:uppercase;margin-top:-14px}
+#cards{position:relative;z-index:1;display:flex;gap:22px;flex-wrap:wrap;justify-content:center;max-width:680px}
+.card{width:260px;max-width:80vw;background:rgba(10,28,58,.7);border:2px solid rgba(90,170,230,.3);border-radius:20px;padding:24px 20px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:10px;backdrop-filter:blur(2px)}
+.card:hover,.card:active{transform:translateY(-6px) scale(1.03);border-color:rgba(120,225,255,.8);box-shadow:0 0 44px rgba(0,150,255,.4),0 10px 30px rgba(0,0,0,.5)}
+.ico{font-size:3rem;line-height:1}
+.ct{font-size:1.5rem;font-weight:900;letter-spacing:3px}
+.cd{font-size:.72rem;color:#a9c8e6;line-height:1.7}
+.badge{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-top:2px}
+.card.d25 .ct{color:#7cff9b}.card.d25 .badge{background:rgba(40,180,90,.25);color:#7cff9b}
+.card.d3 .ct{color:#7fd5ff}.card.d3 .badge{background:rgba(40,140,230,.25);color:#7fd5ff}
+.foot{position:relative;z-index:1;font-size:.62rem;color:#456;letter-spacing:1px}
+</style>
 </head>
-<body></body>
+<body>
+<canvas id="stars"></canvas>
+<h1>COSMO KID</h1>
+<div class="sub">Aventura Espacial</div>
+<div id="cards">
+  <a class="card d25" href="game.html">
+    <div class="ico">🪐</div>
+    <div class="ct">2.5D</div>
+    <div class="badge">Clásico mejorado</div>
+    <div class="cd">8 mundos, jefes, dash, pisotón y rango S. Pixel-art con luz, sombras y profundidad. Ligero y sin conexión.</div>
+  </a>
+  <a class="card d3" href="game3d.html">
+    <div class="ico">🚀</div>
+    <div class="ct">3D</div>
+    <div class="badge">WebGL · nuevo</div>
+    <div class="cd">Plataformas 3D reales con cámara, sombras dinámicas y físicas de salto. En desarrollo (requiere internet).</div>
+  </a>
+</div>
+<div class="foot">Elige una versión para jugar</div>
+<script>
+// lightweight twinkling starfield
+const cv=document.getElementById('stars'), x=cv.getContext('2d');
+let stars=[];
+function resize(){ cv.width=innerWidth; cv.height=innerHeight; stars=[]; const n=Math.min(140,innerWidth*innerHeight/9000|0); for(let i=0;i<n;i++) stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.3,p:Math.random()*6.28,s:.5+Math.random()*1.5}); }
+addEventListener('resize',resize); resize();
+function draw(t){ x.clearRect(0,0,cv.width,cv.height); for(const s of stars){ const a=.35+.5*Math.sin(t*.001*s.s+s.p); x.globalAlpha=a; x.fillStyle='#cfe6ff'; x.beginPath(); x.arc(s.x,s.y,s.r,0,6.28); x.fill(); } x.globalAlpha=1; requestAnimationFrame(draw); }
+requestAnimationFrame(draw);
+</script>
+</body>
 </html>

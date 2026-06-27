@@ -1391,6 +1391,9 @@ function drawBG(){
       ct.beginPath();ct.moveTo(rx-bw*.5,by);ct.bezierCurveTo(rx-bw*.3,by-bw*.7,rx+bw*.1,by-bw*.5,rx+bw*.2,by-bw*.3);ct.bezierCurveTo(rx+bw*.35,by-bw*.1,rx+bw*.5,by,rx+bw*.5,by);ct.closePath();ct.fill();
     });
   });
+  // Atmospheric depth haze near the horizon (separates back layers from play area)
+  const hazeC=bgt===2?'rgba(255,120,50,.07)':bgt===1?'rgba(150,180,255,.06)':'rgba(210,232,255,.08)';
+  ct.fillStyle=lg(0,GY-50,0,GY,'rgba(255,255,255,0)',hazeC);ct.fillRect(0,GY-50,CW,50);
   const [[gt1,gt2],[gd1,gd2]]=GROUND_COLS[li];
   const gx0=Math.floor(camX/32)*32-Math.round(camX);
   for(let gx=gx0;gx<CW+32;gx+=32){
@@ -1691,7 +1694,7 @@ function drawBlob(e,ox){
     ct.fillStyle='#bb3311';ct.beginPath();ct.ellipse(cx2,y+e.h-3,12,3,0,0,Math.PI*2);ct.fill();
     ct.fillStyle='#dd5533';ct.beginPath();ct.ellipse(cx2,y+e.h-3,8,2,0,0,Math.PI*2);ct.fill();return;
   }
-  ct.globalAlpha=.2;ct.fillStyle='#000';ct.beginPath();ct.ellipse(cx2,y+e.h+1,10,2.5,0,0,Math.PI*2);ct.fill();ct.globalAlpha=1;
+  ct.save();ct.globalAlpha=.26;ct.fillStyle='#000';ct.shadowColor='rgba(0,0,0,.5)';ct.shadowBlur=5;ct.beginPath();ct.ellipse(cx2,y+e.h+1,10,2.6,0,0,Math.PI*2);ct.fill();ct.restore();
   sphere(cx2,cy2,12,'#cc4422','#881100','#ff7755');
   ct.fillStyle='rgba(255,140,110,.35)';ct.beginPath();ct.ellipse(cx2,cy2+3,8,7,0,0,Math.PI*2);ct.fill();
   const exo=e.vx<0?-1:1;
@@ -1721,7 +1724,7 @@ function drawDroid(e,ox){
   }
   ct.save();if(e.dir>0){ct.translate(x+e.w,0);ct.scale(-1,1);ct.translate(-e.w,0);}
   const bx=e.dir>0?-e.w+x:x;
-  ct.globalAlpha=.18;ct.fillStyle='#000';ct.beginPath();ct.ellipse(bx+14,y+e.h+1,10,2,0,0,Math.PI*2);ct.fill();ct.globalAlpha=1;
+  ct.save();ct.globalAlpha=.24;ct.fillStyle='#000';ct.shadowColor='rgba(0,0,0,.5)';ct.shadowBlur=5;ct.beginPath();ct.ellipse(bx+14,y+e.h+1,10,2.2,0,0,Math.PI*2);ct.fill();ct.restore();
   box3d(bx+4,y+10,20,18,3,lg(bx+4,y+10,bx+24,y+10,'#2a3a4a','#1a2836'),lg(bx+4,y+10,bx+4,y+28,'#1e2e3e','#131e2a'),'#0e1820');
   ct.fillStyle='#223344';ct.fillRect(bx+7,y+13,6,5);ct.fillRect(bx+15,y+13,6,5);
   ct.fillStyle='#44aaff';ct.fillRect(bx+8,y+14,4,3);ct.fillStyle='#ff4444';ct.fillRect(bx+16,y+14,4,3);
@@ -1793,7 +1796,7 @@ function drawFlyer(e,ox){
     ct.fillStyle='#aa44dd';ct.beginPath();ct.ellipse(cx2,y+e.h-2,8,2,0,0,Math.PI*2);ct.fill();return;
   }
   const wob=Math.sin(NOW*.012)*1.2;
-  ct.globalAlpha=.16;ct.fillStyle='#000';ct.beginPath();ct.ellipse(cx2,GY+2,11,2.5,0,0,Math.PI*2);ct.fill();ct.globalAlpha=1;
+  ct.save();ct.globalAlpha=.2;ct.fillStyle='#000';ct.shadowColor='rgba(0,0,0,.45)';ct.shadowBlur=5;ct.beginPath();ct.ellipse(cx2,GY+2,11,2.6,0,0,Math.PI*2);ct.fill();ct.restore();
   // Tractor beam (always visible, animated)
   const beamA=.1+.07*Math.sin(NOW*.009);
   const bg=ct.createLinearGradient(cx2,cy2+5,cx2,cy2+30+wob);
