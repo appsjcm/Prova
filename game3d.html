@@ -112,6 +112,7 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.0;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+const MAXA = renderer.capabilities.getMaxAnisotropy();
 
 const scene = new THREE.Scene();
 const SKY = new THREE.Color(0x86c5f0);
@@ -155,7 +156,15 @@ async function initBloom(){
     try { rt = new THREE.WebGLRenderTarget(size.x, size.y, { type: THREE.HalfFloatType, samples: 4 }); } catch(_) { rt = null; }
     composer = rt ? new EffectComposer(renderer, rt) : new EffectComposer(renderer);
     composer.setPixelRatio(pr);
-    composer.addPass(new RenderPass(scene, camera));
+    // Ambient occlusion (contact shadows) — optional; falls back to a plain render pass
+    let haveScenePass = false;
+    try{
+      const { SSAOPass } = await import('three/addons/postprocessing/SSAOPass.js');
+      const ssao = new SSAOPass(scene, camera, innerWidth, innerHeight);
+      ssao.kernelRadius = 0.9; ssao.minDistance = 0.0015; ssao.maxDistance = 0.06;
+      composer.addPass(ssao); haveScenePass = true;
+    }catch(_){}
+    if(!haveScenePass) composer.addPass(new RenderPass(scene, camera));
     composer.addPass(new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.5, 0.5, 0.85));
     composer.addPass(new OutputPass());
     composer.setSize(innerWidth, innerHeight);
@@ -227,9 +236,9 @@ scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff2d6, 1.55);
 sun.position.set(28, 46, 20);
 sun.castShadow = true;
-sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.mapSize.set(4096, 4096);
 sun.shadow.camera.near = 1; sun.shadow.camera.far = 160;
-const sc = 70; Object.assign(sun.shadow.camera, { left:-sc, right:sc, top:sc, bottom:-sc });
+const sc = 42; Object.assign(sun.shadow.camera, { left:-sc, right:sc, top:sc, bottom:-sc });
 sun.shadow.camera.updateProjectionMatrix();
 sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.02;
@@ -255,6 +264,20 @@ function noiseTex(){
   _noiseTex=new THREE.CanvasTexture(cv); _noiseTex.wrapS=_noiseTex.wrapT=THREE.RepeatWrapping; _noiseTex.repeat.set(3,3);
   return _noiseTex;
 }
+// Procedural tiled-stone pattern (grayscale; multiplied by the platform color)
+let _tileTex=null;
+function tileTex(){
+  if(_tileTex) return _tileTex;
+  const s=128, cv=document.createElement('canvas'); cv.width=cv.height=s; const ctx=cv.getContext('2d');
+  ctx.fillStyle='#e8e8e8'; ctx.fillRect(0,0,s,s);
+  const n=4, ts=s/n;
+  for(let ty=0;ty<n;ty++) for(let tx=0;tx<n;tx++){ const v=224+Math.random()*28|0; ctx.fillStyle=`rgb(${v},${v},${v})`; ctx.fillRect(tx*ts+1,ty*ts+1,ts-2,ts-2); }
+  ctx.strokeStyle='rgba(70,70,70,0.5)'; ctx.lineWidth=2;
+  for(let i=0;i<=n;i++){ const p=i*ts; ctx.beginPath(); ctx.moveTo(p,0); ctx.lineTo(p,s); ctx.moveTo(0,p); ctx.lineTo(s,p); ctx.stroke(); }
+  for(let i=0;i<700;i++){ const v=Math.random()<0.5?255:110; ctx.fillStyle=`rgba(${v},${v},${v},0.08)`; ctx.fillRect(Math.random()*s,Math.random()*s,1,1); }
+  _tileTex=new THREE.CanvasTexture(cv); _tileTex.wrapS=_tileTex.wrapT=THREE.RepeatWrapping; _tileTex.colorSpace=THREE.SRGBColorSpace;
+  return _tileTex;
+}
 
 // ── World / level data ──────────────────────────────────
 // Platforms are axis-aligned boxes: {x,y,z,w,h,d,color}
@@ -262,9 +285,12 @@ const colliders = []; // {min:Vec3, max:Vec3, mover?, base?, axis?, amp?, spd?}
 const movers = [];
 function addBox(x, y, z, w, h, d, color, opt={}) {
   const g = new THREE.BoxGeometry(w, h, d);
-  const mesh = new THREE.Mesh(g, mat(color, opt.rough ?? 0.92));
-  mesh.material.bumpMap = noiseTex(); mesh.material.bumpScale = 0.02;
-  mesh.material.envMapIntensity = 0.7;
+  const mesh = new THREE.Mesh(g, mat(color, opt.rough ?? 0.9));
+  const tm = tileTex().clone(); tm.needsUpdate = true; tm.anisotropy = MAXA;
+  tm.repeat.set(Math.max(1, Math.round(w/2.2)), Math.max(1, Math.round(h/2.2)));
+  mesh.material.map = tm;
+  mesh.material.bumpMap = noiseTex(); mesh.material.bumpScale = 0.025;
+  mesh.material.envMapIntensity = 1.0;
   mesh.position.set(x, y, z);
   mesh.castShadow = true; mesh.receiveShadow = true;
   scene.add(mesh);
@@ -403,7 +429,7 @@ function grassTex(){
   for(let i=0;i<46;i++){ const dark=Math.random()<0.5; ctx.fillStyle=dark?'rgba(54,120,50,0.28)':'rgba(96,176,82,0.26)'; const r=8+Math.random()*24; ctx.beginPath(); ctx.arc(Math.random()*s,Math.random()*s,r,0,Math.PI*2); ctx.fill(); }
   // tiny grass blades
   for(let i=0;i<2400;i++){ const gx=Math.random()*s, gy=Math.random()*s, dark=Math.random()<0.5; ctx.strokeStyle=dark?'rgba(40,110,40,0.45)':'rgba(130,205,95,0.5)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx+(Math.random()-0.5)*3, gy-2-Math.random()*4); ctx.stroke(); }
-  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(6,6); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t;
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(6,6); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=MAXA; return t;
 }
 function addGroundGrass(){
   const m=new THREE.MeshStandardMaterial({ map:grassTex(), roughness:0.96, metalness:0 });
@@ -779,6 +805,17 @@ function updatePlay(dt, t){
       const a=Math.random()*Math.PI*2, sp=1.6+Math.random()*1.8;
       m.userData.v=new THREE.Vector3(Math.cos(a)*sp, 0.6+Math.random()*1.2, Math.sin(a)*sp);
       m.userData.life=0.34+Math.random()*0.18; scene.add(m); pops.push(m);
+    }
+  }
+
+  // Footstep dust while running on ground
+  if (player.grounded && Math.hypot(player.vel.x, player.vel.z) > 4){
+    player.stepT = (player.stepT||0) + dt;
+    if (player.stepT > 0.16){ player.stepT = 0;
+      const m=new THREE.Mesh(new THREE.SphereGeometry(0.07,5,4), mat(0xe6eef6,0.95));
+      m.position.set(P.x+(Math.random()-0.5)*0.3, P.y-player.hy+0.06, P.z+(Math.random()-0.5)*0.3);
+      m.userData.v=new THREE.Vector3((Math.random()-0.5), 0.5+Math.random()*0.6, (Math.random()-0.5));
+      m.userData.life=0.3; scene.add(m); pops.push(m);
     }
   }
 
