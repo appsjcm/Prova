@@ -36,6 +36,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1830;font-family:
 #bCam1{right:130px;bottom:96px;width:52px;height:52px;font-size:1.3rem}
 #bCam2{right:130px;bottom:34px;width:52px;height:52px;font-size:1.3rem}
 @media (max-width:520px){#ov-t{font-size:2.1rem}}
+#ov-t{cursor:pointer}
+/* Cheat menu */
+#ch3{display:none;position:fixed;inset:0;background:rgba(0,0,18,.95);z-index:60;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:18px;text-align:center}
+#ch3.on{display:flex}
+.ch3-t{font-size:1.4rem;font-weight:900;color:#ffe23c;letter-spacing:4px;text-shadow:0 0 20px #ffcc00}
+.ch3-h{font-size:.6rem;color:#5a86ad;letter-spacing:2px;text-transform:uppercase}
+#ch3-btns{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-width:360px;margin-top:4px}
+.ch3-b{background:rgba(0,40,80,.8);border:1.5px solid rgba(0,200,255,.3);color:#cce8ff;font-size:.7rem;padding:8px 12px;border-radius:8px;cursor:pointer;font-family:monospace;min-height:40px}
+.ch3-b.on{background:rgba(0,180,100,.25);border-color:#00ff88;color:#00ff88}
+.ch3-c{margin-top:10px;background:rgba(80,0,0,.8);border:1px solid rgba(255,80,80,.4);color:#ff8888;font-size:.75rem;padding:9px 20px;border-radius:8px;cursor:pointer;font-family:monospace;min-height:44px}
 </style>
 </head>
 <body>
@@ -57,6 +67,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1830;font-family:
   <div id="ov-s">Aventura Espacial · WebGL</div>
   <div id="ov-m"></div>
   <button id="ov-btn">JUGAR</button>
+</div>
+<div id="ch3">
+  <div class="ch3-t">★ TRUCOS ★</div>
+  <div class="ch3-h">Escribe COSMO · Toca el título ×5</div>
+  <div id="ch3-btns">
+    <button class="ch3-b" data-k="inf">♥ Vidas infinitas</button>
+    <button class="ch3-b" data-k="ghost">👻 Sin daño</button>
+    <button class="ch3-b" data-k="jump">🚀 Súper salto</button>
+    <button class="ch3-b" data-k="turbo">⚡ Turbo</button>
+    <button class="ch3-b" data-k="star">⭐ Invencible</button>
+    <button class="ch3-b" data-k="fly">🕊️ Volar</button>
+  </div>
+  <button class="ch3-c" id="ch3-cl">✕ Cerrar</button>
 </div>
 
 <script>
@@ -100,7 +123,7 @@ function makeSky(){
   const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; return tex;
 }
 scene.background = makeSky();
-scene.fog = new THREE.Fog(SKY, 50, 140);
+scene.fog = new THREE.Fog(SKY, 42, 125);
 
 const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 400);
 
@@ -371,6 +394,23 @@ function addClouds() {
     scene.add(grp); clouds.push(grp);
   }
 }
+// Procedural grass texture for a realistic ground surface
+function grassTex(){
+  const s=256, cv=document.createElement('canvas'); cv.width=cv.height=s;
+  const ctx=cv.getContext('2d');
+  ctx.fillStyle='#4f9e44'; ctx.fillRect(0,0,s,s);
+  // soft color patches
+  for(let i=0;i<46;i++){ const dark=Math.random()<0.5; ctx.fillStyle=dark?'rgba(54,120,50,0.28)':'rgba(96,176,82,0.26)'; const r=8+Math.random()*24; ctx.beginPath(); ctx.arc(Math.random()*s,Math.random()*s,r,0,Math.PI*2); ctx.fill(); }
+  // tiny grass blades
+  for(let i=0;i<2400;i++){ const gx=Math.random()*s, gy=Math.random()*s, dark=Math.random()<0.5; ctx.strokeStyle=dark?'rgba(40,110,40,0.45)':'rgba(130,205,95,0.5)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(gx,gy); ctx.lineTo(gx+(Math.random()-0.5)*3, gy-2-Math.random()*4); ctx.stroke(); }
+  const t=new THREE.CanvasTexture(cv); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(6,6); t.colorSpace=THREE.SRGBColorSpace; t.anisotropy=4; return t;
+}
+function addGroundGrass(){
+  const m=new THREE.MeshStandardMaterial({ map:grassTex(), roughness:0.96, metalness:0 });
+  m.bumpMap=noiseTex(); m.bumpScale=0.03; m.envMapIntensity=0.6;
+  const plane=new THREE.Mesh(new THREE.PlaneGeometry(40,40), m);
+  plane.rotation.x=-Math.PI/2; plane.position.set(0,0.04,0); plane.receiveShadow=true; scene.add(plane);
+}
 // Subtle ground grid (depth reference) on the base island
 function addGroundGrid(){
   const cv=document.createElement('canvas'); cv.width=cv.height=128;
@@ -392,6 +432,7 @@ function addFlower(x,z,col){
   const head=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8), mat(col,0.5,0,col,0.35)); head.position.set(x,0.44,z); head.castShadow=true; scene.add(head);
 }
 function addDecor(){
+  addGroundGrass();
   addGroundGrid();
   const flowerCols=[0xff6a8a,0xffd23c,0x8a6aff,0xffffff];
   for(let i=0;i<16;i++){ const a=Math.random()*Math.PI*2, r=4+Math.random()*14; const x=Math.cos(a)*r, z=Math.sin(a)*r; if(Math.abs(x)<2&&z>2&&z<8) continue; addTuft(x,z); }
@@ -499,6 +540,9 @@ function buildPlayer() {
   scene.add(playerGrp);
 }
 
+// ── Cheats ──────────────────────────────────────────────
+const cheats = { inf:false, ghost:false, jump:false, turbo:false, star:false, fly:false };
+
 // ── Input ───────────────────────────────────────────────
 const keys = {};
 addEventListener('keydown', e=>{ keys[e.code]=true; if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)) e.preventDefault(); });
@@ -585,6 +629,7 @@ function startGame(){
   startMusic();
 }
 function loseLife(){
+  if (cheats.inf){ player.pos.set(0,1.4,6); player.vel.set(0,0,0); player.inv=1.0; return; }
   sfx.hurt();
   player.lives--; updHUD();
   if (player.lives<=0){ endGame(false); }
@@ -601,6 +646,19 @@ ovBtn.addEventListener('click', startGame);
 canvas.addEventListener('click', ()=>{ if(state==='menu') startGame(); });
 document.getElementById('mute').addEventListener('click', e=>{ e.stopPropagation(); initAudio(); toggleMute(); });
 addEventListener('keydown', e=>{ if(e.code==='KeyM'){ initAudio(); toggleMute(); } });
+
+// ── Cheat menu (type COSMO or tap the title x5) ─────────
+const ch3 = document.getElementById('ch3');
+function openCheats(){ ch3.classList.add('on'); document.querySelectorAll('.ch3-b').forEach(b=>b.classList.toggle('on', !!cheats[b.dataset.k])); }
+function closeCheats(){ ch3.classList.remove('on'); }
+document.querySelectorAll('.ch3-b').forEach(b=>b.addEventListener('click', ()=>{ cheats[b.dataset.k]=!cheats[b.dataset.k]; b.classList.toggle('on', cheats[b.dataset.k]); }));
+document.getElementById('ch3-cl').addEventListener('click', closeCheats);
+let _code='';
+addEventListener('keydown', e=>{ if(e.key==='Escape'&&ch3.classList.contains('on')){ closeCheats(); return; } _code=(_code+(e.key||'')).toUpperCase().slice(-5); if(_code.includes('COSMO')){ _code=''; openCheats(); } });
+let _taps=0, _tapT=0;
+function titleTap(){ const n=Date.now(); if(n-_tapT>1500) _taps=0; _tapT=n; if(++_taps>=5){ _taps=0; openCheats(); } }
+ovT.addEventListener('click', titleTap);
+ovT.addEventListener('touchend', e=>{ e.preventDefault(); titleTap(); }, {passive:false});
 
 // ── Main loop ───────────────────────────────────────────
 const clock = new THREE.Clock();
@@ -656,24 +714,30 @@ function updatePlay(dt, t){
   let mz = fwdZ*(-iz) + rightZ*ix;
   const ml = Math.hypot(mx,mz);
   const running = keys['ShiftLeft']||keys['ShiftRight'];
-  const speed = (running ? RUN : WALK) * (player.power>0 ? 1.3 : 1);
+  const speed = (running ? RUN : WALK) * (player.power>0 ? 1.3 : 1) * (cheats.turbo ? 1.7 : 1);
+  if (cheats.star) player.power = Math.max(player.power, 1);
   if (ml>0.01){ mx/=ml; mz/=ml; const s=Math.min(1,ml)*speed;
     player.vel.x = mx*s; player.vel.z = mz*s;
     player.facing = Math.atan2(mx, mz);
   } else { player.vel.x*=0.6; player.vel.z*=0.6; }
 
   // Jump (with mid-air double jump)
+  const JV = cheats.jump ? JUMP*1.5 : JUMP;
   if (jumpQueued){
-    if (player.grounded){ player.vel.y = JUMP; player.grounded=false; player.jumps=1; sfx.jump(); }
-    else if (player.jumps>0){ player.vel.y = JUMP*0.92; player.jumps--; sfx.djump();
+    if (player.grounded){ player.vel.y = JV; player.grounded=false; player.jumps=1; sfx.jump(); }
+    else if (player.jumps>0 || cheats.jump){ player.vel.y = JV*0.92; if(!cheats.jump) player.jumps--; sfx.djump();
       pop(new THREE.Vector3(player.pos.x, player.pos.y-0.6, player.pos.z), 0x9fd8ff, 8); }
   }
-  if (!keys['Space'] && player.vel.y>4) player.vel.y = 4; // variable jump height
+  if (!keys['Space'] && player.vel.y>4 && !cheats.fly) player.vel.y = 4; // variable jump height
   jumpQueued=false;
 
-  // Gravity
-  player.vel.y -= GRAV*dt;
-  if (player.vel.y < -40) player.vel.y = -40;
+  // Gravity (or fly cheat)
+  if (cheats.fly){
+    player.vel.y = (keys['Space']?7:0) + ((keys['ShiftLeft']||keys['ShiftRight'])?-7:0);
+  } else {
+    player.vel.y -= GRAV*dt;
+    if (player.vel.y < -40) player.vel.y = -40;
+  }
   if (player.inv>0) player.inv-=dt;
   if (player.power>0) player.power-=dt;
 
@@ -719,7 +783,7 @@ function updatePlay(dt, t){
   }
 
   // Fell off the world
-  if (P.y < -12){ loseLife(); }
+  if (P.y < -12 && !cheats.fly){ loseLife(); }
 
   // Update player visual
   playerGrp.position.copy(P);
@@ -775,7 +839,7 @@ function updatePlay(dt, t){
       const stomp = player.vel.y < -0.5 && P.y - e.grp.position.y > 0.9;
       if (player.power>0){ e.alive=false; scene.remove(e.grp); player.vel.y = Math.max(player.vel.y, JUMP*0.5); sfx.stomp(); pop(e.grp.position, 0xffe23c, 16); }
       else if (stomp){ e.alive=false; scene.remove(e.grp); player.vel.y = JUMP*0.7; player.jumps=1; sfx.stomp(); pop(e.grp.position, 0xff5533, 14); }
-      else if (player.inv<=0){ loseLife(); pop(P.clone(), 0xff3344, 8); }
+      else if (player.inv<=0 && !cheats.ghost){ loseLife(); pop(P.clone(), 0xff3344, 8); }
     }
   }
 
