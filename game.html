@@ -421,6 +421,14 @@ function updBoss(sl){
     if(boss.onG&&boss.timer%75===0)boss.vy=-13;
     if(boss.timer%95===0&&player)boss.vx=(player.x>boss.x?1:-1)*2.2*(boss.rage?1.4:1);
     if(player&&!player.dead&&boss.timer%65===0){const dx=player.x-(boss.x+20);bossProjs.push({x:boss.x+20,y:boss.y+20,vx:(dx>0?1:-1)*2.8*df().pspd,vy:0,life:200,active:true});}
+    // Rage signature: 5-way aimed burst
+    if(boss.rage&&player&&!player.dead&&!player.goal&&boss.timer%140===0){
+      shake(3);hap(22);SFX.shot();
+      const cx=boss.x+20,cy=boss.y+20,sp=2.6*df().pspd;
+      const dx=player.x+10-cx,dy=player.y+player.h/2-cy,d=Math.sqrt(dx*dx+dy*dy)||1,bx=dx/d,by=dy/d;
+      for(let k=-2;k<=2;k++){const a=k*.32,s2=Math.sin(a),c2=Math.cos(a);bossProjs.push({x:cx,y:cy,vx:(bx*c2-by*s2)*sp,vy:(bx*s2+by*c2)*sp,life:200,active:true});}
+      for(let i=0;i<8;i++)parts.push(new Pop(cx,cy,(Math.random()-.5)*8,(Math.random()-.5)*8,'#66ffaa',20));
+    }
     for(const lb of lasers){
       if(!lb.active||!hit(lb,boss))continue;
       lb.active=false;if(boss.inv>0)continue;
@@ -519,6 +527,8 @@ function drawBoss(ox){
     // Fire telegraph: contracting ring in last 15 frames before shot
     const mc=boss.timer%65;
     if(mc>=50){const cp=(mc-49)/15;ct.shadowColor='#66ffaa';ct.shadowBlur=8+6*cp;ct.strokeStyle=`rgba(120,255,150,${.3+.6*cp})`;ct.lineWidth=2;ct.beginPath();ct.arc(x+20,y+20,4+15*(1-cp),0,Math.PI*2);ct.stroke();ct.shadowBlur=0;}
+    // Rage burst telegraph: magenta contracting ring before the 5-way fan
+    if(boss.rage){const bc=boss.timer%140;if(bc>=124){const cp=(bc-123)/16;ct.shadowColor='#ff66ff';ct.shadowBlur=10;ct.strokeStyle=`rgba(255,120,255,${.3+.6*cp})`;ct.lineWidth=2.5;ct.beginPath();ct.arc(x+20,y+20,4+20*(1-cp),0,Math.PI*2);ct.stroke();ct.shadowBlur=0;}}
     const bw=52,bh=7,bx2=x+20-26,by2=y-16;
     ct.fillStyle='rgba(0,0,0,.7)';ct.fillRect(bx2-1,by2-1,bw+2,bh+2);
     ct.fillStyle='#002200';ct.fillRect(bx2,by2,bw,bh);
