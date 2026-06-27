@@ -67,7 +67,10 @@ setTimeout(function(){
 }, 7000);
 </script>
 <script type="importmap">
-{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
 </script>
 <script type="module">
 import * as THREE from 'three';
@@ -97,6 +100,26 @@ scene.background = makeSky();
 scene.fog = new THREE.Fog(SKY, 50, 140);
 
 const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 400);
+
+// ── Post-processing: bloom (optional, loaded dynamically) ──
+let composer = null;
+async function initBloom(){
+  try{
+    const [{ EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+      import('three/addons/postprocessing/EffectComposer.js'),
+      import('three/addons/postprocessing/RenderPass.js'),
+      import('three/addons/postprocessing/UnrealBloomPass.js'),
+      import('three/addons/postprocessing/OutputPass.js'),
+    ]);
+    composer = new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene, camera));
+    const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.55, 0.5, 0.82);
+    composer.addPass(bloom);
+    composer.addPass(new OutputPass());
+    composer.setSize(innerWidth, innerHeight);
+    composer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  }catch(e){ composer = null; /* fall back to direct render */ }
+}
 
 // ── Audio (self-contained WebAudio, no deps) ────────────
 let AC=null;
@@ -131,8 +154,13 @@ const sc = 70; Object.assign(sun.shadow.camera, { left:-sc, right:sc, top:sc, bo
 sun.shadow.camera.updateProjectionMatrix();
 sun.shadow.bias = -0.0004;
 sun.shadow.normalBias = 0.02;
+sun.shadow.radius = 4; // softer PCF shadow edges
 scene.add(sun);
 scene.add(sun.target);
+// Cool back/fill light for stylized rim shading
+const fill = new THREE.DirectionalLight(0x9ec4ff, 0.45);
+fill.position.set(-24, 16, -28);
+scene.add(fill);
 
 // ── Materials ───────────────────────────────────────────
 const mat = (c, r=0.85, m=0.0, e=0x000000, ei=0) =>
@@ -177,7 +205,7 @@ function lighten(hex, f){ const c=new THREE.Color(hex); c.lerp(new THREE.Color(0
 const coins = [];
 function addCoin(x, y, z) {
   const g = new THREE.TorusGeometry(0.42, 0.16, 12, 22);
-  const m = new THREE.Mesh(g, mat(0xffcc22, 0.35, 0.4, 0xffae00, 0.55));
+  const m = new THREE.Mesh(g, mat(0xffcc22, 0.28, 0.6, 0xffb200, 0.9));
   m.position.set(x, y, z); m.castShadow = true;
   m.rotation.x = Math.PI/2;
   scene.add(m);
@@ -503,7 +531,7 @@ function tick(){
   // Effects
   for (let i=pops.length-1;i>=0;i--){ const p=pops[i]; p.userData.life-=dt; p.userData.v.y-=GRAV*dt; p.position.addScaledVector(p.userData.v, dt); p.scale.multiplyScalar(1-dt*1.5); if(p.userData.life<=0){ scene.remove(p); pops.splice(i,1);} }
 
-  renderer.render(scene, camera);
+  if (composer) composer.render(); else renderer.render(scene, camera);
 }
 
 function updatePlay(dt, t){
@@ -553,6 +581,7 @@ function updatePlay(dt, t){
   // Integrate with axis-separated collision
   const P = player.pos;
   let standingMover = null;
+  const wasGrounded = player.grounded, impactVy = player.vel.y;
 
   // --- Y axis ---
   P.y += player.vel.y*dt;
@@ -576,6 +605,17 @@ function updatePlay(dt, t){
   for (const c of overlaps(P.x, P.y, P.z)){
     if (player.vel.z>0) P.z = c.min.z - player.hz; else if (player.vel.z<0) P.z = c.max.z + player.hz;
     player.vel.z=0;
+  }
+
+  // Landing dust puff
+  if (player.grounded && !wasGrounded && impactVy < -7){
+    for (let i=0;i<9;i++){
+      const m=new THREE.Mesh(new THREE.SphereGeometry(0.1,5,4), mat(0xe6eef6,0.95));
+      m.position.set(P.x+(Math.random()-0.5)*0.7, P.y-player.hy+0.1, P.z+(Math.random()-0.5)*0.7);
+      const a=Math.random()*Math.PI*2, sp=1.6+Math.random()*1.8;
+      m.userData.v=new THREE.Vector3(Math.cos(a)*sp, 0.6+Math.random()*1.2, Math.sin(a)*sp);
+      m.userData.life=0.34+Math.random()*0.18; scene.add(m); pops.push(m);
+    }
   }
 
   // Fell off the world
@@ -665,6 +705,7 @@ function updatePlay(dt, t){
 function resize(){
   renderer.setSize(innerWidth, innerHeight);
   camera.aspect = innerWidth/innerHeight; camera.updateProjectionMatrix();
+  if (composer) composer.setSize(innerWidth, innerHeight);
 }
 addEventListener('resize', resize);
 
@@ -673,6 +714,7 @@ buildLevel();
 buildPlayer();
 resize();
 camPos.set(0, 7, 18);
+initBloom();
 window.__cosmo3dBoot = true;
 document.getElementById('loading').style.display='none';
 showMenu();
