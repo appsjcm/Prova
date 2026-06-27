@@ -24,6 +24,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1830;font-family:
 #ov-btn{margin-top:6px;padding:16px 44px;font-size:1.25rem;font-weight:bold;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(160deg,#22a7e6,#1466c4);color:#fff;border:2px solid rgba(140,225,255,.6);border-radius:16px;cursor:pointer;font-family:monospace;box-shadow:0 0 36px rgba(0,140,230,.5),0 6px 22px rgba(0,0,0,.5);transition:transform .1s}
 #ov-btn:hover,#ov-btn:active{transform:scale(1.05)}
 #loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#0a1830;z-index:40;font-size:1rem;color:#7fb6e0;letter-spacing:2px}
+#mute{position:fixed;top:10px;right:12px;z-index:25;width:40px;height:40px;border-radius:10px;background:rgba(0,20,50,.55);border:1.5px solid rgba(120,200,255,.35);color:#cfeaff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+#mute:hover,#mute:active{border-color:rgba(140,235,255,.85)}
 /* Touch controls */
 #tc{display:none;position:fixed;inset:0;z-index:20;pointer-events:none}
 #joy{position:absolute;left:18px;bottom:24px;width:120px;height:120px;border-radius:50%;background:rgba(0,10,30,.4);border:2px solid rgba(255,255,255,.14);pointer-events:auto;touch-action:none}
@@ -38,6 +40,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1830;font-family:
 </head>
 <body>
 <canvas id="c"></canvas>
+<button id="mute" title="Silenciar (M)">🔊</button>
 <div id="loading">Cargando motor 3D…</div>
 <div id="hud">
   <div class="hud-l"><span id="coins">★ 0</span><span style="color:#5a86ad"> / <span id="coinTot">0</span></span></div>
@@ -122,15 +125,53 @@ async function initBloom(){
 }
 
 // ── Audio (self-contained WebAudio, no deps) ────────────
-let AC=null;
-function initAudio(){ try{ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){} }
+let AC=null, musicGain=null, sfxGain=null, musicMuted=false;
+function initAudio(){
+  try{
+    if(!AC){ AC=new (window.AudioContext||window.webkitAudioContext)();
+      musicGain=AC.createGain(); musicGain.gain.value=musicMuted?0:0.32; musicGain.connect(AC.destination);
+      sfxGain=AC.createGain(); sfxGain.gain.value=0.9; sfxGain.connect(AC.destination);
+    }
+    if(AC.state==='suspended') AC.resume();
+  }catch(e){}
+}
 function beep(freq, dur, type='square', vol=0.14, slideTo){
   if(!AC) return;
   const t=AC.currentTime, o=AC.createOscillator(), g=AC.createGain();
   o.type=type; o.frequency.setValueAtTime(freq,t);
   if(slideTo) o.frequency.exponentialRampToValueAtTime(Math.max(20,slideTo), t+dur);
   g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
-  o.connect(g); g.connect(AC.destination); o.start(t); o.stop(t+dur+0.02);
+  o.connect(g); g.connect(sfxGain||AC.destination); o.start(t); o.stop(t+dur+0.02);
+}
+// Background music: procedural chiptune loop scheduled ahead of time
+let musicOn=false, musicStep=0, musicNextT=0;
+const M_BPM=124, M_STEP=60/M_BPM/2; // eighth notes
+const M_MEL=[0,7,12,7, 9,7,4,0, 2,5,9,5, 7,4,0,-99]; // semitones from C4 (-99 = rest)
+const M_BASS=[0,5,7,5];                                // roots from C3, one per beat (4 steps)
+function mtone(freq, t, dur, vol, type){
+  if(!AC) return;
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  o.connect(g); g.connect(musicGain||AC.destination); o.start(t); o.stop(t+dur+0.03);
+}
+function startMusic(){ if(!AC) return; musicOn=true; musicStep=0; musicNextT=AC.currentTime+0.1; }
+function stopMusic(){ musicOn=false; }
+function scheduleMusic(){
+  if(!musicOn||!AC) return;
+  while(musicNextT < AC.currentTime + 0.18){
+    const i=musicStep%16;
+    const mel=M_MEL[i];
+    if(mel>-90) mtone(261.63*Math.pow(2,mel/12), musicNextT, M_STEP*0.9, 0.22, 'square');
+    if(i%4===0){ const b=M_BASS[(i/4)|0]; mtone(130.81*Math.pow(2,b/12), musicNextT, M_STEP*1.8, 0.3, 'triangle'); }
+    musicNextT += M_STEP; musicStep++;
+  }
+}
+function toggleMute(){
+  musicMuted=!musicMuted;
+  if(musicGain) musicGain.gain.value = musicMuted?0:0.32;
+  if(sfxGain) sfxGain.gain.value = musicMuted?0:0.9;
+  const b=document.getElementById('mute'); if(b) b.textContent = musicMuted?'🔇':'🔊';
 }
 const sfx={
   jump:()=>beep(420,0.16,'square',0.12,760),
@@ -495,7 +536,7 @@ function updHUD(){
   timerEl.textContent = Math.floor(elapsed)+'s' + (player.power>0 ? '  ⚡'+Math.ceil(player.power) : '');
 }
 function showMenu(){
-  state='menu'; ov.classList.remove('off');
+  state='menu'; stopMusic(); ov.classList.remove('off');
   ovT.textContent='COSMO KID 3D'; ovS.textContent='Aventura Espacial · WebGL';
   ovM.innerHTML='Reúne todas las <b>estrellas</b> ★ para abrir la <b>meta</b>. El <b>núcleo</b> ⚡ te hace invencible.<br><br>'+
     (isTouch ? 'Joystick para moverte · <b>SALTO</b> (toca 2 veces = doble salto)<br>⟲ ⟳ giran la cámara · pisa a los enemigos'
@@ -513,6 +554,7 @@ function startGame(){
   const aura0=playerGrp.getObjectByName('aura'); if(aura0) aura0.visible=false;
   refreshGoalLock();
   startTime=performance.now(); elapsed=0; updHUD();
+  startMusic();
 }
 function loseLife(){
   sfx.hurt();
@@ -521,7 +563,7 @@ function loseLife(){
   else { player.pos.set(0,1.4,6); player.vel.set(0,0,0); player.inv=1.2; }
 }
 function endGame(won){
-  state='over'; ov.classList.remove('off');
+  state='over'; stopMusic(); ov.classList.remove('off');
   if (won){ sfx.win(); ovT.textContent='¡META!'; ovS.textContent=`${player.coins}/${coinTotal} estrellas · ${Math.floor(elapsed)}s`;
     ovM.innerHTML = player.coins===coinTotal ? '¡Perfecto! Todas las estrellas.' : '¡Bien hecho!'; }
   else { ovT.textContent='FIN'; ovS.textContent=`${player.coins} estrellas`; ovM.innerHTML='Vuelve a intentarlo.'; }
@@ -529,6 +571,8 @@ function endGame(won){
 }
 ovBtn.addEventListener('click', startGame);
 canvas.addEventListener('click', ()=>{ if(state==='menu') startGame(); });
+document.getElementById('mute').addEventListener('click', e=>{ e.stopPropagation(); initAudio(); toggleMute(); });
+addEventListener('keydown', e=>{ if(e.code==='KeyM'){ initAudio(); toggleMute(); } });
 
 // ── Main loop ───────────────────────────────────────────
 const clock = new THREE.Clock();
@@ -537,6 +581,7 @@ function tick(){
   requestAnimationFrame(tick);
   let dt = clock.getDelta(); if (dt>1/30) dt=1/30;
   const t = performance.now()*0.001;
+  scheduleMusic();
 
   // Animate world (coins, goal, movers) regardless of state
   for (const c of coins){ if(!c.got){ c.mesh.rotation.z += dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
