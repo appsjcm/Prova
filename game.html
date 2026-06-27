@@ -316,7 +316,7 @@ let cpX=-1; // checkpoint respawn X (-1 = none)
 let comboMult=1,comboTimer=0,joyIsRunning=false,dmgFlash=0,oneupFlash=0,magnetTimer=0;
 let coinStreak=0,coinStreakTimer=0;
 let runKills=0,runMaxCombo=1,lvNoHit=true,lastLvPerfect=false;
-let tProjs=[];
+let tProjs=[],shockwaves=[];
 let difficulty=1;
 const DIFFS=[
   {nm:'NOVATO',col:'#44ff88',ico:'★',lives:5,tsc:1.35,espd:.72,edens:.7,spsc:.45,bsc:.7,pspd:.75,inv:150,rage:.5},
@@ -457,6 +457,13 @@ function updBoss(sl){
   for(const s of sl){if(!hit(boss,s))continue;boss.vx>0?(boss.x=s.x-boss.w,boss.vx=-Math.abs(boss.vx)):(boss.x=s.x+boss.w,boss.vx=Math.abs(boss.vx));break;}
   boss.onG=false;boss.y+=boss.vy;
   for(const s of sl){if(!hit(boss,s))continue;if(boss.vy>=0){boss.y=s.y-boss.h;boss.vy=0;boss.onG=true;}else{boss.y=s.y+boss.h;boss.vy=1;}break;}
+  // Rage ground-slam: landing spawns shockwaves the player must jump over
+  if(boss.rage&&boss.onG&&!boss._wasOnG&&boss.y+boss.h>=GY-4){
+    shake(6);hap(40);SFX.stomp();
+    for(let i=0;i<10;i++)parts.push(new Pop(boss.x+28,GY,(Math.random()-.5)*10,-Math.random()*5,'#ff8800',26));
+    shockwaves.push({x:boss.x+28,vx:4,life:130,active:true},{x:boss.x+28,vx:-4,life:130,active:true});
+  }
+  boss._wasOnG=boss.onG;
   if(boss.onG&&boss.timer%(boss.rage?52:80)===0)boss.vy=boss.rage?-16:-13;
   if(boss.timer%120===0)boss.vx=(player.x>boss.x?1:-1)*(2.5+(boss.maxHp-boss.hp)*.4+(boss.rage?.9:0));
   const bfi=boss.rage?55:90;
@@ -565,6 +572,18 @@ function drawBossProj(bp,ox){
   ct.fillStyle='#ff6600';ct.beginPath();ct.arc(x,y,6,0,Math.PI*2);ct.fill();
   ct.fillStyle='#ffcc44';ct.beginPath();ct.arc(x-1,y-1,3,0,Math.PI*2);ct.fill();
   ct.shadowBlur=0;
+}
+function drawShockwave(sw,ox){
+  const x=Math.round(sw.x-ox),h=14+4*Math.sin(NOW*.05);
+  ct.save();if(sw.vx<0){ct.translate(x,0);ct.scale(-1,1);ct.translate(-x,0);}
+  ct.shadowColor='#ff7700';ct.shadowBlur=12;
+  const g=ct.createLinearGradient(x,GY-h,x,GY);
+  g.addColorStop(0,'rgba(255,200,80,.95)');g.addColorStop(1,'rgba(255,90,0,.35)');
+  ct.fillStyle=g;
+  ct.beginPath();ct.moveTo(x-12,GY);ct.quadraticCurveTo(x-4,GY-h,x+2,GY-h*.6);ct.quadraticCurveTo(x+8,GY-h*1.3,x+12,GY);ct.closePath();ct.fill();
+  ct.shadowBlur=0;
+  ct.strokeStyle='rgba(255,240,180,.8)';ct.lineWidth=1.5;ct.beginPath();ct.moveTo(x-12,GY);ct.quadraticCurveTo(x+2,GY-h*1.2,x+12,GY);ct.stroke();
+  ct.restore();
 }
 
 // ── SPIKES ────────────────────────────────────────────────────
@@ -994,7 +1013,7 @@ function resetRound(){
   enemies=mkEnemies(lvData.ens);
   coinList=lvData.cns.map(c=>({...c,col:false,fr:0,ft:0}));
   blkList=lvData.blks.map(b=>({...b,hit:false,bh:0}));
-  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];dmgFlash=0;oneupFlash=0;magnetTimer=0;coinStreak=0;coinStreakTimer=0;
+  powerUps=[];lasers=[];parts=[];bossProjs=[];tProjs=[];shockwaves=[];dmgFlash=0;oneupFlash=0;magnetTimer=0;coinStreak=0;coinStreakTimer=0;
   if(lvData.plats)lvData.plats.forEach(p=>{if(p.crumble){p.cst=0;p.ctimer=0;p.respawnT=0;}});
   boss=lvData.bossX?mkBoss(lvData.bossX,lvData.bossHp,lvData.bossIsMini):null;
   updatePwrHUD();
@@ -1135,6 +1154,17 @@ function update(){
     }
     bossProjs=bossProjs.filter(bp=>bp.active);
   }else if(!boss||!boss.alive){bossProjs=[];}
+  // Boss shockwaves (travel along the ground; jump or dash to avoid)
+  if(boss&&boss.alive){
+    for(const sw of shockwaves){
+      if(!sw.active)continue;
+      sw.x+=sw.vx;sw.life--;
+      if(sw.life<=0||sw.x<camX-80||sw.x>camX+CW+80){sw.active=false;continue;}
+      if(NOW%2===0)parts.push(new Pop(sw.x,GY-2,(Math.random()-.5)*2,-Math.random()*2,'#ffaa33',12));
+      if(!player.dead&&!player.goal&&!chts.ghost&&player.inv<=0&&player.star<=0&&player.dashTimer<=0&&hit(player,{x:sw.x-10,y:GY-18,w:20,h:18})&&player.y+player.h>GY-18){pHurt();sw.active=false;}
+    }
+    shockwaves=shockwaves.filter(sw=>sw.active);
+  }else{shockwaves=[];}
   // Turret projectiles
   for(const tp of tProjs){
     if(!tp.active)continue;
@@ -1812,6 +1842,7 @@ function render(){
   enemies.forEach(e=>{if(!e.alive)return;const sx=e.x-ox;if(sx<-60||sx>CW+60)return;e.t==='g'?drawBlob(e,ox):e.t==='f'?drawFlyer(e,ox):e.t==='s'?drawTurret(e,ox):e.t==='h'?drawGhost(e,ox):drawDroid(e,ox);});
   if(boss)drawBoss(ox);
   bossProjs.forEach(bp=>{if(bp.active){const sx=bp.x-ox;if(sx>-20&&sx<CW+20)drawBossProj(bp,ox);}});
+  shockwaves.forEach(sw=>{if(sw.active){const sx=sw.x-ox;if(sx>-30&&sx<CW+30)drawShockwave(sw,ox);}});
   tProjs.forEach(tp=>{if(tp.active)drawTurretProj(tp,ox);});
   lasers.forEach(lb=>{if(lb.active)drawLaser(lb,ox);});
   if(player&&(!player.dead||player.y<CH+40))drawPlayer(player,ox);
