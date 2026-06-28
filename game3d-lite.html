@@ -37,6 +37,10 @@ h1{font-size:clamp(2rem,10vw,3.4rem);letter-spacing:4px;background:linear-gradie
 #winPanel{width:min(460px,92vw);background:rgba(4,16,34,.9);border:1px solid rgba(124,255,155,.42);border-radius:24px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.6)}
 #winPanel h2{font-size:2rem;color:#7cff9b;margin-bottom:10px}
 #winPanel p{font-size:.72rem;color:#a9c8e6;line-height:1.6;margin-bottom:12px}
+#gover{position:fixed;inset:0;z-index:35;display:none;align-items:center;justify-content:center;background:rgba(18,2,2,.88);padding:18px;text-align:center}
+#goverPanel{width:min(460px,92vw);background:rgba(34,6,6,.94);border:1px solid rgba(255,100,100,.42);border-radius:24px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.7)}
+#goverPanel h2{font-size:2rem;color:#ff6b6b;margin-bottom:10px}
+#goverPanel p{font-size:.72rem;color:#c8a6a6;line-height:1.6;margin-bottom:12px}
 @media(max-width:560px){
  #hud{font-size:.53rem;padding:8px 10px;max-width:166px}
  #tag{display:none}
@@ -80,6 +84,7 @@ h1{font-size:clamp(2rem,10vw,3.4rem);letter-spacing:4px;background:linear-gradie
 </div>
 <div id="toast">Listo</div>
 <div id="win"><div id="winPanel"><h2>¡PORTAL ABIERTO!</h2><p>Has reunido suficientes cristales en Canvas Lite Deluxe.</p><button class="btn main" id="again">SEGUIR</button><button class="btn" onclick="location.href='index.html?v=41&t='+Date.now()">HOME</button></div></div>
+<div id="gover"><div id="goverPanel"><h2>&#9760; SIN VIDA</h2><p>Los enemigos acabaron contigo. ¡Vuelves a levantarte!</p><button class="btn main" id="goverRetry">REINTENTAR</button><button class="btn" onclick="location.href='index.html?v=41&t='+Date.now()">HOME</button></div></div>
 <div id="menu">
   <div id="panel">
     <h1>COSMO KID</h1>
@@ -174,6 +179,7 @@ document.getElementById('b3d').onclick=()=>location.href='game3d.html?v=41&safe=
 document.getElementById('bHome').onclick=()=>location.href='index.html?v=41&t='+Date.now();
 document.getElementById('bDiag').onclick=()=>location.href='diagnostico.html?v=41&t='+Date.now();
 document.getElementById('again').onclick=()=>{document.getElementById('win').style.display='none';player.hp=3;player.invT=0;state='play'};
+document.getElementById('goverRetry').onclick=()=>{document.getElementById('gover').style.display='none';player.hp=3;player.invT=0;player.x=0;player.z=0;player.vx=player.vz=0;player.py=0;player.pvy=0;enemies.length=0;for(let i=0;i<3;i++)enemies.push({x:rand(20,44)*(i%2?-1:1),z:rand(20,44)*(i>1?-1:1),vx:0,vz:0,t:rand(0,6.28)});state='play';};
 document.getElementById('bJumpLite').addEventListener('pointerdown',e=>{e.preventDefault();jumpPlayer();},{passive:false});
 if(AUTO) setTimeout(()=>start(true),350);
 function pollGamepadLite(){
@@ -216,7 +222,7 @@ function update(dt,t){
   if(player.py>0||player.pvy>0){player.pvy-=LITE_GRAV*dt;player.py=Math.max(0,player.py+player.pvy*dt);if(player.py<=0){player.py=0;player.pvy=0;}}
   // Rock collision
   for(const ro of rocks){const dx=player.x-ro.x,dz=player.z-ro.z,d=Math.hypot(dx,dz),minD=ro.r+2.2;if(d<minD&&d>0.01){const push=minD-d;player.x+=dx/d*push;player.z+=dz/d*push;player.vx*=0.55;player.vz*=0.55;}}
-  for(const p of pads){if(Math.hypot(player.x-p.x,player.z-p.z)<5){player.x+=player.vx*dt*.7;player.z+=player.vz*dt*.7;}}
+  for(const p of pads){if(Math.hypot(player.x-p.x,player.z-p.z)<4.5&&player.py<=0.05&&player.pvy<=0){player.pvy=JUMP_VEL*1.5;sfxLite.jump();addParticle(p.x,p.z,'#7cff9b');navigator.vibrate?.(22);toast('¡Trampolín!');}}
   for(const cr of crystals){if(!cr.got&&Math.hypot(player.x-cr.x,player.z-cr.z)<3.2){cr.got=true;crystalsGot++;addParticle(cr.x,cr.z);sfxLite.crystal();toast('Cristal +1');if(crystalsGot===12){portalOpen=true;sfxLite.portal();toast('¡Portal desbloqueado!');}}}
   if(portalOpen&&!won&&Math.hypot(player.x-gates[0].x,player.z-gates[0].z)<7){won=true;state='pause';document.getElementById('win').style.display='flex';saveGame();}
   if(player.invT>0) player.invT=Math.max(0,player.invT-dt);
@@ -248,7 +254,8 @@ function update(dt,t){
     if(d>0.5){e.vx+=(dx/d*spd-e.vx)*Math.min(1,dt*2.5);e.vz+=(dz/d*spd-e.vz)*Math.min(1,dt*2.5);}
     e.x+=e.vx*dt;e.z+=e.vz*dt;
     for(const ro of rocks){const ex=e.x-ro.x,ez=e.z-ro.z,ed=Math.hypot(ex,ez),md=ro.r+1.8;if(ed<md&&ed>0.01){e.x+=ex/ed*(md-ed);e.z+=ez/ed*(md-ed);}}
-    if(d<2.5&&player.py<1.5&&player.invT<=0){player.hp=Math.max(0,player.hp-1);player.invT=1.8;addParticle(player.x,player.z,'#ff3333');sfxLite.hurt();navigator.vibrate?.(45);if(player.hp<=0){toast('¡Sin vida! Pulsa RESET para continuar');state='pause';}else toast('¡Impacto! Vidas: '+'❤ '.repeat(player.hp).trim());}
+    for(const o of enemies){if(o===e)continue;const sx=e.x-o.x,sz=e.z-o.z,sd=Math.hypot(sx,sz);if(sd<3.2&&sd>0.01){const sep=(3.2-sd)*.5;e.x+=sx/sd*sep;e.z+=sz/sd*sep;}}
+    if(d<2.5&&player.py<1.5&&player.invT<=0){player.hp=Math.max(0,player.hp-1);player.invT=1.8;addParticle(player.x,player.z,'#ff3333');sfxLite.hurt();navigator.vibrate?.(45);if(player.hp<=0){state='gameover';document.getElementById('gover').style.display='flex';}else toast('¡Impacto! Vidas: '+'❤ '.repeat(player.hp).trim());}
   }
   for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.z+=p.vz*dt;p.y+=p.vy*dt;p.vy-=8*dt;if(p.life<=0)particles.splice(i,1);}
 }
