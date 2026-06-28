@@ -4,7 +4,7 @@ const CORE = [
   './index.html?v=41',
   './game.html?v=41',
   './game3d.html?v=41',
-  './game3d-lite.html?v=41',
+
   './diagnostico.html?v=41',
   './manifest.webmanifest',
   './assets/icons/icon-192.png',

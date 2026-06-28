@@ -44,16 +44,15 @@ a,button{border:1px solid rgba(124,243,255,.38);background:rgba(0,34,64,.72);col
 </div>
 
 <div class="grid">
-  <a class="main" id="openBest" href="game3d-lite.html?v=41&play=1&demo=1">ABRIR RECOMENDADO</a>
-  <a href="game3d-lite.html?v=41&play=1&demo=1">CANVAS LITE</a>
+  <a class="main" id="openBest" href="game3d.html?v=41&mobile=1&safe=1&lite=1&play=1">ABRIR RECOMENDADO</a>
   <a href="game.html?v=41">2,5D ESTABLE</a>
-  <a class="warn" href="game3d.html?v=41&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">WEBGL MÓVIL</a>
+  <a class="warn" href="game3d.html?v=41&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">WEBGL MÓVIL LITE</a>
   <a href="game3d.html?v=41&pc=1">WEBGL PC</a>
   <a href="index.html?v=41">LAUNCHER</a>
 </div>
 
 <div class="box small">
-  Consejo: en iPhone usa primero Canvas Lite o 2,5D. En PC usa WebGL PC. Si GitHub Pages muestra una versión antigua, abre con <b>?v=41</b> o usa navegación privada.
+  Consejo: en iPhone y móvil usa WebGL Lite o 2,5D. En PC usa WebGL PC. Si GitHub Pages muestra una versión antigua, abre con <b>?v=41</b> o usa navegación privada.
 </div>
 </div>
 
@@ -87,20 +86,20 @@ function testCanvasFPS(done){
   requestAnimationFrame(frame);
 }
 function bestURL(){
-  if(touch||isSmall||isIOS||isAndroid) return 'game3d-lite.html?v=41&play=1&demo=1';
+  if(touch||isSmall||isIOS||isAndroid) return 'game3d.html?v=41&mobile=1&safe=1&lite=1&play=1';
   if(webgl==='sí') return 'game3d.html?v=41&pc=1';
-  return 'game3d-lite.html?v=41&play=1&demo=1';
+  return 'game.html?v=41';
 }
 function render(){
   const best=bestURL();
   document.getElementById('openBest').href=best+'&t='+Date.now();
   let rec='';
   if(touch||isSmall||isIOS||isAndroid){
-    rec='Recomendado: CANVAS LITE o 2,5D. WebGL puede ir lento en móvil/iPhone.';
+    rec='Recomendado: 3D WebGL Lite (modo móvil optimizado). Si va muy lento prueba el 2,5D.';
   }else if(webgl==='sí'){
     rec='Recomendado: WEBGL PC. Tu dispositivo parece adecuado para el 3D completo.';
   }else{
-    rec='Recomendado: CANVAS LITE. No se detecta WebGL disponible.';
+    rec='Recomendado: 2,5D estable. No se detecta WebGL disponible.';
   }
   document.getElementById('recommend').textContent=rec;
   document.getElementById('result').innerHTML =

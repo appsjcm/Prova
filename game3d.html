@@ -346,9 +346,9 @@ body.photo #hud,body.photo #quest,body.photo #compass,body.photo #minimapBox,bod
   <div class="btn3d" id="bSafe">SAFE</div>
   <div class="btn3d" id="b25D">2,5D</div>
   <div class="btn3d" id="bHome">HOME</div>
-  <div class="btn3d" id="bCanvas">CANVAS</div>
+  <div class="btn3d" id="bCanvas">2,5D</div>
 </div>
-<div id="perfWarn3D">3D lento detectado<br><button id="perfCanvasBtn">ABRIR CANVAS LITE</button></div>
+<div id="perfWarn3D">3D lento detectado<br><button id="perfCanvasBtn">ABRIR 2,5D</button></div>
 <div id="debugPanel3D"><div id="dbgInfo" class="dbgLine">DEBUG v41</div><div class="dbgBtns"><button id="dbgStart">START</button><button id="dbgFix" class="warn">FIX</button><button id="dbgLite">LITE</button><button id="dbgUltra">ULTRA</button><button id="dbg25">2,5D</button><button id="dbgCanvas">CANVAS</button><button id="dbgHome">HOME</button><button id="dbgDiag">DIAG</button></div></div>
 <div id="mobileHelp3D">V41 · SAFE/FIX/2,5D disponibles</div>
 <div id="debugMove">V41 · joystick listo</div>
@@ -3084,7 +3084,7 @@ function forcePlayerCamera(resetPos=false){
 
 
 function openHome(){ location.href='index.html?v=41&t='+Date.now(); }
-function openCanvasLite(){ location.href='game3d-lite.html?v=41&play=1&demo=1&t='+Date.now(); }
+function openCanvasLite(){ location.href='game.html?v=41&t='+Date.now(); }
 function open25D(){
   showToast('Abriendo modo 2,5D estable...',1.2);
   setTimeout(()=>{ location.href='game.html?v=41&t='+Date.now(); }, 250);
@@ -3102,7 +3102,7 @@ function setMobileProfile3D(on=true){
     renderer.shadowMap.enabled=false;
     try{ setQuality('low'); }catch(_){}
     const mh=document.getElementById('mobileHelp3D');
-    if(mh) mh.textContent='V41 · perfil móvil activo · Canvas Lite recomendado si va lento';
+    if(mh) mh.textContent='V41 · perfil móvil activo · 2,5D recomendado si va lento';
     const dm=document.getElementById('debugMove');
     if(dm) dm.textContent='V41 · Mobile Profile';
   }
@@ -3333,7 +3333,7 @@ function bindDebugPanel(){
   if(q('dbgLite')) q('dbgLite').onclick=()=>{ setSafe3D(true); setLite3D(true); setDebug3D(true); };
   if(q('dbgUltra')) q('dbgUltra').onclick=()=>{ setUltra3D(true); setDebug3D(true); };
   if(q('dbg25')) q('dbg25').onclick=()=>open25D();
-  if(q('dbgCanvas')) q('dbgCanvas').onclick=()=>{location.href='game3d-lite.html?v=41&play=1&demo=1&t='+Date.now()};
+  if(q('dbgCanvas')) q('dbgCanvas').onclick=()=>open25D();
   if(q('dbgHome')) q('dbgHome').onclick=()=>openHome();
   if(q('dbgDiag')) q('dbgDiag').onclick=()=>{location.href='diagnostico.html?v=41&t='+Date.now()};
 }
@@ -3359,7 +3359,7 @@ function updatePerformanceWatchdog(dt,t){
           _perfShown=true;
           const w=document.getElementById('perfWarn3D');
           if(w) w.classList.add('on');
-          showToast('El 3D WebGL va lento: prueba Canvas Lite',3.4);
+          showToast('El 3D WebGL va lento: prueba el modo 2,5D',3.4);
         }
       }
     }

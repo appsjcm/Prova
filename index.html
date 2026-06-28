@@ -58,10 +58,10 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
 <div class="ver">VERSIÓN v41 · PWA + auto calidad</div>
 
 <div class="reco">
-  <div><b>Auto recomendación + PWA:</b> en móvil usa Canvas Lite o 2,5D. En PC usa WebGL PC.</div>
+  <div><b>Auto recomendación + PWA:</b> en móvil usa WebGL Lite. En PC usa WebGL PC.</div>
   <small id="recommend">Detectando dispositivo...</small>
   <div class="bigrow">
-    <a class="big playlink" id="autoBtn" href="game3d-lite.html?v=41&play=1&demo=1">JUGAR RECOMENDADO v41</a>
+    <a class="big playlink" id="autoBtn" href="game3d.html?v=41&mobile=1&safe=1&lite=1&play=1">JUGAR RECOMENDADO v41</a>
     <a class="big pc playlink" href="game3d.html?v=41&pc=1">PC 3D WEBGL</a>
   </div>
 </div>
@@ -70,10 +70,6 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
   <a class="card debug playlink" href="diagnostico.html?v=41">
     <div class="ico">🩺</div><div class="ct">DIAGNÓSTICO</div><div class="badge">Test</div>
     <div class="cd">Comprueba móvil/PC, WebGL, Canvas y recomendado.</div>
-  </a>
-  <a class="card canvas playlink" href="game3d-lite.html?v=41&play=1&demo=1">
-    <div class="ico">📱</div><div class="ct">CANVAS LITE</div><div class="badge">Sin WebGL</div>
-    <div class="cd">El modo más estable: ahora con CALIDAD rendimiento/calidad.</div>
   </a>
   <a class="card mobile playlink" href="game.html?v=41">
     <div class="ico">🪐</div><div class="ct">2.5D MÓVIL</div><div class="badge">Estable</div>
@@ -85,7 +81,7 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
   </a>
   <a class="card webgl playlink" href="game3d.html?v=41&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">
     <div class="ico">⚡</div><div class="ct">MÓVIL WEBGL</div><div class="badge">Ultra Lite</div>
-    <div class="cd">WebGL reducido: si baja de FPS avisa y salta a Canvas.</div>
+    <div class="cd">WebGL reducido: calidad adaptativa automática, ideal para móvil.</div>
   </a>
   <a class="card debug playlink" href="game3d.html?v=41&safe=1&lite=1&play=1&demo=1&debug=1">
     <div class="ico">🧰</div><div class="ct">DEBUG 3D</div><div class="badge">Diagnóstico</div>
@@ -106,7 +102,7 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
 </div>
 <div id="status">Listo · v41 cargada</div>
 <div id="diag">Diagnóstico: comprobando navegador...</div>
-<div class="foot">Sube index.html, game.html, game3d.html, game3d-lite.html, diagnostico.html, manifest.webmanifest, sw.js y assets/. Si ves v41 o anterior, limpia caché o abre en privado.</div>
+<div class="foot">Sube index.html, game.html, game3d.html, diagnostico.html, manifest.webmanifest, sw.js y assets/. Si ves v41 o anterior, limpia caché o abre en privado.</div>
 </div>
 <script>
 const VERSION='41';
@@ -115,10 +111,10 @@ const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
 const isSmall=innerWidth<820;
 let gl='no';
 try{const c=document.createElement('canvas');gl=!!(c.getContext('webgl2')||c.getContext('webgl'))?'sí':'no';}catch(e){}
-const recommended=(touch||isSmall||isIOS) ? 'game3d-lite.html?v=41&play=1&demo=1' : 'game3d.html?v=41&pc=1';
+const recommended=(touch||isSmall||isIOS) ? 'game3d.html?v=41&mobile=1&safe=1&lite=1&play=1' : 'game3d.html?v=41&pc=1';
 document.getElementById('autoBtn').href=recommended;
 document.getElementById('recommend').textContent=(touch||isSmall||isIOS)
-  ? 'Detectado móvil/tablet: recomendado Canvas Lite o 2,5D. WebGL puede ir lento en iPhone.'
+  ? 'Detectado móvil/tablet: recomendado 3D WebGL Lite. Si va muy lento prueba el modo 2,5D.'
   : 'Detectado PC/escritorio: recomendado 3D WebGL PC.';
 document.querySelectorAll('.playlink').forEach(a=>{a.addEventListener('click',()=>{const u=new URL(a.href,location.href);u.searchParams.set('v',VERSION);u.searchParams.set('t',Date.now().toString().slice(-6));a.href=u.href;});});
 const status=document.getElementById('status');
