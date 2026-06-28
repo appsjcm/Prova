@@ -3339,7 +3339,7 @@ function bindDebugPanel(){
 }
 
 
-let _perfLast=performance.now(), _perfFrames=0, _perfFps=60, _slowFpsHits=0, _perfShown=false;
+let _perfLast=performance.now(), _perfFrames=0, _perfFps=60, _slowFpsHits=0, _perfShown=false, _tickN=0;
 function updatePerformanceWatchdog(dt,t){
   _perfFrames++;
   const now=performance.now();
@@ -3395,8 +3395,12 @@ function tick(){
   safeStep('v18', ()=>updateV18(dt,t));
   safeStep('v19', ()=>updateV19(dt,t));
 
+  _tickN++;
   // Animate world (coins, goal, movers) regardless of state
-  for (const c of coins){ if(!c.got){ c.mesh.rotation.z += dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
+  // On mobile, animate coins only on even frames (saves Math.sin per frame)
+  if(!IS_MOBILE||_tickN%2===0){
+    for (const c of coins){ if(!c.got){ c.mesh.rotation.z += IS_MOBILE?dt*4.4:dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
+  }
   for (const s of powerups){ if(!s.got){ s.mesh.rotation.y += dt*2.0; s.mesh.rotation.x += dt*1.1; s.mesh.position.y = s.y + Math.sin(t*2.5)*0.2; } }
   if (goal){ goal.ring.rotation.z += dt*1.5; goal.grp.rotation.y += dt*0.6; }
   for (const cl of clouds){ cl.position.x += dt*cl.userData.spd; if(cl.userData.rot){ cl.rotation.x+=dt*cl.userData.rot.x; cl.rotation.y+=dt*cl.userData.rot.y; cl.rotation.z+=dt*cl.userData.rot.z; } if (cl.position.x > 100) cl.position.x = -100; }
