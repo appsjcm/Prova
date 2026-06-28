@@ -578,14 +578,15 @@ function toggleMute(){
   const b=document.getElementById('mute'); if(b) b.textContent = musicMuted?'🔇':'🔊';
 }
 const sfx={
-  jump:()=>beep(420,0.16,'square',0.12,760),
-  djump:()=>beep(640,0.16,'square',0.12,1040),
-  coin:()=>{ beep(900,0.07,'square',0.12); setTimeout(()=>beep(1350,0.1,'square',0.12),55); },
-  stomp:()=>beep(220,0.18,'sawtooth',0.16,70),
-  hurt:()=>beep(300,0.32,'sawtooth',0.18,80),
+  jump:()=>{ beep(420,0.16,'square',0.12,760); hap3D(25); },
+  djump:()=>{ beep(640,0.16,'square',0.12,1040); hap3D(18); },
+  coin:()=>{ beep(900,0.07,'square',0.12); setTimeout(()=>beep(1350,0.1,'square',0.12),55); hap3D(8); },
+  stomp:()=>{ beep(220,0.18,'sawtooth',0.16,70); hap3D(50); },
+  hurt:()=>{ beep(300,0.32,'sawtooth',0.18,80); hap3D(90); },
   bounce:()=>beep(520,0.2,'triangle',0.16,1100),
-  win:()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'triangle',0.16),i*120))
+  win:()=>{ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.2,'triangle',0.16),i*120)); hap3D(120); }
 };
+function hap3D(ms){ try{ navigator.vibrate?.(ms); }catch(_){} }
 
 // ── Lighting ────────────────────────────────────────────
 const hemi = new THREE.HemisphereLight(0xcff6ff, 0x6d9b5f, 0.85);
@@ -2925,6 +2926,59 @@ if (isTouch) {
 
   // Evita que Safari robe gestos dentro de controles.
   tc.addEventListener('touchmove', e=>{ if(e.target.closest('#joy,.btn3d')) e.preventDefault(); }, {passive:false});
+
+  // ── Zona derecha: arrastrar para rotar cámara + deslizar arriba = saltar ──
+  let _camTId=null,_camTLX=0,_camTLY=0,_camTSY=0;
+  document.addEventListener('pointerdown',e=>{
+    if(state!=='play'||_camTId!==null) return;
+    if(e.target.closest('#tc,#joy,.btn3d,#mute,#ch3,button,a')) return;
+    if(e.clientX<=innerWidth*0.52) return;
+    _camTId=e.pointerId; _camTLX=e.clientX; _camTSY=_camTLY=e.clientY;
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('pointermove',e=>{
+    if(e.pointerId!==_camTId) return;
+    camYaw-=(e.clientX-_camTLX)*0.007;
+    _camTLX=e.clientX; _camTLY=e.clientY;
+    e.preventDefault();
+  },{passive:false});
+  document.addEventListener('pointerup',e=>{
+    if(e.pointerId!==_camTId) return;
+    if(e.clientY<_camTSY-55) jumpQueued=true; // deslizar arriba = saltar
+    _camTId=null;
+  },{passive:false});
+  document.addEventListener('pointercancel',e=>{ if(e.pointerId===_camTId) _camTId=null; },{passive:false});
+}
+
+// ── Gamepad / Controller API ─────────────────────────────
+let _gpX=0,_gpZ=0,_gpPrev3D=[];
+function pollGamepad3D(){
+  const gps=navigator.getGamepads?navigator.getGamepads():[];
+  for(const gp of gps){
+    if(!gp) continue;
+    const dead=0.18;
+    _gpX=Math.abs(gp.axes[0])>dead?gp.axes[0]:0;
+    _gpZ=Math.abs(gp.axes[1])>dead?gp.axes[1]:0;
+    // D-pad override
+    if(gp.buttons[12]?.pressed) _gpZ=-1;
+    if(gp.buttons[13]?.pressed) _gpZ=1;
+    if(gp.buttons[14]?.pressed) _gpX=-1;
+    if(gp.buttons[15]?.pressed) _gpX=1;
+    // Right stick → cámara
+    const rx=Math.abs(gp.axes[2])>dead?gp.axes[2]:0;
+    if(rx) camYaw-=rx*0.055;
+    // A/Cross (0) = saltar — solo en flanco de subida
+    if(gp.buttons[0]?.pressed && !(_gpPrev3D[0]??false)) jumpQueued=true;
+    // B/Circle (1) = correr
+    keys['ShiftLeft']=gp.buttons[1]?.pressed||false;
+    // Start (9) / Options = pausa
+    if(gp.buttons[9]?.pressed && !(_gpPrev3D[9]??false)){
+      if(state==='play') togglePause();
+      else if(state==='menu') startGame();
+    }
+    _gpPrev3D=gp.buttons.map(b=>b.pressed);
+    break;
+  }
 }
 
 // ── Camera control ──────────────────────────────────────
@@ -2992,8 +3046,8 @@ function showMenu(){
   ovT.textContent='COSMO KID 3D'; ovS.textContent='Mundo abierto v41 · PWA';
   ovM.innerHTML='Explora un <b>mundo abierto</b> con minimapa, checkpoints, portales, NPCs, reliquias, misiones, guardado local, ciclo de luz, modo foto, selector de calidad, flecha de objetivo, escáner, dron compañero, planeo, clima dinámico, cofres, cápsulas de historia, logros, ruta sugerida, Taller Cosmo, baterías, mejoras desbloqueables, pruebas con cronómetro, medallas, constelación, santuarios y portal supremo, progreso 100%, rango final, diario, viaje rápido, guía de controles, zonas descubiertas y modos de cámara. Reúne las <b>estrellas</b> ★ para abrir la <b>META</b> y busca 6 reliquias especiales.<br><br>'+
     (best.bestStars ? '<b>Récord guardado:</b> '+best.bestStars+' estrellas · '+(best.bestRelics||0)+' reliquias<br><br>' : '')+
-    (isTouch ? 'Joystick para moverte · <b>SALTO</b> doble · <b>FIX</b> recoloca · <b>SAFE</b> modo seguro · <b>2,5D</b> estable · <b>play=1</b> test auto'
-             : '<b>WASD</b>/flechas mover · <b>Espacio</b> salto doble · <b>Shift</b> correr · <b>Q/E</b> cámara · <b>P</b> pausa · <b>F</b> hablar · <b>R</b> escáner · <b>U</b> mejorar · <b>T</b> prueba · <b>C</b> santuario · <b>G</b> viaje · <b>J</b> diario · <b>H</b> guía · <b>V</b> cámara · <b>O</b> foto');
+    (isTouch ? 'Joystick (izq) mover · Arrastra lado derecho: rotar cámara · Deslizar arriba (derecha): saltar · <b>SALTO</b> doble · <b>FIX</b> recoloca · <b>SAFE</b> modo seguro · <b>2,5D</b> estable · Mando USB compatible'
+             : '<b>WASD</b>/flechas mover · <b>Espacio</b> salto doble · <b>Shift</b> correr · <b>Q/E</b> cámara · <b>P</b> pausa · <b>F</b> hablar · <b>R</b> escáner · <b>U</b> mejorar · <b>T</b> prueba · <b>C</b> santuario · <b>G</b> viaje · <b>J</b> diario · <b>H</b> guía · <b>V</b> cámara · <b>O</b> foto · Mando: stick izq = mover, stick der = cámara, A = saltar, B = correr');
   ovBtn.textContent='JUGAR';
 }
 
@@ -3302,6 +3356,7 @@ function tick(){
   const t = performance.now()*0.001;
   mobilePlayerWatchdog(t);
   updatePerformanceWatchdog(dt,t);
+  safeStep('gamepad',()=>pollGamepad3D());
   updateDebugPanel(dt,t);
   safeStep('music', ()=>scheduleMusic());
   safeStep('v3', ()=>updateV3(dt,t));
@@ -3366,6 +3421,7 @@ function updatePlay(dt, t){
   if (keys['KeyA']||keys['ArrowLeft']) ix-=1;
   if (keys['KeyD']||keys['ArrowRight']) ix+=1;
   if (joyActive){ ix+=joyX; iz+=joyY; }
+  if(Math.abs(_gpX)>0.05||Math.abs(_gpZ)>0.05){ ix+=_gpX; iz+=_gpZ; }
   if(URL_DEMO_3D && demoAutoT>0){
     demoAutoT=Math.max(0,demoAutoT-dt);
     iz -= 0.86;
@@ -3643,7 +3699,7 @@ bindDebugPanel();
 bindPerformanceButtons();
 // V28_AUTO_HELP
 // V31_AUTOPLAY
-if(IS_MOBILE || URL_SAFE_3D || URL_LITE_3D || URL_ULTRA_3D) setTimeout(()=>{ setSafe3D(true); if(URL_LITE_3D) setLite3D(true); const mh=document.getElementById('mobileHelp3D'); if(mh) mh.textContent=URL_LITE_3D?'V41 · LITE activo · FIX si falla':'V41 · SAFE activo · FIX si no ves jugador · 2,5D si falla'; },500);
+if(IS_MOBILE || URL_SAFE_3D || URL_LITE_3D || URL_ULTRA_3D) setTimeout(()=>{ setSafe3D(true); if(URL_LITE_3D) setLite3D(true); const mh=document.getElementById('mobileHelp3D'); if(mh) mh.textContent=URL_LITE_3D?'V41 · LITE activo · FIX si falla':'V41 · Joystick(izq)=mover · Arrastra(der)=cámara · FIX si falla'; },500);
 if(URL_DEBUG_3D) setTimeout(()=>{ setDebug3D(true); setSafe3D(true); setLite3D(true); },350);
 if(URL_ULTRA_3D) setTimeout(()=>{ setDebug3D(true); setUltra3D(true); },420);
 if(URL_AUTOPLAY_3D || URL_DEMO_3D || URL_DEBUG_3D) setTimeout(()=>{ if(state==='menu') startGame(); },950);

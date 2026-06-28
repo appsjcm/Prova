@@ -192,6 +192,7 @@ body.touch h1{display:none}
   <div class="hp-sec">
     <div class="hp-h">Movimiento</div>
     <div class="hp-r"><span class="hp-k">&#8592; &#8594; / Joystick</span> Moverse</div>
+    <div class="hp-r"><span class="hp-k">Mando USB/BT</span> Stick izq = mover &middot; A = saltar &middot; B = dash/ataque &middot; Start = pausa</div>
     <div class="hp-r"><span class="hp-k">Shift / B</span> Correr (más velocidad y salto)</div>
     <div class="hp-r"><span class="hp-k">&#8593; / Z / A</span> Saltar &middot; en pared = salto de pared</div>
     <div class="hp-r"><span class="hp-k">Doble salto</span> Con mejora activa, salta otra vez en el aire</div>
@@ -381,6 +382,41 @@ window.addEventListener('keydown',e=>{if(!K[e.code])JP[e.code]=true;K[e.code]=tr
 window.addEventListener('keyup',e=>K[e.code]=false);
 window.addEventListener('blur',()=>{for(const k in K)K[k]=false;});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)for(const k in K)K[k]=false;});
+
+// ── Gamepad / mando ─────────────────────────────────────
+let _gp25Prev=[];
+function pollGamepad25D(){
+  const gps=navigator.getGamepads?navigator.getGamepads():[];
+  for(const gp of gps){
+    if(!gp) continue;
+    const dead=0.22;
+    const lx=gp.axes[0]??0, ly=gp.axes[1]??0;
+    // Movimiento horizontal: stick izq o D-pad
+    const nL=(gp.buttons[14]?.pressed)||lx<-dead;
+    const nR=(gp.buttons[15]?.pressed)||lx>dead;
+    const nD=(gp.buttons[13]?.pressed)||ly>dead;
+    // A/Cross (0) = saltar; B/Circle (1) = ataque/dash; Y/Triangle (3) = stompo
+    const nJ=gp.buttons[0]?.pressed||gp.buttons[12]?.pressed; // A o D-pad arriba
+    const nX=gp.buttons[1]?.pressed||gp.buttons[2]?.pressed;  // B o X
+    // Aplica: si el estado cambia, actualiza K y JP
+    function applyBtn(code, pressed){
+      if(pressed && !K[code]){ K[code]=true; JP[code]=true; }
+      else if(!pressed) K[code]=false;
+    }
+    applyBtn('ArrowLeft',nL);
+    applyBtn('ArrowRight',nR);
+    applyBtn('ArrowDown',nD);
+    applyBtn('Space',nJ);
+    applyBtn('KeyX',nX);
+    // Start (9) = pausa
+    if(gp.buttons[9]?.pressed && !(_gp25Prev[9]??false)) togglePause();
+    // Vibración al pulsar salto (solo si cambia de estado)
+    if(nJ && !(_gp25Prev[0]??false)) navigator.vibrate?.(28);
+    _gp25Prev=gp.buttons.map(b=>b.pressed);
+    break;
+  }
+}
+
 const isL=()=>K.ArrowLeft||K.KeyA,isR=()=>K.ArrowRight||K.KeyD;
 const isJ=()=>K.ArrowUp||K.KeyZ||K.Space,isD=()=>K.ArrowDown||K.KeyS;
 const isRn=()=>K.ShiftLeft||K.ShiftRight;
@@ -2132,7 +2168,7 @@ function loop(ts){
   const dt=ts-_lt;
   if(dt>=_STEP*.85){
     _lt=ts-(dt%_STEP);
-    NOW=Date.now();scheduleMusicNotes();update();render();for(const k in JP)delete JP[k];
+    NOW=Date.now();pollGamepad25D();scheduleMusicNotes();update();render();for(const k in JP)delete JP[k];
   }
 }
 
