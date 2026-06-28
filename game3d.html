@@ -3347,12 +3347,20 @@ function updatePerformanceWatchdog(dt,t){
     _perfFps=Math.round(_perfFrames*1000/(now-_perfLast));
     _perfFrames=0; _perfLast=now;
     if((PROFILE_MOBILE_3D || IS_MOBILE) && state==='play'){
-      if(_perfFps<22) _slowFpsHits++; else _slowFpsHits=Math.max(0,_slowFpsHits-1);
-      if(_slowFpsHits>=4 && !_perfShown){
-        _perfShown=true;
-        const w=document.getElementById('perfWarn3D');
-        if(w) w.classList.add('on');
-        showToast('El 3D WebGL va lento: prueba Canvas Lite',3.4);
+      if(_perfFps<25) _slowFpsHits++; else _slowFpsHits=Math.max(0,_slowFpsHits-1);
+      if(_slowFpsHits>=3){
+        _slowFpsHits=0;
+        const pr=renderer.getPixelRatio();
+        if(pr>0.38){
+          const np=Math.max(0.38,pr-0.1);
+          renderer.setPixelRatio(np);
+          showToast('Auto calidad: resolución '+Math.round(np*100)+'%',2.2);
+        } else if(!_perfShown){
+          _perfShown=true;
+          const w=document.getElementById('perfWarn3D');
+          if(w) w.classList.add('on');
+          showToast('El 3D WebGL va lento: prueba Canvas Lite',3.4);
+        }
       }
     }
   }
@@ -3690,6 +3698,13 @@ addLensFlares();
 buildLevel();
 buildPlayer();
 makeDrone();
+if(IS_MOBILE){
+  scene.traverse(obj=>{
+    if(!obj.isPointLight) return;
+    let a=obj.parent; while(a){ if(a===playerGrp) return; a=a.parent; }
+    obj.intensity=0;
+  });
+}
 setWeather('Claro'); progression.xp=0; progression.level=1; progression.combo=0; progression.comboT=0; progression.bestCombo=0; progression.perks={shield:false,strike:false,combo:false,overload:false};
 resize();
 camPos.set(0, IS_MOBILE ? 9 : 7, IS_MOBILE ? 24 : 18);
