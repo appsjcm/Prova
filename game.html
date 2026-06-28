@@ -2161,15 +2161,27 @@ function render(){
 }
 
 // ── MAIN LOOP ────────────────────────────────────────────────
-let _lt=0;const _STEP=1000/60;
+// Acumulador de tiempo fijo: corre siempre a 60 pasos/seg sin importar el Hz
+// del display (30Hz→2 substeps/frame, 120Hz→1 substep cada 2 frames, etc.)
+let _lt=0, _accum=0;
+const _STEP=1000/60; // 16.67ms por paso de física
+
 function loop(ts){
   requestAnimationFrame(loop);
-  if(!_lt)_lt=ts;
-  const dt=ts-_lt;
-  if(dt>=_STEP*.85){
-    _lt=ts-(dt%_STEP);
-    NOW=Date.now();pollGamepad25D();scheduleMusicNotes();update();render();for(const k in JP)delete JP[k];
+  if(!_lt){_lt=ts;return;}             // primer frame: inicializar y salir
+  _accum+=Math.min(ts-_lt, _STEP*3);  // cap a 3 pasos: evita espiral de muerte
+  _lt=ts;
+  NOW=Date.now();
+  pollGamepad25D();
+  scheduleMusicNotes();
+  let didStep=false;
+  while(_accum>=_STEP){
+    _accum-=_STEP;
+    if(didStep) for(const k in JP)delete JP[k]; // limpiar JP entre substeps (no doble-salto)
+    update();
+    didStep=true;
   }
+  if(didStep){ render(); for(const k in JP)delete JP[k]; }
 }
 
 // ── BUTTON HANDLERS ─────────────────────────────────────────
