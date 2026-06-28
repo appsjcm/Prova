@@ -128,16 +128,92 @@ scene.fog = new THREE.Fog(SKY, 42, 125);
 
 const camera = new THREE.PerspectiveCamera(58, innerWidth/innerHeight, 0.1, 400);
 
+// ── Optional real PBR assets (drop in files and set the paths) ──
+// Leave empty to use the fully-procedural look. When you have assets and
+// internet, set these and the game upgrades toward photoreal automatically.
+const ASSETS = {
+  hdri:        '',  // .hdr equirectangular sky → real IBL + background (RGBELoader)
+  character:   '',  // .glb/.gltf model that replaces the procedural astronaut
+  groundMap:   '',  // ground albedo/color texture (tileable)
+  groundNormal:'',  // ground normal map
+  groundRough: '',  // ground roughness map
+};
+
+// Procedural outdoor-sky environment (sky-tinted reflections + sun glint)
+function buildSkyEnvScene(){
+  const s = new THREE.Scene();
+  const skyMat = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    uniforms: { top:{value:new THREE.Color(0x3f86d8)}, bot:{value:new THREE.Color(0xdaf0ff)} },
+    vertexShader: 'varying vec3 vP; void main(){ vP=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'varying vec3 vP; uniform vec3 top; uniform vec3 bot; void main(){ float h=clamp(normalize(vP).y*0.5+0.5,0.0,1.0); gl_FragColor=vec4(mix(bot,top,h),1.0); }'
+  });
+  s.add(new THREE.Mesh(new THREE.SphereGeometry(50,32,16), skyMat));
+  const sun = new THREE.Mesh(new THREE.SphereGeometry(4,16,16), new THREE.MeshBasicMaterial({ color:0xffffff }));
+  sun.position.copy(new THREE.Vector3(28,40,20).normalize().multiplyScalar(46));
+  s.add(sun);
+  // soft ground bounce
+  const grd = new THREE.Mesh(new THREE.SphereGeometry(50,16,8,0,Math.PI*2,Math.PI*0.5,Math.PI*0.5), new THREE.MeshBasicMaterial({ color:0x4f7a45, side:THREE.BackSide }));
+  s.add(grd);
+  return s;
+}
+
 // ── Image-based lighting (realistic ambient + reflections) ──
 async function initEnv(){
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  // 1) Real HDRI if provided
+  if (ASSETS.hdri){
+    try{
+      const { RGBELoader } = await import('three/addons/loaders/RGBELoader.js');
+      const hdr = await new RGBELoader().loadAsync(ASSETS.hdri);
+      hdr.mapping = THREE.EquirectangularReflectionMapping;
+      const env = pmrem.fromEquirectangular(hdr).texture;
+      scene.environment = env; scene.background = env;
+      hdr.dispose(); pmrem.dispose(); return;
+    }catch(e){ /* fall through to procedural */ }
+  }
+  // 2) Procedural sky environment
+  try{
+    scene.environment = pmrem.fromScene(buildSkyEnvScene(), 0.06).texture;
+    pmrem.dispose(); return;
+  }catch(e){}
+  // 3) Neutral studio fallback
   try{
     const { RoomEnvironment } = await import('three/addons/environments/RoomEnvironment.js');
-    const pmrem = new THREE.PMREMGenerator(renderer);
-    pmrem.compileEquirectangularShader();
-    const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-    scene.environment = envTex;
-    pmrem.dispose();
-  }catch(e){ /* keep light-only shading */ }
+    scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  }catch(e){}
+  pmrem.dispose();
+}
+
+// ── Optional glTF character (replaces the procedural astronaut) ──
+let charMixer = null;
+async function loadCharacter(){
+  if(!ASSETS.character) return;
+  try{
+    const { GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js');
+    const gltf = await new GLTFLoader().loadAsync(ASSETS.character);
+    const model = gltf.scene;
+    model.traverse(o=>{ if(o.isMesh){ o.castShadow=true; o.receiveShadow=true; } });
+    for(let i=playerGrp.children.length-1;i>=0;i--){ const c=playerGrp.children[i]; if(c.name!=='aura') playerGrp.remove(c); }
+    const sz=new THREE.Vector3(); new THREE.Box3().setFromObject(model).getSize(sz);
+    model.scale.setScalar(1.8/(sz.y||1));
+    const b2=new THREE.Box3().setFromObject(model); model.position.y = -b2.min.y;
+    playerGrp.add(model);
+    if(gltf.animations && gltf.animations.length){ charMixer=new THREE.AnimationMixer(model); charMixer.clipAction(gltf.animations[0]).play(); }
+  }catch(e){}
+}
+
+// ── Optional PBR ground textures ────────────────────────────
+async function loadGroundPBR(mesh){
+  if(!ASSETS.groundMap) return;
+  try{
+    const loader = new THREE.TextureLoader();
+    const set = async (url, srgb)=>{ const t=await loader.loadAsync(url); t.wrapS=t.wrapT=THREE.RepeatWrapping; t.repeat.set(8,8); t.anisotropy=MAXA; if(srgb) t.colorSpace=THREE.SRGBColorSpace; return t; };
+    mesh.material.map = await set(ASSETS.groundMap, true);
+    if(ASSETS.groundNormal) mesh.material.normalMap = await set(ASSETS.groundNormal, false);
+    if(ASSETS.groundRough) mesh.material.roughnessMap = await set(ASSETS.groundRough, false);
+    mesh.material.bumpMap = null; mesh.material.needsUpdate = true;
+  }catch(e){}
 }
 
 // ── Post-processing: HDR + MSAA + bloom (optional) ──────────
@@ -436,6 +512,7 @@ function addGroundGrass(){
   m.bumpMap=noiseTex(); m.bumpScale=0.03; m.envMapIntensity=0.6;
   const plane=new THREE.Mesh(new THREE.PlaneGeometry(40,40), m);
   plane.rotation.x=-Math.PI/2; plane.position.set(0,0.04,0); plane.receiveShadow=true; scene.add(plane);
+  loadGroundPBR(plane);
 }
 // Subtle ground grid (depth reference) on the base island
 function addGroundGrid(){
@@ -694,6 +771,7 @@ function tick(){
   let dt = clock.getDelta(); if (dt>1/30) dt=1/30;
   const t = performance.now()*0.001;
   scheduleMusic();
+  if (charMixer) charMixer.update(dt);
 
   // Animate world (coins, goal, movers) regardless of state
   for (const c of coins){ if(!c.got){ c.mesh.rotation.z += dt*2.2; c.mesh.position.y = c.y + Math.sin(t*2+c.mesh.position.x)*0.16; } }
@@ -917,6 +995,7 @@ resize();
 camPos.set(0, 7, 18);
 initEnv();
 initBloom();
+loadCharacter();
 window.__cosmo3dBoot = true;
 document.getElementById('loading').style.display='none';
 showMenu();
