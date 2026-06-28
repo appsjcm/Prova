@@ -408,7 +408,7 @@ const URL_DEBUG_3D = URL_PARAMS_3D.get('debug') === '1';
 const URL_ULTRA_3D = URL_PARAMS_3D.get('ultra') === '1';
 const URL_MOBILE_3D = URL_PARAMS_3D.get('mobile') === '1';
 if(IS_MOBILE) document.body.classList.add('mobile3d');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias:!IS_MOBILE, powerPreference:IS_MOBILE?'default':'high-performance', alpha:false });
+const renderer = new THREE.WebGLRenderer({ canvas, antialias:!IS_MOBILE, powerPreference:'high-performance', alpha:false });
 renderer.setPixelRatio(Math.min(devicePixelRatio, PROFILE_PC_3D ? 1.55 : (IS_IOS_3D ? 0.65 : (PROFILE_MOBILE_3D ? 0.85 : 1.25))));
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -981,6 +981,7 @@ function addBridge(x,z,len=10,rot=0){
   grp.position.set(x,0,z); grp.rotation.y=rot; scene.add(grp); return grp;
 }
 const waterSurfaces = [];
+const floaters = []; // islas flotantes con userData.floatY — se itera directo (sin scene.traverse)
 function addWaterPond(x,z,rx=7,rz=5){
   const tex = imgTex('water_lagoon.png', 3, 2);
   const material = new THREE.MeshPhysicalMaterial({ map:tex, color:0xbdfbff, roughness:0.04, metalness:0, transparent:true, opacity:0.72, transmission:0.18, clearcoat:1, clearcoatRoughness:0.02, emissive:0x1e9cff, emissiveIntensity:0.08 });
@@ -994,23 +995,28 @@ function addWaterPond(x,z,rx=7,rz=5){
 // Clouds (decorative, drifting)
 const clouds = [];
 function addClouds() {
-  for (let i=0;i<16;i++){
+  const count = IS_MOBILE ? 4 : 16;
+  const seg = IS_MOBILE ? 6 : 18;
+  const segSm = IS_MOBILE ? 5 : 16;
+  for (let i=0;i<count;i++){
     const grp = new THREE.Group();
-    const n = 4 + (Math.random()*3|0);
+    const n = IS_MOBILE ? 2 : 4 + (Math.random()*3|0);
     for (let j=0;j<n;j++){
       const puff = new THREE.Mesh(
-        new THREE.SphereGeometry(1.1+Math.random()*1.35, 18, 14),
+        new THREE.SphereGeometry(1.1+Math.random()*1.35, seg, IS_MOBILE?5:14),
         new THREE.MeshStandardMaterial({ color:0xffffff, roughness:0.85, metalness:0, transparent:true, opacity:0.92 })
       );
       puff.position.set((Math.random()-0.5)*4.4, (Math.random()-0.5)*1.6, (Math.random()-0.5)*2.8);
       puff.scale.set(1.2+Math.random()*1.1, 0.6+Math.random()*0.5, 1.0+Math.random()*0.8);
       grp.add(puff);
     }
-    const shade = new THREE.Mesh(
-      new THREE.SphereGeometry(1.2, 16, 12),
-      new THREE.MeshStandardMaterial({ color:0xbde9ff, roughness:1, metalness:0, transparent:true, opacity:0.12 })
-    );
-    shade.scale.set(2.8,0.4,1.8); shade.position.y=-0.45; grp.add(shade);
+    if(!IS_MOBILE){
+      const shade = new THREE.Mesh(
+        new THREE.SphereGeometry(1.2, segSm, 12),
+        new THREE.MeshStandardMaterial({ color:0xbde9ff, roughness:1, metalness:0, transparent:true, opacity:0.12 })
+      );
+      shade.scale.set(2.8,0.4,1.8); shade.position.y=-0.45; grp.add(shade);
+    }
     grp.position.set((Math.random()-0.5)*160, 15+Math.random()*28, -18-Math.random()*80);
     grp.scale.setScalar(0.85+Math.random()*1.2);
     grp.userData.spd = 0.18+Math.random()*0.18;
@@ -1144,6 +1150,13 @@ function addDecor(){
   }
 }
 
+function addDecorMobile(){
+  addGroundGrass();
+  addGroundGrid();
+  for(let i=0;i<6;i++){ const a=i/6*Math.PI*2, r=12+i*4; addRock(Math.cos(a)*r, Math.sin(a)*r, 0.5+Math.random()*0.7); }
+  for(let i=0;i<6;i++){ const x=(Math.random()-0.5)*60, z=(Math.random()-0.5)*60; if(Math.hypot(x,z)>8) addTuft(x,z); }
+}
+
 // Distant decorative islands (no collision) for depth
 function addScenery(){
   const cols=[0x8e6d4e,0x7c68a8,0x4da3a6,0xd9815a];
@@ -1161,6 +1174,7 @@ function addScenery(){
     grp.userData.floatY=grp.position.y;
     grp.userData.phase=Math.random()*Math.PI*2;
     scene.add(grp);
+    floaters.push(grp);
   }
 }
 function addMiniBackdropProps(grp){
@@ -1288,7 +1302,7 @@ function updateQualityButtons(){
 }
 function setQuality(q='medium'){
   v4.quality=q;
-  const pr = q==='low' ? 0.75 : q==='medium' ? Math.min(devicePixelRatio,1.25) : Math.min(devicePixelRatio,2);
+  const pr = q==='low' ? (IS_MOBILE?0.5:0.75) : q==='medium' ? Math.min(devicePixelRatio,1.25) : Math.min(devicePixelRatio,2);
   renderer.setPixelRatio(pr);
   renderer.shadowMap.enabled = q!=='low';
   renderer.toneMappingExposure = q==='high' ? 1.18 : q==='medium' ? 1.08 : 1.0;
@@ -2723,8 +2737,7 @@ function buildLevel() {
   prepareEnemyUI();
   refreshGoalLock();
   addClouds();
-  addScenery();
-  addDecor();
+  if(IS_MOBILE){ addDecorMobile(); } else { addScenery(); addDecor(); }
 }
 
 // ── Player ──────────────────────────────────────────────
@@ -3085,7 +3098,7 @@ function setMobileProfile3D(on=true){
   if(on){
     setSafe3D(true);
     setLite3D(true);
-    renderer.setPixelRatio(IS_IOS_3D ? 0.6 : 0.82);
+    renderer.setPixelRatio(IS_IOS_3D ? 0.5 : 0.55);
     renderer.shadowMap.enabled=false;
     try{ setQuality('low'); }catch(_){}
     const mh=document.getElementById('mobileHelp3D');
@@ -3147,7 +3160,7 @@ function setSafe3D(on=true){
     forcePlayerCamera(false);
     showToast('Modo seguro 3D activado: HUD limpio y render ligero',2.4);
   } else {
-    renderer.setPixelRatio(Math.min(devicePixelRatio, PROFILE_PC_3D ? 1.55 : (IS_IOS_3D ? 0.65 : (PROFILE_MOBILE_3D ? 0.85 : 1.25))));
+    renderer.setPixelRatio(Math.min(devicePixelRatio, PROFILE_PC_3D ? 1.55 : (IS_IOS_3D ? 0.5 : (PROFILE_MOBILE_3D ? 0.55 : 1.25))));
     renderer.shadowMap.enabled=!IS_MOBILE;
     showToast('Modo seguro desactivado',1.6);
   }
@@ -3380,12 +3393,7 @@ function tick(){
   if (goal){ goal.ring.rotation.z += dt*1.5; goal.grp.rotation.y += dt*0.6; }
   for (const cl of clouds){ cl.position.x += dt*cl.userData.spd; if(cl.userData.rot){ cl.rotation.x+=dt*cl.userData.rot.x; cl.rotation.y+=dt*cl.userData.rot.y; cl.rotation.z+=dt*cl.userData.rot.z; } if (cl.position.x > 100) cl.position.x = -100; }
   for (const w of waterSurfaces){ if(w.tex){ w.tex.offset.x += dt*0.028; w.tex.offset.y += dt*0.012; } w.mesh.position.y = 0.085 + Math.sin(t*1.8 + w.mesh.position.x)*0.018; }
-  scene.traverse(obj=>{
-    if(obj.userData && obj.userData.floatY!==undefined){
-      obj.position.y = obj.userData.floatY + Math.sin(t*0.6 + obj.userData.phase)*0.5;
-      obj.rotation.y += dt*0.03;
-    }
-  });
+  for(const o of floaters){ o.position.y=o.userData.floatY+Math.sin(t*0.6+o.userData.phase)*0.5; o.rotation.y+=dt*0.03; }
   for (const m of movers){
     const off = Math.sin(t*m.spd + m.phase) * m.amp;
     const prev = m.mesh.position.clone();
