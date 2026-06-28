@@ -2,55 +2,141 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0a2040">
-<title>Cosmo Kid — Elige versión</title>
+<meta name="theme-color" content="#020712">
+<link rel="manifest" href="manifest.webmanifest?v=41">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Cosmo Kid">
+<title>Cosmo Kid v41 — PWA</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%}
-body{background:radial-gradient(ellipse at 50% 30%,#143a72,#0a1830 70%,#060d1f);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;font-family:monospace;color:#fff;overflow:hidden;padding:24px;text-align:center}
+html,body{min-height:100%}
+body{background:radial-gradient(ellipse at 50% 24%,#14345d,#020712 72%,#00040a);min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;font-family:monospace;color:#fff;overflow-x:hidden;padding:20px;text-align:center}
 #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
-h1{position:relative;z-index:1;font-size:clamp(2rem,9vw,3.6rem);font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,#7fd5ff,#7cff9b,#ffe66b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 50px rgba(120,210,255,.3);line-height:1}
-.sub{position:relative;z-index:1;font-size:.72rem;color:#7fa8cf;letter-spacing:4px;text-transform:uppercase;margin-top:-14px}
-#cards{position:relative;z-index:1;display:flex;gap:22px;flex-wrap:wrap;justify-content:center;max-width:680px}
-.card{width:260px;max-width:80vw;background:rgba(10,28,58,.7);border:2px solid rgba(90,170,230,.3);border-radius:20px;padding:24px 20px;cursor:pointer;transition:transform .14s,box-shadow .14s,border-color .14s;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:10px;backdrop-filter:blur(2px)}
-.card:hover,.card:active{transform:translateY(-6px) scale(1.03);border-color:rgba(120,225,255,.8);box-shadow:0 0 44px rgba(0,150,255,.4),0 10px 30px rgba(0,0,0,.5)}
-.ico{font-size:3rem;line-height:1}
-.ct{font-size:1.5rem;font-weight:900;letter-spacing:3px}
-.cd{font-size:.72rem;color:#a9c8e6;line-height:1.7}
-.badge{font-size:.6rem;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-top:2px}
-.card.d25 .ct{color:#7cff9b}.card.d25 .badge{background:rgba(40,180,90,.25);color:#7cff9b}
-.card.d3 .ct{color:#7fd5ff}.card.d3 .badge{background:rgba(40,140,230,.25);color:#7fd5ff}
-.foot{position:relative;z-index:1;font-size:.62rem;color:#456;letter-spacing:1px}
+.wrap{position:relative;z-index:1;width:min(1040px,94vw);display:flex;flex-direction:column;align-items:center;gap:14px}
+h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;background:linear-gradient(135deg,#7fd5ff,#7cff9b,#ffe66b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 50px rgba(120,210,255,.3);line-height:1}
+.sub{font-size:.7rem;color:#86b4df;letter-spacing:4px;text-transform:uppercase;margin-top:-6px}
+.ver{font-size:.62rem;color:#ffe66b;background:rgba(70,48,0,.38);border:1px solid rgba(255,230,107,.28);border-radius:999px;padding:6px 10px;letter-spacing:1px}
+.reco{width:min(820px,94vw);border-radius:22px;padding:16px;background:linear-gradient(160deg,rgba(0,80,90,.58),rgba(0,34,64,.66));border:2px solid rgba(124,243,255,.42);box-shadow:0 0 36px rgba(0,180,255,.18)}
+.reco b{color:#7cff9b}
+.reco small{display:block;color:#a9c8e6;margin-top:8px;line-height:1.45}
+.bigrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.big{display:block;padding:14px 16px;border-radius:18px;text-decoration:none;color:#06131f;background:linear-gradient(135deg,#7cff9b,#7fd5ff);font-weight:900;letter-spacing:2px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.big.pc{background:linear-gradient(135deg,#ffe66b,#7fd5ff)}
+#cards{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%}
+.card{width:184px;max-width:92vw;background:rgba(10,28,58,.72);border:2px solid rgba(90,170,230,.32);border-radius:20px;padding:15px 12px;text-decoration:none;color:#fff;display:flex;flex-direction:column;align-items:center;gap:8px;backdrop-filter:blur(2px)}
+.card:active{transform:scale(.98)}
+.ico{font-size:2rem;line-height:1}
+.ct{font-size:.84rem;font-weight:900;letter-spacing:1px}
+.cd{font-size:.56rem;color:#a9c8e6;line-height:1.4}
+.badge{font-size:.45rem;letter-spacing:1.1px;text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-top:2px}
+.card.mobile .ct{color:#7cff9b}.card.mobile .badge{background:rgba(40,180,90,.25);color:#7cff9b}
+.card.canvas .ct{color:#7fd5ff}.card.canvas .badge{background:rgba(40,140,230,.25);color:#7fd5ff}
+.card.pc .ct{color:#ffe66b}.card.pc .badge{background:rgba(180,130,20,.25);color:#ffe66b}
+.card.webgl .ct{color:#9fffe0}.card.webgl .badge{background:rgba(30,190,130,.2);color:#9fffe0}
+.card.debug .ct{color:#ff6b6b}.card.debug .badge{background:rgba(255,80,80,.22);color:#ff8a8a}
+.tools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.tool{border:1px solid rgba(124,243,255,.34);background:rgba(5,20,40,.62);color:#dffbff;border-radius:999px;padding:9px 12px;font:700 .62rem monospace;letter-spacing:1px}
+.tool.warn{border-color:rgba(255,230,107,.45);color:#ffe66b;background:rgba(60,40,0,.48)}
+.foot{font-size:.6rem;color:#6e8aa8;letter-spacing:1px;line-height:1.5;max-width:820px}
+#status{min-height:18px;font-size:.58rem;color:#9feaff;letter-spacing:1px}
+#diag{font-size:.56rem;color:#92aec8;letter-spacing:1px;line-height:1.5;max-width:820px;background:rgba(5,20,40,.38);border:1px solid rgba(124,243,255,.16);border-radius:14px;padding:8px 10px}
+@media(max-width:560px){
+ body{justify-content:flex-start;padding-top:max(18px,env(safe-area-inset-top,18px));gap:10px;overflow:auto}
+ .wrap{gap:11px}.reco{padding:13px}.big{padding:13px 14px;width:100%}.card{width:100%;padding:15px 14px}#cards{gap:9px}
+}
 </style>
 </head>
 <body>
 <canvas id="stars"></canvas>
+<div class="wrap">
 <h1>COSMO KID</h1>
 <div class="sub">Aventura Espacial</div>
+<div class="ver">VERSIÓN v41 · PWA + auto calidad</div>
+
+<div class="reco">
+  <div><b>Auto recomendación + PWA:</b> en móvil usa Canvas Lite o 2,5D. En PC usa WebGL PC.</div>
+  <small id="recommend">Detectando dispositivo...</small>
+  <div class="bigrow">
+    <a class="big playlink" id="autoBtn" href="game3d-lite.html?v=41&play=1&demo=1">JUGAR RECOMENDADO v41</a>
+    <a class="big pc playlink" href="game3d.html?v=41&pc=1">PC 3D WEBGL</a>
+  </div>
+</div>
+
 <div id="cards">
-  <a class="card d25" href="game.html">
-    <div class="ico">🪐</div>
-    <div class="ct">2.5D</div>
-    <div class="badge">Clásico mejorado</div>
-    <div class="cd">8 mundos, jefes, dash, pisotón y rango S. Pixel-art con luz, sombras y profundidad. Ligero y sin conexión.</div>
+  <a class="card debug playlink" href="diagnostico.html?v=41">
+    <div class="ico">🩺</div><div class="ct">DIAGNÓSTICO</div><div class="badge">Test</div>
+    <div class="cd">Comprueba móvil/PC, WebGL, Canvas y recomendado.</div>
   </a>
-  <a class="card d3" href="game3d.html">
-    <div class="ico">🚀</div>
-    <div class="ct">3D</div>
-    <div class="badge">WebGL · nuevo</div>
-    <div class="cd">Plataformas 3D reales con cámara, sombras dinámicas y físicas de salto. En desarrollo (requiere internet).</div>
+  <a class="card canvas playlink" href="game3d-lite.html?v=41&play=1&demo=1">
+    <div class="ico">📱</div><div class="ct">CANVAS LITE</div><div class="badge">Sin WebGL</div>
+    <div class="cd">El modo más estable: ahora con CALIDAD rendimiento/calidad.</div>
+  </a>
+  <a class="card mobile playlink" href="game.html?v=41">
+    <div class="ico">🪐</div><div class="ct">2.5D MÓVIL</div><div class="badge">Estable</div>
+    <div class="cd">Ligero, rápido y con mandos editables.</div>
+  </a>
+  <a class="card pc playlink" href="game3d.html?v=41&pc=1">
+    <div class="ico">🖥️</div><div class="ct">PC 3D</div><div class="badge">WebGL PC</div>
+    <div class="cd">3D completo optimizado para ordenador.</div>
+  </a>
+  <a class="card webgl playlink" href="game3d.html?v=41&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">
+    <div class="ico">⚡</div><div class="ct">MÓVIL WEBGL</div><div class="badge">Ultra Lite</div>
+    <div class="cd">WebGL reducido: si baja de FPS avisa y salta a Canvas.</div>
+  </a>
+  <a class="card debug playlink" href="game3d.html?v=41&safe=1&lite=1&play=1&demo=1&debug=1">
+    <div class="ico">🧰</div><div class="ct">DEBUG 3D</div><div class="badge">Diagnóstico</div>
+    <div class="cd">FPS, estado, posición y cámara.</div>
+  </a>
+  <a class="card webgl playlink" href="game3d.html?v=41">
+    <div class="ico">🚀</div><div class="ct">3D NORMAL</div><div class="badge">Completo</div>
+    <div class="cd">Mundo abierto WebGL completo.</div>
   </a>
 </div>
-<div class="foot">Elige una versión para jugar</div>
+
+<div class="tools">
+  <button class="tool warn" id="clearBtn">LIMPIAR CACHÉ</button>
+  <button class="tool" id="hardBtn">RECARGA v41</button>
+  <button class="tool" id="autoTool">ABRIR RECOMENDADO</button>
+  <button class="tool" id="diagBtn">DIAGNÓSTICO</button>
+  <button class="tool" id="installBtn">INSTALAR APP</button>
+</div>
+<div id="status">Listo · v41 cargada</div>
+<div id="diag">Diagnóstico: comprobando navegador...</div>
+<div class="foot">Sube index.html, game.html, game3d.html, game3d-lite.html, diagnostico.html, manifest.webmanifest, sw.js y assets/. Si ves v41 o anterior, limpia caché o abre en privado.</div>
+</div>
 <script>
-// lightweight twinkling starfield
-const cv=document.getElementById('stars'), x=cv.getContext('2d');
-let stars=[];
-function resize(){ cv.width=innerWidth; cv.height=innerHeight; stars=[]; const n=Math.min(140,innerWidth*innerHeight/9000|0); for(let i=0;i<n;i++) stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.3,p:Math.random()*6.28,s:.5+Math.random()*1.5}); }
-addEventListener('resize',resize); resize();
-function draw(t){ x.clearRect(0,0,cv.width,cv.height); for(const s of stars){ const a=.35+.5*Math.sin(t*.001*s.s+s.p); x.globalAlpha=a; x.fillStyle='#cfe6ff'; x.beginPath(); x.arc(s.x,s.y,s.r,0,6.28); x.fill(); } x.globalAlpha=1; requestAnimationFrame(draw); }
-requestAnimationFrame(draw);
+const VERSION='41';
+const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+const isSmall=innerWidth<820;
+let gl='no';
+try{const c=document.createElement('canvas');gl=!!(c.getContext('webgl2')||c.getContext('webgl'))?'sí':'no';}catch(e){}
+const recommended=(touch||isSmall||isIOS) ? 'game3d-lite.html?v=41&play=1&demo=1' : 'game3d.html?v=41&pc=1';
+document.getElementById('autoBtn').href=recommended;
+document.getElementById('recommend').textContent=(touch||isSmall||isIOS)
+  ? 'Detectado móvil/tablet: recomendado Canvas Lite o 2,5D. WebGL puede ir lento en iPhone.'
+  : 'Detectado PC/escritorio: recomendado 3D WebGL PC.';
+document.querySelectorAll('.playlink').forEach(a=>{a.addEventListener('click',()=>{const u=new URL(a.href,location.href);u.searchParams.set('v',VERSION);u.searchParams.set('t',Date.now().toString().slice(-6));a.href=u.href;});});
+const status=document.getElementById('status');
+document.getElementById('clearBtn').onclick=async()=>{status.textContent='Limpiando caché local...';try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}try{localStorage.clear();sessionStorage.clear();}catch(e){}status.textContent='Caché limpia. Recargando v41...';setTimeout(()=>location.href='index.html?v=41&t='+Date.now(),500);}catch(e){status.textContent='No se pudo limpiar todo, abre en privado.';}};
+document.getElementById('hardBtn').onclick=()=>location.href='index.html?v=41&t='+Date.now();
+document.getElementById('autoTool').onclick=()=>location.href=recommended+'&t='+Date.now();
+document.getElementById('diagBtn').onclick=()=>location.href='diagnostico.html?v=41&t='+Date.now();
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;document.getElementById('installBtn').textContent='INSTALAR APP';});
+document.getElementById('installBtn').onclick=async()=>{
+  if(deferredInstall){deferredInstall.prompt(); await deferredInstall.userChoice; deferredInstall=null;}
+  else alert('En iPhone: compartir → Añadir a pantalla de inicio. En Android/PC: menú del navegador → Instalar app.');
+};
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=41').catch(()=>{}));
+}
+document.getElementById('diag').textContent='Diagnóstico: WebGL '+gl+' · táctil '+(touch?'sí':'no')+' · iOS '+(isIOS?'sí':'no')+' · ancho '+innerWidth+'px · v'+VERSION;
+const cv=document.getElementById('stars'), x=cv.getContext('2d');let stars=[];function resize(){cv.width=innerWidth;cv.height=innerHeight;stars=[];const n=Math.min(140,innerWidth*innerHeight/9000|0);for(let i=0;i<n;i++)stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.3,p:Math.random()*6.28,s:.5+Math.random()*1.5});}addEventListener('resize',resize);resize();function draw(t){x.clearRect(0,0,cv.width,cv.height);for(const s of stars){const a=.35+.5*Math.sin(t*.001*s.s+s.p);x.globalAlpha=a;x.fillStyle='#cfe6ff';x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}x.globalAlpha=1;requestAnimationFrame(draw);}requestAnimationFrame(draw);
 </script>
 </body>
 </html>

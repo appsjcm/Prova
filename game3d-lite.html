@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#041020">
+<link rel="manifest" href="manifest.webmanifest?v=41">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Cosmo Kid 3D Canvas Lite v41</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#041020;font-family:monospace;color:white}
+#game{position:fixed;inset:0;width:100vw;height:100dvh;background:#061426;touch-action:none}
+#hud{position:fixed;left:10px;top:max(10px,env(safe-area-inset-top,10px));z-index:10;background:rgba(4,12,28,.66);border:1px solid rgba(124,243,255,.28);border-radius:16px;padding:10px 12px;font:800 .62rem monospace;line-height:1.55;color:#dffbff;backdrop-filter:blur(3px)}
+#hud b{color:#7cff9b}
+#tag{position:fixed;left:50%;top:max(10px,env(safe-area-inset-top,10px));transform:translateX(-50%);z-index:10;background:rgba(0,40,55,.72);border:1px solid rgba(124,243,255,.4);border-radius:999px;padding:8px 11px;font:900 .56rem monospace;letter-spacing:1px;color:#dffbff;white-space:nowrap}
+#mission{position:fixed;left:50%;top:max(48px,calc(env(safe-area-inset-top,0px) + 48px));transform:translateX(-50%);z-index:10;background:rgba(4,12,28,.66);border:1px solid rgba(255,230,107,.36);border-radius:999px;padding:8px 12px;font:900 .56rem monospace;letter-spacing:1px;color:#ffe66b;white-space:nowrap}
+#mini{position:fixed;right:10px;top:max(10px,env(safe-area-inset-top,10px));z-index:11;width:104px;height:104px;border-radius:18px;border:1px solid rgba(124,243,255,.35);background:rgba(4,12,28,.58);padding:6px}
+#minic{width:92px;height:92px}
+#menu{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,rgba(20,80,130,.9),rgba(2,7,18,.96));padding:18px;text-align:center}
+#panel{width:min(500px,92vw);border:1px solid rgba(124,243,255,.32);border-radius:24px;background:rgba(4,16,34,.78);padding:24px;box-shadow:0 16px 60px rgba(0,0,0,.55)}
+h1{font-size:clamp(2rem,10vw,3.4rem);letter-spacing:4px;background:linear-gradient(135deg,#7fd5ff,#7cff9b,#ffe66b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+#panel p{font-size:.72rem;color:#a9c8e6;line-height:1.7;margin:14px 0}
+.btn{border:1px solid rgba(124,243,255,.45);background:rgba(0,36,66,.75);color:#dffbff;border-radius:999px;padding:11px 14px;font:900 .72rem monospace;letter-spacing:1px;margin:4px}
+.btn.main{background:linear-gradient(135deg,#7cff9b,#7fd5ff);color:#06131f;border:0;padding:13px 20px}
+#controls{position:fixed;inset:0;z-index:20;pointer-events:none}
+#joy{position:absolute;left:max(20px,env(safe-area-inset-left,20px));bottom:max(26px,env(safe-area-inset-bottom,26px));width:118px;height:118px;border-radius:50%;background:rgba(0,35,70,.42);border:2px solid rgba(124,243,255,.34);pointer-events:auto;touch-action:none}
+#knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;background:rgba(124,243,255,.78);box-shadow:0 0 20px rgba(124,243,255,.45)}
+#buttons{position:absolute;right:max(18px,env(safe-area-inset-right,18px));bottom:max(30px,env(safe-area-inset-bottom,30px));display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+#buttons .btn{width:98px;margin:0;padding:10px 7px;font-size:.58rem}
+#toast{position:fixed;left:50%;bottom:max(154px,calc(env(safe-area-inset-bottom,0px) + 154px));transform:translateX(-50%);z-index:25;background:rgba(5,12,24,.82);border:1px solid rgba(255,230,107,.45);color:#ffe66b;border-radius:999px;padding:8px 12px;font:900 .58rem monospace;letter-spacing:1px;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap}
+#toast.on{opacity:1}
+#win{position:fixed;inset:0;z-index:35;display:none;align-items:center;justify-content:center;background:rgba(2,7,18,.82);padding:18px;text-align:center}
+#winPanel{width:min(460px,92vw);background:rgba(4,16,34,.9);border:1px solid rgba(124,255,155,.42);border-radius:24px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.6)}
+#winPanel h2{font-size:2rem;color:#7cff9b;margin-bottom:10px}
+#winPanel p{font-size:.72rem;color:#a9c8e6;line-height:1.6;margin-bottom:12px}
+@media(max-width:560px){
+ #hud{font-size:.53rem;padding:8px 10px;max-width:166px}
+ #tag{display:none}
+ #mission{top:auto;bottom:max(156px,calc(env(safe-area-inset-bottom,0px) + 156px));font-size:.5rem;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+ #mini{width:86px;height:86px}
+ #minic{width:74px;height:74px}
+ #buttons .btn{width:88px;font-size:.53rem}
+}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="tag">3D CANVAS LITE v41 · sin WebGL · móvil/PC</div>
+<div id="mission">Misión: recoge cristales para abrir el portal</div>
+<div id="mini"><canvas id="minic" width="92" height="92"></canvas></div>
+<div id="hud">
+  <div><b>Modo:</b> Canvas Lite Deluxe</div>
+  <div id="pos">X 0 · Z 0</div>
+  <div id="fps">FPS —</div>
+  <div id="goal">Cristales 0/20</div>
+  <div id="save">Guardado: —</div>
+  <div id="qualityHud">Calidad: auto</div>
+  <div id="ctrlHint">Móvil: joystick · PC: WASD · CALIDAD</div>
+</div>
+<div id="controls">
+  <div id="joy"><div id="knob"></div></div>
+  <div id="buttons">
+    <button class="btn" id="bDemo">DEMO</button>
+    <button class="btn" id="bFix">FIX</button>
+    <button class="btn" id="bQuality">CALIDAD</button>
+    <button class="btn" id="bFull">FULL</button>
+    <button class="btn" id="bSave">SAVE</button>
+    <button class="btn" id="bReset">RESET</button>
+    <button class="btn" id="b25">2,5D</button>
+    <button class="btn" id="b3d">3D WEBGL</button>
+    <button class="btn" id="bHome">HOME</button>
+    <button class="btn" id="bDiag">DIAG</button>
+  </div>
+</div>
+<div id="toast">Listo</div>
+<div id="win"><div id="winPanel"><h2>¡PORTAL ABIERTO!</h2><p>Has reunido suficientes cristales en Canvas Lite Deluxe.</p><button class="btn main" id="again">SEGUIR</button><button class="btn" onclick="location.href='index.html?v=41&t='+Date.now()">HOME</button></div></div>
+<div id="menu">
+  <div id="panel">
+    <h1>COSMO KID</h1>
+    <p><b>3D Canvas Lite Deluxe v41</b><br>Modo 3D falso/isométrico sin WebGL. Ahora tiene minimapa, portal/meta, guardado local y pantalla completa.</p>
+    <button class="btn main" id="start">JUGAR</button>
+    <button class="btn" id="demoStart">DEMO AUTO</button>
+    <button class="btn" onclick="location.href='index.html?v=41&t='+Date.now()">HOME</button>
+  </div>
+</div>
+<script>
+const VERSION='41';
+const STORE='cosmoKidCanvasLiteV41';
+const qs=new URLSearchParams(location.search);
+const AUTO=qs.get('play')==='1'||qs.get('demo')==='1';
+const c=document.getElementById('game'), ctx=c.getContext('2d');
+const mc=document.getElementById('minic'), mctx=mc.getContext('2d');
+const posEl=document.getElementById('pos'), fpsEl=document.getElementById('fps'), goalEl=document.getElementById('goal'), saveEl=document.getElementById('save'), qualityHud=document.getElementById('qualityHud'), missionEl=document.getElementById('mission');
+const toastEl=document.getElementById('toast');
+let W=0,H=0,DPR=1, state='menu', last=performance.now(), fps=0, frames=0, fpsT=last;
+const IS_TOUCH_LITE=('ontouchstart' in window)||navigator.maxTouchPoints>0||innerWidth<820;
+const keysLite={};
+let joyX=0, joyY=0, demoT=0, crystalsGot=0, portalOpen=false, won=false, particles=[];
+let qualityLite=(innerWidth<820||IS_TOUCH_LITE)?'performance':'quality';
+let lowFpsLite=0, autoQualityLite=true;
+const player={x:0,z:0,vx:0,vz:0,face:0};
+const crystals=[], rocks=[], pads=[], gates=[{x:0,z:-54,r:6}];
+function resize(){DPR=Math.min(devicePixelRatio||1,qualityLite==='performance'?(IS_TOUCH_LITE?1:1.15):(IS_TOUCH_LITE?1.25:1.65));W=innerWidth;H=innerHeight;c.width=W*DPR;c.height=H*DPR;c.style.width=W+'px';c.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}
+addEventListener('resize',resize); resize();
+function rand(a,b){return a+Math.random()*(b-a)}
+function seedWorld(){
+  crystals.length=rocks.length=pads.length=0; crystalsGot=0; portalOpen=false; won=false;
+  for(let i=0;i<20;i++) crystals.push({x:rand(-48,48),z:rand(-48,48),got:false,spin:rand(0,6.28)});
+  for(let i=0;i<42;i++) rocks.push({x:rand(-58,58),z:rand(-58,58),r:rand(1.2,3.6),h:rand(.8,2.2)});
+  for(let i=0;i<12;i++) pads.push({x:rand(-50,50),z:rand(-50,50),w:rand(6,11),h:rand(4,8),pulse:rand(0,6.28)});
+}
+seedWorld();
+function setQualityLite(q,auto=false){
+  qualityLite=q;
+  resize();
+  if(qualityHud) qualityHud.textContent='Calidad: '+qualityLite+(auto?' auto':'');
+}
+function resetSaveLite(){
+  try{localStorage.removeItem(STORE);}catch(e){}
+  seedWorld(); player.x=0; player.z=0; player.vx=player.vz=0; saveEl.textContent='Guardado: reset'; toast('Guardado reiniciado');
+}
+function saveGame(){try{localStorage.setItem(STORE,JSON.stringify({x:player.x,z:player.z,got:crystals.map(c=>c.got),time:Date.now()}));saveEl.textContent='Guardado: OK';toast('Partida guardada')}catch(e){toast('No se pudo guardar')}}
+function loadGame(){try{const d=JSON.parse(localStorage.getItem(STORE)||'null');if(!d)return;player.x=d.x||0;player.z=d.z||0;(d.got||[]).forEach((g,i)=>{if(crystals[i])crystals[i].got=!!g});crystalsGot=crystals.filter(c=>c.got).length;portalOpen=crystalsGot>=12;saveEl.textContent='Guardado: cargado'}catch(e){}}
+loadGame();
+function iso(x,z){const scale=Math.min(W,H)*0.0115;return {x:W/2+(x-z)*scale*1.55,y:H/2+58+(x+z)*scale*.72}}
+function depth(a){return (a.x||0)+(a.z||0)}
+function toast(t){toastEl.textContent=t;toastEl.classList.add('on');clearTimeout(toastEl._t);toastEl._t=setTimeout(()=>toastEl.classList.remove('on'),1800)}
+function start(demo=false){state='play';document.getElementById('menu').style.display='none';if(demo){demoT=10;toast('DEMO AUTO 10s')}else toast('Juega con joystick')}
+function fix(){player.x=0;player.z=0;player.vx=player.vz=0;toast('Jugador recolocado')}
+function addParticle(x,z,col='#ffe66b'){for(let i=0;i<8;i++)particles.push({x,z,y:0,vx:rand(-1.5,1.5),vz:rand(-1.5,1.5),vy:rand(2,5),life:rand(.45,.8),col})}
+document.getElementById('start').onclick=()=>start(false);
+document.getElementById('demoStart').onclick=()=>start(true);
+document.getElementById('bDemo').onclick=()=>{demoT=10;toast('DEMO AUTO')};
+document.getElementById('bFix').onclick=fix;
+document.getElementById('bQuality').onclick=()=>{autoQualityLite=false;setQualityLite(qualityLite==='performance'?'quality':'performance');toast('Calidad: '+qualityLite)};
+document.getElementById('bFull').onclick=()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()};
+document.getElementById('bSave').onclick=saveGame;
+document.getElementById('b25').onclick=()=>location.href='game.html?v=41&t='+Date.now();
+document.getElementById('b3d').onclick=()=>location.href='game3d.html?v=41&safe=1&lite=1&ultra=1&play=1&debug=1&t='+Date.now();
+document.getElementById('bHome').onclick=()=>location.href='index.html?v=41&t='+Date.now();
+document.getElementById('bDiag').onclick=()=>location.href='diagnostico.html?v=41&t='+Date.now();
+document.getElementById('again').onclick=()=>{document.getElementById('win').style.display='none';state='play'};
+if(AUTO) setTimeout(()=>start(true),350);
+const joy=document.getElementById('joy'), knob=document.getElementById('knob');let jid=null,cx=0,cy=0,R=48;
+function setJoy(x,y){let dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy);if(d>R){dx=dx/d*R;dy=dy/d*R}joyX=dx/R;joyY=dy/R;knob.style.transform=`translate(${dx}px,${dy}px)`}
+function endJoy(){jid=null;joyX=joyY=0;knob.style.transform=''}
+joy.addEventListener('pointerdown',e=>{e.preventDefault();jid=e.pointerId;const r=joy.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;try{joy.setPointerCapture(jid)}catch(_){}setJoy(e.clientX,e.clientY)},{passive:false});
+addEventListener('pointermove',e=>{if(e.pointerId===jid)setJoy(e.clientX,e.clientY)},{passive:false});
+addEventListener('pointerup',e=>{if(e.pointerId===jid)endJoy()},{passive:false});
+addEventListener('pointercancel',e=>{if(e.pointerId===jid)endJoy()},{passive:false});
+addEventListener('keydown',e=>{keysLite[e.code]=true;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code))e.preventDefault();});
+addEventListener('keyup',e=>{keysLite[e.code]=false;});
+function drawGround(){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#12365c');g.addColorStop(.45,'#0b213d');g.addColorStop(1,'#061020');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2,H/2+58);ctx.strokeStyle='rgba(124,243,255,.08)';ctx.lineWidth=1;const s=Math.min(W,H)*0.0115;for(let i=-12;i<=12;i++){ctx.beginPath();ctx.moveTo((i*8-90)*s*1.55,(-90+i*8)*s*.72);ctx.lineTo((i*8+90)*s*1.55,(90+i*8)*s*.72);ctx.stroke();ctx.beginPath();ctx.moveTo((-90-i*8)*s*1.55,(90-i*8)*s*.72);ctx.lineTo((90-i*8)*s*1.55,(-90-i*8)*s*.72);ctx.stroke()}ctx.restore()}
+function drawBlob(p,rx,ry,color,stroke){ctx.beginPath();ctx.ellipse(p.x,p.y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke()}}
+function drawCrystal(o,t){if(o.got)return;const p=iso(o.x,o.z),bob=Math.sin(t*3+o.spin)*5;ctx.save();ctx.translate(p.x,p.y-18+bob);ctx.rotate(t*1.5+o.spin);ctx.fillStyle='#8fffff';ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,-13);ctx.lineTo(9,0);ctx.lineTo(0,14);ctx.lineTo(-9,0);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore()}
+function drawRock(o){const p=iso(o.x,o.z);drawBlob({x:p.x,y:p.y-o.h*4},o.r*5,o.r*2.6,'#31435d','#6f89a8');ctx.fillStyle='rgba(255,255,255,.12)';ctx.beginPath();ctx.arc(p.x-o.r*1.5,p.y-o.h*4-o.r*.6,o.r*1.4,0,6.28);ctx.fill()}
+function drawPad(o,t){const p=iso(o.x,o.z),w=o.w*5,h=o.h*3;ctx.save();ctx.translate(p.x,p.y);ctx.fillStyle='rgba(124,243,255,.14)';ctx.strokeStyle='rgba(124,243,255,'+(.36+Math.sin(t*4+o.pulse)*.12)+')';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,w,h,0,0,6.28);ctx.fill();ctx.stroke();ctx.restore()}
+function drawPortal(t){const g=gates[0],p=iso(g.x,g.z);ctx.save();ctx.translate(p.x,p.y-16);ctx.strokeStyle=portalOpen?'#7cff9b':'rgba(255,230,107,.35)';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,34,48,Math.sin(t)*.08,0,6.28);ctx.stroke();ctx.strokeStyle=portalOpen?'rgba(124,255,155,.38)':'rgba(255,230,107,.16)';ctx.lineWidth=12;ctx.beginPath();ctx.ellipse(0,0,22+Math.sin(t*5)*3,36+Math.cos(t*4)*3,0,0,6.28);ctx.stroke();ctx.restore()}
+function drawPlayer(t){const p=iso(player.x,player.z);drawBlob({x:p.x,y:p.y+12},22,8,'rgba(0,0,0,.32)');ctx.save();ctx.translate(p.x,p.y-20);ctx.fillStyle='#2f6edf';ctx.strokeStyle='#dffbff';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(-13,-4,26,30,8);ctx.fill();ctx.stroke();ctx.fillStyle='#f7fbff';ctx.beginPath();ctx.arc(0,-18,17,0,6.28);ctx.fill();ctx.stroke();ctx.fillStyle='#11529a';ctx.beginPath();ctx.ellipse(2,-18,10,7,0,0,6.28);ctx.fill();ctx.fillStyle='#ffe66b';ctx.fillRect(-9,8,18,5);ctx.strokeStyle='#7cff9b';ctx.lineWidth=3;const sw=Math.sin(t*10)*5;ctx.beginPath();ctx.moveTo(-12,4);ctx.lineTo(-22,15+sw);ctx.moveTo(12,4);ctx.lineTo(22,15-sw);ctx.stroke();ctx.fillStyle='#7cff9b';ctx.beginPath();ctx.moveTo(0,-54);ctx.lineTo(10,-36);ctx.lineTo(-10,-36);ctx.closePath();ctx.fill();ctx.restore()}
+function update(dt,t){if(state!=='play')return;let ix=joyX,iz=joyY;if(keysLite['KeyA']||keysLite['ArrowLeft'])ix-=1;if(keysLite['KeyD']||keysLite['ArrowRight'])ix+=1;if(keysLite['KeyW']||keysLite['ArrowUp'])iz-=1;if(keysLite['KeyS']||keysLite['ArrowDown'])iz+=1;if(demoT>0){demoT-=dt;iz-=.75;ix+=Math.sin(t*2)*.55;if(demoT<=0)toast('Demo terminada: prueba joystick/WASD')}const sp=18;player.vx+=(ix*sp-player.vx)*Math.min(1,dt*7);player.vz+=(iz*sp-player.vz)*Math.min(1,dt*7);player.x+=player.vx*dt;player.z+=player.vz*dt;player.x=Math.max(-62,Math.min(62,player.x));player.z=Math.max(-62,Math.min(62,player.z));for(const p of pads){if(Math.hypot(player.x-p.x,player.z-p.z)<5){player.x+=player.vx*dt*.7;player.z+=player.vz*dt*.7}}for(const cr of crystals){if(!cr.got&&Math.hypot(player.x-cr.x,player.z-cr.z)<3.2){cr.got=true;crystalsGot++;addParticle(cr.x,cr.z);toast('Cristal +1');if(crystalsGot===12){portalOpen=true;toast('Portal desbloqueado')}}}if(portalOpen&&!won&&Math.hypot(player.x-gates[0].x,player.z-gates[0].z)<7){won=true;state='pause';document.getElementById('win').style.display='flex';saveGame()}for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.x+=p.vx*dt;p.z+=p.vz*dt;p.y+=p.vy*dt;p.vy-=8*dt;if(p.life<=0)particles.splice(i,1)}}
+function drawParticles(){for(const pp of particles){const p=iso(pp.x,pp.z);ctx.globalAlpha=Math.max(0,pp.life/.8);ctx.fillStyle=pp.col;ctx.beginPath();ctx.arc(p.x,p.y-18-pp.y*7,3,0,6.28);ctx.fill();ctx.globalAlpha=1}}
+function drawMini(){const w=mc.width,h=mc.height;mctx.clearRect(0,0,w,h);mctx.fillStyle='rgba(4,12,28,.7)';mctx.fillRect(0,0,w,h);mctx.strokeStyle='rgba(124,243,255,.28)';mctx.strokeRect(1,1,w-2,h-2);function map(x,z){return {x:w/2+x/70*w/2,y:h/2+z/70*h/2}}for(const cr of crystals){if(cr.got)continue;const p=map(cr.x,cr.z);mctx.fillStyle='#8fffff';mctx.fillRect(p.x-1,p.y-1,2,2)}const gp=map(gates[0].x,gates[0].z);mctx.strokeStyle=portalOpen?'#7cff9b':'#ffe66b';mctx.beginPath();mctx.arc(gp.x,gp.y,5,0,6.28);mctx.stroke();const pp=map(player.x,player.z);mctx.fillStyle='#ff6bff';mctx.beginPath();mctx.arc(pp.x,pp.y,4,0,6.28);mctx.fill()}
+function render(t){drawGround();for(const p of pads)drawPad(p,t);drawPortal(t);const visibleRocks=qualityLite==='performance'?rocks.filter((_,i)=>i%2===0):rocks; const things=[...visibleRocks.map(o=>({type:'rock',o,depth:depth(o)})),...crystals.map(o=>({type:'crystal',o,depth:depth(o)})),{type:'player',depth:depth(player)}].sort((a,b)=>a.depth-b.depth);for(const it of things){if(it.type==='rock')drawRock(it.o);else if(it.type==='crystal')drawCrystal(it.o,t);else drawPlayer(t)}drawParticles();drawMini();posEl.textContent='X '+Math.round(player.x)+' · Z '+Math.round(player.z);goalEl.textContent='Cristales '+crystalsGot+'/'+crystals.length;missionEl.textContent=portalOpen?'Misión: entra en el portal norte':'Misión: recoge 12 cristales para abrir el portal'}
+function loop(now){const dt=Math.min(.033,(now-last)/1000);last=now;const t=now/1000;frames++;if(now-fpsT>500){fps=Math.round(frames*1000/(now-fpsT));frames=0;fpsT=now;fpsEl.textContent='FPS '+fps;
+if(autoQualityLite && state==='play'){
+  if(fps<28) lowFpsLite++; else lowFpsLite=Math.max(0,lowFpsLite-1);
+  if(lowFpsLite>=3 && qualityLite!=='performance'){setQualityLite('performance',true);toast('Auto calidad: rendimiento');}
+}
+}update(dt,t);render(t);requestAnimationFrame(loop)}
+if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){this.moveTo(x+r,y);this.arcTo(x+w,y,x+w,y+h,r);this.arcTo(x+w,y+h,x,y+h,r);this.arcTo(x,y+h,x,y,r);this.arcTo(x,y,x+w,y,r);return this}}
+requestAnimationFrame(loop);
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=41').catch(()=>{}));}
+</script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+{
+  "name": "Cosmo Kid",
+  "short_name": "Cosmo Kid",
+  "description": "Aventura espacial optimizada para móvil y PC.",
+  "start_url": "index.html?v=41",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#020712",
+  "theme_color": "#020712",
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
