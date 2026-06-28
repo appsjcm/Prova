@@ -1278,6 +1278,37 @@ function update(){
         }else{SFX.blk();b.hit=false;}
       }
     }
+    // Ground-pound hit from above
+    if(!b.hit && player.pounding && player.vy>=0){
+      const prevBot = player.y + player.h - player.vy;
+      const hitFromAbove = player.x+player.w>b.x+2 && player.x<b.x+b.w-2 && player.y+player.h>=b.y && prevBot<=b.y+6;
+      if(hitFromAbove){
+        b.hit=true; b.bh=10; b.crack=26;
+        player.pounding=false;
+        player.vy=-10; // bounce up
+        shake(5); hap(40);
+        if(b.t==='q'){
+          SFX.blk();
+          for(let i=0;i<12;i++) parts.push(new Pop(b.x+16,b.y+16,(Math.random()-.5)*6,1.5+Math.random()*4, i%2?'#8ea3b1':'#ffe66b', 14+Math.random()*10|0));
+          if(b.rw==='coin'){
+            gainCoin(b.x+14,b.y+32);
+            parts.push(new Pop(b.x+14,b.y+32,0,5,'#ffcc00',30));
+            parts.push(new TextPop(b.x+14,b.y+32,rewardLabel('coin'),'#ffdd66'));
+            if(Math.random()<0.22){ gainCoin(b.x+18,b.y+44); parts.push(new TextPop(b.x+18,b.y+44,'x2','#ffe66b')); for(let bi=0;bi<4;bi++)parts.push(new Pop(b.x+16,b.y+24,(Math.random()-.5)*4,2+Math.random()*3,'#ffe66b',18)); }
+          }else{
+            let ty=b.rw; if(ty==='mushroom'&&player.pwr)ty='flower';
+            spawnPU(ty,b.x+6,b.y+32);
+            parts.push(new TextPop(b.x+14,b.y+32,rewardLabel(ty),'#9feaff'));
+            if(Math.random()<0.18){ gainCoin(b.x+18,b.y+44); parts.push(new TextPop(b.x+18,b.y+44,'BONUS!','#ffe66b')); for(let bi=0;bi<5;bi++)parts.push(new Pop(b.x+16,b.y+24,(Math.random()-.5)*4,2+Math.random()*3,'#ffe66b',18)); }
+          }
+        }else{
+          // Bricks always break with ground pound
+          b.alive=false; SFX.brk(); shake(4);
+          for(let i=0;i<10;i++) parts.push(new Pop(b.x+Math.random()*32,b.y+16,(Math.random()-.5)*8,2+Math.random()*5,'#7e6652',28));
+          addScore(50);
+        }
+      }
+    }
   }
   blkList=blkList.filter(b=>b.alive!==false);
   powerUps.forEach(pu=>updPU(pu,sl));powerUps=powerUps.filter(pu=>pu.active);
