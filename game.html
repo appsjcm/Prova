@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a2040">
-<title>Cosmo Kid 2.5D v41</title>
+<title>Cosmo Kid 2.5D v42</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{overscroll-behavior:none;touch-action:none}
@@ -154,7 +154,7 @@ body.touch h1{display:none}
 .hp-c{margin:12px 0 4px;background:rgba(0,60,90,.85);border:1.5px solid rgba(0,200,255,.45);color:#bfefff;font-size:.85rem;letter-spacing:2px;padding:10px 28px;border-radius:10px;cursor:pointer;font-family:monospace;min-height:48px}
 .hp-c:hover,.hp-c:active{background:rgba(0,110,160,.6);border-color:#00ccff}
 </style>
-<link rel="manifest" href="manifest.webmanifest?v=41">
+<link rel="manifest" href="manifest.webmanifest?v=42">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
@@ -175,7 +175,7 @@ body.touch h1{display:none}
   <canvas id="c" width="600" height="380"></canvas>
   <div id="ov">
     <div id="ov-t">COSMO KID</div>
-    <div id="ov-sub">Aventura Espacial · 8 Misiones · v41</div>
+    <div id="ov-sub">Aventura Espacial · 8 Misiones · v42</div>
     <div id="ov-hi"></div>
     <div id="ov-m"></div>
     <div id="ov-b"></div>
@@ -540,7 +540,7 @@ function updBoss(sl){
     if(!boss.triggered){
       boss.vy+=GRAV;if(boss.vy>16)boss.vy=16;boss.y+=boss.vy;
       for(const s of sl){if(!hit(boss,s))continue;if(boss.vy>=0){boss.y=s.y-boss.h;boss.vy=0;}break;}
-      if(player&&Math.abs(player.x-(boss.x+20))<420){
+      if(player&&Math.abs(player.x-(boss.x+20))<350){
         boss.triggered=true;boss.vx=-1.5;shake(6);SFX.warn();
         parts.push(new TextPop(boss.x+20,boss.y-20,'¡GUARDIAN!','#00cc44'));
         for(let i=0;i<14;i++)parts.push(new Pop(boss.x+20,boss.y+20,(Math.random()-.5)*10,-Math.random()*8,'#00aa44',36));
@@ -638,12 +638,24 @@ function drawBoss(ox){
   const x=Math.round(boss.x-ox),y=Math.round(boss.y);
   if(boss.isMini){
     if(!boss.triggered){
-      const pulse=.6+.4*Math.sin(NOW*.05);
-      ct.globalAlpha=pulse;ct.shadowColor='#004400';ct.shadowBlur=10*pulse;
-      sphere(x+20,y+20,20,'#004400','#002200','#006622');
+      const pulse=.5+.5*Math.sin(NOW*.07);
+      const bsx=x+20;
+      if(bsx>CW+10||bsx<-10){
+        // Off-screen: draw arrow indicator at screen edge
+        ct.globalAlpha=pulse;ct.fillStyle='#00ff66';ct.shadowColor='#00ff66';ct.shadowBlur=10;
+        const ay=Math.min(Math.max(y+20,40),CH-50),arx=bsx>CW?CW-6:-6+14;
+        ct.beginPath();if(bsx>CW){ct.moveTo(arx-10,ay-10);ct.lineTo(arx+2,ay);ct.lineTo(arx-10,ay+10);}else{ct.moveTo(arx+10,ay-10);ct.lineTo(arx-2,ay);ct.lineTo(arx+10,ay+10);}
+        ct.closePath();ct.fill();
+        ct.font='bold 7px monospace';ct.textAlign=bsx>CW?'right':'left';ct.fillText('BOSS',bsx>CW?arx-12:arx+12,ay-13);
+        ct.shadowBlur=0;ct.globalAlpha=1;return;
+      }
+      ct.globalAlpha=pulse;ct.shadowColor='#00ff66';ct.shadowBlur=22*pulse;
+      sphere(x+20,y+20,20,'#22cc44','#115522','#66ff88');
       ct.shadowBlur=0;ct.globalAlpha=1;
-      ct.fillStyle='rgba(0,220,80,.7)';ct.font='bold 8px monospace';ct.textAlign='center';
-      ct.fillText('???',x+20,y+22);return;
+      ct.fillStyle='rgba(80,255,100,.95)';ct.font='bold 8px monospace';ct.textAlign='center';
+      ct.fillText('???',x+20,y+24);
+      ct.globalAlpha=pulse;ct.fillStyle='#ffff00';ct.font='bold 13px monospace';
+      ct.fillText('!',x+20,y-4);ct.globalAlpha=1;return;
     }
     if(boss.inv>0&&(boss.inv/3|0)%2===1)return;
     const rp=boss.rage?(.5+.5*Math.sin(NOW*.1)):0;
@@ -787,7 +799,7 @@ function buildLevel3(){
   [260,420,540,660,780,900,1020,1140,1270,1390,1520,1650,1780,1910,2040,2170,2310,2440,2580,2710,2850,2980,3120,3250,3390,3520,3660,3790,3930,4060].forEach((x,i)=>ens.push({t:i%3===0?'k':'g',x,sp:2.0}));
   [700,1500,2250,3050,3850].forEach((x,i)=>ens.push({t:'f',x,sp:1.5+i*.1,y:GY-150-i*8,amp:30+i*4}));
   const checkpts=[{x:2400,active:false}];
-  const springs=[{x:880,y:GY-16},{x:1860,y:GY-16},{x:3050,y:GY-16},{x:4250,y:GY-16}];
+  const springs=[{x:880,y:GY-16},{x:1860,y:GY-16},{x:3050,y:GY-16},{x:3950,y:GY-16}];
   const movPlats=[
     {x:640,y:228,w:64,h:16,x0:640,x1:810,y0:228,y1:228,axis:'x',spd:1.9,dir:1},
     {x:1120,y:215,w:64,h:16,x0:1120,x1:1120,y0:168,y1:258,axis:'y',spd:1.6,dir:1},
@@ -796,9 +808,9 @@ function buildLevel3(){
     {x:2960,y:155,w:64,h:16,x0:2960,x1:3160,y0:155,y1:155,axis:'x',spd:2.3,dir:1},
     {x:3500,y:140,w:64,h:16,x0:3500,x1:3500,y0:98,y1:188,axis:'y',spd:2.1,dir:1},
     {x:4040,y:120,w:64,h:16,x0:4040,x1:4230,y0:120,y1:120,axis:'x',spd:2.5,dir:1},
-    {x:4480,y:108,w:64,h:16,x0:4480,x1:4480,y0:68,y1:158,axis:'y',spd:2.2,dir:1},
   ];
-  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,bossX:4100,bossHp:4,bossIsMini:true,flagX:4520,lw:4800};
+  const bushes=[{x:180,y:GY-32,w:44,h:32},{x:760,y:GY-32,w:44,h:32},{x:1500,y:GY-32,w:48,h:32},{x:2350,y:GY-32,w:44,h:32},{x:3100,y:GY-32,w:48,h:32},{x:4050,y:GY-32,w:44,h:32}];
+  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,bushes,bossX:3850,bossHp:4,bossIsMini:true,flagX:4200,lw:4600};
 }
 
 // ── LEVEL 4: NEBULA OSCURA ───────────────────────────────────
@@ -827,7 +839,8 @@ function buildLevel4(){
     {x:700,y:216,w:56,h:16,x0:700,x1:860,y0:216,y1:216,axis:'x',spd:2.0,dir:1},
     {x:1480,y:192,w:56,h:16,x0:1480,x1:1680,y0:192,y1:192,axis:'x',spd:2.3,dir:-1},
   ];
-  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,spikes,flagX:5200,lw:5400};
+  const bushes=[{x:160,y:GY-32,w:44,h:32},{x:900,y:GY-32,w:44,h:32},{x:1700,y:GY-32,w:48,h:32},{x:2600,y:GY-32,w:44,h:32},{x:3500,y:GY-32,w:48,h:32},{x:4400,y:GY-32,w:44,h:32},{x:5050,y:GY-32,w:44,h:32}];
+  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,spikes,bushes,flagX:5200,lw:5400};
 }
 
 // ── LEVEL 5: CORAZON ALIEN ───────────────────────────────────
@@ -859,7 +872,8 @@ function buildLevel5(){
     {x:5320,y:52,w:56,h:16,x0:5320,x1:5520,y0:52,y1:52,axis:'x',spd:3.5,dir:1},
     {x:5620,y:36,w:56,h:16,x0:5620,x1:5620,y0:16,y1:90,axis:'y',spd:3.2,dir:1},
   ];
-  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,spikes,bossX:5700,flagX:5900,lw:6200};
+  const bushes=[{x:250,y:GY-32,w:44,h:32},{x:1050,y:GY-32,w:44,h:32},{x:2000,y:GY-32,w:48,h:32},{x:3100,y:GY-32,w:44,h:32},{x:4200,y:GY-32,w:48,h:32},{x:5100,y:GY-32,w:44,h:32}];
+  return{plats,blks:[...qbs,...bbs],cns,tubes,ens,checkpts,movPlats,springs,spikes,bushes,bossX:5700,flagX:5900,lw:6200};
 }
 
 // ── PROCEDURAL LEVEL GENERATOR ──────────────────────────────
@@ -2500,7 +2514,7 @@ const ppP=e=>{e.preventDefault();tcpEl.classList.add('on');togglePause();hap(15)
 const ppR=e=>{e.preventDefault();tcpEl.classList.remove('on');};
 tcpEl.addEventListener('touchstart',ppP,{passive:false});tcpEl.addEventListener('touchend',ppR,{passive:false});
 tcpEl.addEventListener('mousedown',ppP);tcpEl.addEventListener('mouseup',ppR);
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=41').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=42').catch(()=>{}));}
 </script>
 </body>
 </html>
