@@ -6,11 +6,11 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#020712">
-<link rel="manifest" href="manifest.webmanifest?v=45">
+<link rel="manifest" href="manifest.webmanifest?v=46">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Cosmo Kid">
-<title>Cosmo Kid v45 — PWA</title>
+<title>Cosmo Kid v46 — PWA</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}
@@ -55,39 +55,39 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
 <div class="wrap">
 <h1>COSMO KID</h1>
 <div class="sub">Aventura Espacial</div>
-<div class="ver">VERSIÓN v45 · PWA + auto calidad</div>
+<div class="ver">VERSIÓN v46 · PWA + auto calidad</div>
 
 <div class="reco">
   <div><b>Auto recomendación + PWA:</b> en móvil usa WebGL Lite. En PC usa WebGL PC.</div>
   <small id="recommend">Detectando dispositivo...</small>
   <div class="bigrow">
-    <a class="big playlink" id="autoBtn" href="game3d.html?v=45&mobile=1&safe=1&lite=1&play=1">JUGAR RECOMENDADO v45</a>
-    <a class="big pc playlink" href="game3d.html?v=45&pc=1">PC 3D WEBGL</a>
+    <a class="big playlink" id="autoBtn" href="game3d.html?v=46&mobile=1&safe=1&lite=1&play=1">JUGAR RECOMENDADO v46</a>
+    <a class="big pc playlink" href="game3d.html?v=46&pc=1">PC 3D WEBGL</a>
   </div>
 </div>
 
 <div id="cards">
-  <a class="card debug playlink" href="diagnostico.html?v=45">
+  <a class="card debug playlink" href="diagnostico.html?v=46">
     <div class="ico">🩺</div><div class="ct">DIAGNÓSTICO</div><div class="badge">Test</div>
     <div class="cd">Comprueba móvil/PC, WebGL, Canvas y recomendado.</div>
   </a>
-  <a class="card mobile playlink" href="game.html?v=45">
+  <a class="card mobile playlink" href="game.html?v=46">
     <div class="ico">🪐</div><div class="ct">2.5D MÓVIL</div><div class="badge">Estable</div>
     <div class="cd">Ligero, rápido y con mandos editables.</div>
   </a>
-  <a class="card pc playlink" href="game3d.html?v=45&pc=1">
+  <a class="card pc playlink" href="game3d.html?v=46&pc=1">
     <div class="ico">🖥️</div><div class="ct">PC 3D</div><div class="badge">WebGL PC</div>
     <div class="cd">3D completo optimizado para ordenador.</div>
   </a>
-  <a class="card webgl playlink" href="game3d.html?v=45&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">
+  <a class="card webgl playlink" href="game3d.html?v=46&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">
     <div class="ico">⚡</div><div class="ct">MÓVIL WEBGL</div><div class="badge">Ultra Lite</div>
     <div class="cd">WebGL reducido: calidad adaptativa automática, ideal para móvil.</div>
   </a>
-  <a class="card debug playlink" href="game3d.html?v=45&safe=1&lite=1&play=1&demo=1&debug=1">
+  <a class="card debug playlink" href="game3d.html?v=46&safe=1&lite=1&play=1&demo=1&debug=1">
     <div class="ico">🧰</div><div class="ct">DEBUG 3D</div><div class="badge">Diagnóstico</div>
     <div class="cd">FPS, estado, posición y cámara.</div>
   </a>
-  <a class="card webgl playlink" href="game3d.html?v=45">
+  <a class="card webgl playlink" href="game3d.html?v=46">
     <div class="ico">🚀</div><div class="ct">3D NORMAL</div><div class="badge">Completo</div>
     <div class="cd">Mundo abierto WebGL completo.</div>
   </a>
@@ -95,33 +95,33 @@ h1{font-size:clamp(2.1rem,10vw,4rem);font-weight:900;letter-spacing:5px;backgrou
 
 <div class="tools">
   <button class="tool warn" id="clearBtn">LIMPIAR CACHÉ</button>
-  <button class="tool" id="hardBtn">RECARGA v45</button>
+  <button class="tool" id="hardBtn">RECARGA v46</button>
   <button class="tool" id="autoTool">ABRIR RECOMENDADO</button>
   <button class="tool" id="diagBtn">DIAGNÓSTICO</button>
   <button class="tool" id="installBtn">INSTALAR APP</button>
 </div>
-<div id="status">Listo · v45 cargada</div>
+<div id="status">Listo · v46 cargada</div>
 <div id="diag">Diagnóstico: comprobando navegador...</div>
-<div class="foot">Sube index.html, game.html, game3d.html, diagnostico.html, manifest.webmanifest, sw.js y assets/. Si ves v45 o anterior, limpia caché o abre en privado.</div>
+<div class="foot">Sube index.html, game.html, game3d.html, diagnostico.html, manifest.webmanifest, sw.js y assets/. Si ves v46 o anterior, limpia caché o abre en privado.</div>
 </div>
 <script>
-const VERSION='45';
+const VERSION='46';
 const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 const isIOS=/iPhone|iPad|iPod/i.test(navigator.userAgent);
 const isSmall=innerWidth<820;
 let gl='no';
 try{const c=document.createElement('canvas');gl=!!(c.getContext('webgl2')||c.getContext('webgl'))?'sí':'no';}catch(e){}
-const recommended=(touch||isSmall||isIOS) ? 'game3d.html?v=45&mobile=1&safe=1&lite=1&play=1' : 'game3d.html?v=45&pc=1';
+const recommended=(touch||isSmall||isIOS) ? 'game3d.html?v=46&mobile=1&safe=1&lite=1&play=1' : 'game3d.html?v=46&pc=1';
 document.getElementById('autoBtn').href=recommended;
 document.getElementById('recommend').textContent=(touch||isSmall||isIOS)
   ? 'Detectado móvil/tablet: recomendado 3D WebGL Lite. Si va muy lento prueba el modo 2,5D.'
   : 'Detectado PC/escritorio: recomendado 3D WebGL PC.';
 document.querySelectorAll('.playlink').forEach(a=>{a.addEventListener('click',()=>{const u=new URL(a.href,location.href);u.searchParams.set('v',VERSION);u.searchParams.set('t',Date.now().toString().slice(-6));a.href=u.href;});});
 const status=document.getElementById('status');
-document.getElementById('clearBtn').onclick=async()=>{status.textContent='Limpiando caché local...';try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}try{localStorage.clear();sessionStorage.clear();}catch(e){}status.textContent='Caché limpia. Recargando v45...';setTimeout(()=>location.href='index.html?v=45&t='+Date.now(),500);}catch(e){status.textContent='No se pudo limpiar todo, abre en privado.';}};
-document.getElementById('hardBtn').onclick=()=>location.href='index.html?v=45&t='+Date.now();
+document.getElementById('clearBtn').onclick=async()=>{status.textContent='Limpiando caché local...';try{if('caches'in window){const ks=await caches.keys();await Promise.all(ks.map(k=>caches.delete(k)));}try{localStorage.clear();sessionStorage.clear();}catch(e){}status.textContent='Caché limpia. Recargando v46...';setTimeout(()=>location.href='index.html?v=46&t='+Date.now(),500);}catch(e){status.textContent='No se pudo limpiar todo, abre en privado.';}};
+document.getElementById('hardBtn').onclick=()=>location.href='index.html?v=46&t='+Date.now();
 document.getElementById('autoTool').onclick=()=>location.href=recommended+'&t='+Date.now();
-document.getElementById('diagBtn').onclick=()=>location.href='diagnostico.html?v=45&t='+Date.now();
+document.getElementById('diagBtn').onclick=()=>location.href='diagnostico.html?v=46&t='+Date.now();
 let deferredInstall=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;document.getElementById('installBtn').textContent='INSTALAR APP';});
 document.getElementById('installBtn').onclick=async()=>{
@@ -129,7 +129,7 @@ document.getElementById('installBtn').onclick=async()=>{
   else alert('En iPhone: compartir → Añadir a pantalla de inicio. En Android/PC: menú del navegador → Instalar app.');
 };
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=45').catch(()=>{}));
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46').catch(()=>{}));
 }
 document.getElementById('diag').textContent='Diagnóstico: WebGL '+gl+' · táctil '+(touch?'sí':'no')+' · iOS '+(isIOS?'sí':'no')+' · ancho '+innerWidth+'px · v'+VERSION;
 const cv=document.getElementById('stars'), x=cv.getContext('2d');let stars=[];function resize(){cv.width=innerWidth;cv.height=innerHeight;stars=[];const n=Math.min(140,innerWidth*innerHeight/9000|0);for(let i=0;i<n;i++)stars.push({x:Math.random()*cv.width,y:Math.random()*cv.height,r:Math.random()*1.4+.3,p:Math.random()*6.28,s:.5+Math.random()*1.5});}addEventListener('resize',resize);resize();function draw(t){x.clearRect(0,0,cv.width,cv.height);for(const s of stars){const a=.35+.5*Math.sin(t*.001*s.s+s.p);x.globalAlpha=a;x.fillStyle='#cfe6ff';x.beginPath();x.arc(s.x,s.y,s.r,0,6.28);x.fill();}x.globalAlpha=1;requestAnimationFrame(draw);}requestAnimationFrame(draw);

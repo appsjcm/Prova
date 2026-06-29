@@ -6,10 +6,10 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#020712">
-<link rel="manifest" href="manifest.webmanifest?v=45">
+<link rel="manifest" href="manifest.webmanifest?v=46">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Cosmo Kid v45 — Diagnóstico</title>
+<title>Cosmo Kid v46 — Diagnóstico</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%;background:#020712;color:#fff;font-family:monospace}
@@ -33,7 +33,7 @@ a,button{border:1px solid rgba(124,243,255,.38);background:rgba(0,34,64,.72);col
 <canvas id="fpsCanvas" width="220" height="120"></canvas>
 <div class="wrap">
 <h1>COSMO KID</h1>
-<div class="sub">Diagnóstico v45</div>
+<div class="sub">Diagnóstico v46</div>
 
 <div class="box">
   <div id="recommend">Analizando dispositivo...</div>
@@ -44,20 +44,20 @@ a,button{border:1px solid rgba(124,243,255,.38);background:rgba(0,34,64,.72);col
 </div>
 
 <div class="grid">
-  <a class="main" id="openBest" href="game3d.html?v=45&mobile=1&safe=1&lite=1&play=1">ABRIR RECOMENDADO</a>
-  <a href="game.html?v=45">2,5D ESTABLE</a>
-  <a class="warn" href="game3d.html?v=45&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">WEBGL MÓVIL LITE</a>
-  <a href="game3d.html?v=45&pc=1">WEBGL PC</a>
-  <a href="index.html?v=45">LAUNCHER</a>
+  <a class="main" id="openBest" href="game3d.html?v=46&mobile=1&safe=1&lite=1&play=1">ABRIR RECOMENDADO</a>
+  <a href="game.html?v=46">2,5D ESTABLE</a>
+  <a class="warn" href="game3d.html?v=46&mobile=1&safe=1&lite=1&ultra=1&play=1&debug=1">WEBGL MÓVIL LITE</a>
+  <a href="game3d.html?v=46&pc=1">WEBGL PC</a>
+  <a href="index.html?v=46">LAUNCHER</a>
 </div>
 
 <div class="box small">
-  Consejo: en iPhone y móvil usa WebGL Lite o 2,5D. En PC usa WebGL PC. Si GitHub Pages muestra una versión antigua, abre con <b>?v=45</b> o usa navegación privada.
+  Consejo: en iPhone y móvil usa WebGL Lite o 2,5D. En PC usa WebGL PC. Si GitHub Pages muestra una versión antigua, abre con <b>?v=46</b> o usa navegación privada.
 </div>
 </div>
 
 <script>
-const VERSION='45';
+const VERSION='46';
 const ua=navigator.userAgent;
 const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 const isIOS=/iPhone|iPad|iPod/i.test(ua);
@@ -86,9 +86,9 @@ function testCanvasFPS(done){
   requestAnimationFrame(frame);
 }
 function bestURL(){
-  if(touch||isSmall||isIOS||isAndroid) return 'game3d.html?v=45&mobile=1&safe=1&lite=1&play=1';
-  if(webgl==='sí') return 'game3d.html?v=45&pc=1';
-  return 'game.html?v=45';
+  if(touch||isSmall||isIOS||isAndroid) return 'game3d.html?v=46&mobile=1&safe=1&lite=1&play=1';
+  if(webgl==='sí') return 'game3d.html?v=46&pc=1';
+  return 'game.html?v=46';
 }
 function render(){
   const best=bestURL();
@@ -120,7 +120,7 @@ document.querySelectorAll('a').forEach(a=>{
     a.href=u.href;
   });
 });
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=45').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=46').catch(()=>{}));}
 </script>
 </body>
 </html>
