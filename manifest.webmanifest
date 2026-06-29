@@ -2,7 +2,7 @@
   "name": "Cosmo Kid",
   "short_name": "Cosmo Kid",
   "description": "Aventura espacial optimizada para móvil y PC.",
-  "start_url": "index.html?v=44",
+  "start_url": "index.html?v=45",
   "scope": "./",
   "display": "fullscreen",
   "orientation": "any",
