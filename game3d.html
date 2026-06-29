@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#79c0f0">
-<title>Cosmo Kid 3D · Mundo Abierto v42</title>
+<title>Cosmo Kid 3D · Mundo Abierto v43</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#020712;font-family:monospace;color:#fff;touch-action:none;overscroll-behavior:none}
@@ -293,7 +293,7 @@ body.photo #hud,body.photo #quest,body.photo #compass,body.photo #minimapBox,bod
 
 @media (max-width:520px){#quest{font-size:.62rem;max-width:210px;top:52px}#compass{width:72px;height:88px;right:8px;top:100px}#compass img{width:54px;height:54px}#coords{font-size:.48rem}}
 </style>
-<link rel="manifest" href="manifest.webmanifest?v=42">
+<link rel="manifest" href="manifest.webmanifest?v=43">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
@@ -349,12 +349,12 @@ body.photo #hud,body.photo #quest,body.photo #compass,body.photo #minimapBox,bod
   <div class="btn3d" id="bCanvas">2,5D</div>
 </div>
 <div id="perfWarn3D">3D lento detectado<br><button id="perfCanvasBtn">ABRIR 2,5D</button></div>
-<div id="debugPanel3D"><div id="dbgInfo" class="dbgLine">DEBUG v42</div><div class="dbgBtns"><button id="dbgStart">START</button><button id="dbgFix" class="warn">FIX</button><button id="dbgLite">LITE</button><button id="dbgUltra">ULTRA</button><button id="dbg25">2,5D</button><button id="dbgCanvas">CANVAS</button><button id="dbgHome">HOME</button><button id="dbgDiag">DIAG</button></div></div>
+<div id="debugPanel3D"><div id="dbgInfo" class="dbgLine">DEBUG v43</div><div class="dbgBtns"><button id="dbgStart">START</button><button id="dbgFix" class="warn">FIX</button><button id="dbgLite">LITE</button><button id="dbgUltra">ULTRA</button><button id="dbg25">2,5D</button><button id="dbgCanvas">CANVAS</button><button id="dbgHome">HOME</button><button id="dbgDiag">DIAG</button></div></div>
 <div id="mobileHelp3D">V41 · SAFE/FIX/2,5D disponibles</div>
 <div id="debugMove">V41 · joystick listo</div>
 <div id="ov">
   <div id="ov-t">COSMO KID 3D</div>
-  <div id="ov-s">Aventura Espacial · Mundo abierto v42</div>
+  <div id="ov-s">Aventura Espacial · Mundo abierto v43</div>
   <div id="ov-m"></div>
   <button id="ov-btn">JUGAR</button>
 </div>
@@ -3040,7 +3040,7 @@ function updQuest(){
 function showMenu(){
   state='menu'; stopMusic(); ov.classList.remove('off');
   const best=loadBestProgress();
-  ovT.textContent='COSMO KID 3D'; ovS.textContent='Mundo abierto v42 · PWA';
+  ovT.textContent='COSMO KID 3D'; ovS.textContent='Mundo abierto v43 · PWA';
   ovM.innerHTML='Explora un <b>mundo abierto</b> con minimapa, checkpoints, portales, NPCs, reliquias, misiones, guardado local, ciclo de luz, modo foto, selector de calidad, flecha de objetivo, escáner, dron compañero, planeo, clima dinámico, cofres, cápsulas de historia, logros, ruta sugerida, Taller Cosmo, baterías, mejoras desbloqueables, pruebas con cronómetro, medallas, constelación, santuarios y portal supremo, progreso 100%, rango final, diario, viaje rápido, guía de controles, zonas descubiertas y modos de cámara. Reúne las <b>estrellas</b> ★ para abrir la <b>META</b> y busca 6 reliquias especiales.<br><br>'+
     (best.bestStars ? '<b>Récord guardado:</b> '+best.bestStars+' estrellas · '+(best.bestRelics||0)+' reliquias<br><br>' : '')+
     (isTouch ? 'Joystick (izq) mover · Arrastra lado derecho: rotar cámara · Deslizar arriba (derecha): saltar · <b>SALTO</b> doble · <b>FIX</b> recoloca · <b>SAFE</b> modo seguro · <b>2,5D</b> estable · Mando USB compatible'
@@ -3067,11 +3067,11 @@ function forcePlayerCamera(resetPos=false){
 }
 
 
-function openHome(){ location.href='index.html?v=42&t='+Date.now(); }
-function openCanvasLite(){ location.href='game.html?v=42&t='+Date.now(); }
+function openHome(){ location.href='index.html?v=43&t='+Date.now(); }
+function openCanvasLite(){ location.href='game.html?v=43&t='+Date.now(); }
 function open25D(){
   showToast('Abriendo modo 2,5D estable...',1.2);
-  setTimeout(()=>{ location.href='game.html?v=42&t='+Date.now(); }, 250);
+  setTimeout(()=>{ location.href='game.html?v=43&t='+Date.now(); }, 250);
 }
 
 
@@ -3307,7 +3307,7 @@ function updateDebugPanel(dt,t){
     cd=camera.position.distanceTo(player.pos).toFixed(1);
   }catch(e){}
   el.innerHTML='FPS '+_dbgFps+' / perf '+_perfFps+' · estado '+state+' · safe '+(safe3dMode?'ON':'OFF')+' · ultra '+(document.body.classList.contains('ultra3d')?'ON':'OFF')+' · demo '+Math.ceil(demoAutoT||0)+'s<br>'+
-               'player X '+px+' Y '+py+' Z '+pz+' · camDist '+cd+' · joy '+(joyActive?'ON':'OFF')+' · v42';
+               'player X '+px+' Y '+py+' Z '+pz+' · camDist '+cd+' · joy '+(joyActive?'ON':'OFF')+' · v43';
 }
 function bindPerformanceButtons(){ const p=document.getElementById('perfCanvasBtn'); if(p) p.onclick=()=>openCanvasLite(); }
 function bindDebugPanel(){
@@ -3319,7 +3319,7 @@ function bindDebugPanel(){
   if(q('dbg25')) q('dbg25').onclick=()=>open25D();
   if(q('dbgCanvas')) q('dbgCanvas').onclick=()=>open25D();
   if(q('dbgHome')) q('dbgHome').onclick=()=>openHome();
-  if(q('dbgDiag')) q('dbgDiag').onclick=()=>{location.href='diagnostico.html?v=42&t='+Date.now()};
+  if(q('dbgDiag')) q('dbgDiag').onclick=()=>{location.href='diagnostico.html?v=43&t='+Date.now()};
 }
 
 
@@ -3454,7 +3454,10 @@ function updatePlay(dt, t){
   if (jumpQueued){
     if (player.grounded){ player.vel.y = JV; player.grounded=false; player.jumps=1; sfx.jump(); }
     else if (player.jumps>0 || cheats.jump){ player.vel.y = JV*0.92; if(!cheats.jump) player.jumps--; sfx.djump();
-      pop(new THREE.Vector3(player.pos.x, player.pos.y-0.6, player.pos.z), 0x9fd8ff, 8); }
+      const _djp=new THREE.Vector3(player.pos.x,player.pos.y-0.5,player.pos.z);
+      const _djc=[0x44aaff,0x00ffcc,0xff88ff,0xffee44];
+      for(let _i=0;_i<16;_i++){const _a=_i/16*Math.PI*2,_r=3.2+Math.random();const _m=new THREE.Mesh(new THREE.SphereGeometry(0.14,6,5),mat(_djc[_i%4],0.45,0,_djc[_i%4],0.9));_m.position.copy(_djp);_m.userData.v=new THREE.Vector3(Math.cos(_a)*_r,0.5+Math.random()*2.5,Math.sin(_a)*_r);_m.userData.life=0.55+Math.random()*0.3;scene.add(_m);pops.push(_m);}
+    }
   }
   if (!keys['Space'] && player.vel.y>4 && !cheats.fly) player.vel.y = 4; // variable jump height
   jumpQueued=false;
@@ -3715,7 +3718,7 @@ if(URL_DEBUG_3D) setTimeout(()=>{ setDebug3D(true); setSafe3D(true); setLite3D(t
 if(URL_ULTRA_3D) setTimeout(()=>{ setDebug3D(true); setUltra3D(true); },420);
 if(URL_AUTOPLAY_3D || URL_DEMO_3D || URL_DEBUG_3D) setTimeout(()=>{ if(state==='menu') startGame(); },950);
 tick();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=42').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=43').catch(()=>{}));}
 </script>
 </body>
 </html>
