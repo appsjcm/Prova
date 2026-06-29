@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#79c0f0">
-<title>Cosmo Kid 3D · Mundo Abierto v43</title>
+<title>Cosmo Kid 3D · Mundo Abierto v44</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{width:100%;height:100%;overflow:hidden;background:#020712;font-family:monospace;color:#fff;touch-action:none;overscroll-behavior:none}
@@ -226,7 +226,7 @@ body.photo #xpHUD{display:none!important}
 #completionHUD{position:fixed;right:14px;top:190px;z-index:13;background:rgba(8,42,36,.42);border:1px solid rgba(120,255,210,.30);border-radius:16px;padding:8px 10px;font-size:.55rem;color:#eafff5;letter-spacing:1px;line-height:1.55;pointer-events:none;backdrop-filter:blur(2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
 #completionHUD b{color:#ffe66b}
 #journalToast{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.96);z-index:46;display:none;width:min(520px,88vw);padding:18px;border-radius:24px;background:linear-gradient(160deg,rgba(6,36,58,.96),rgba(8,50,42,.96));border:1.5px solid rgba(120,255,210,.48);color:#eafff5;text-align:left;font-size:.78rem;line-height:1.6;box-shadow:0 18px 60px rgba(0,0,0,.48)}
-#journalToast.on{display:block}
+#journalToast.on{display:none}
 #journalToast b{color:#ffe66b}
 body.photo #completionHUD,body.photo #journalToast{display:none!important}
 @media (max-width:520px){#completionHUD{right:8px;top:150px;font-size:.45rem;padding:6px 8px}#journalToast{font-size:.62rem}}
@@ -252,8 +252,8 @@ body.photo #upgradeHUD,body.photo #workshopPrompt{display:none!important}
 @media (max-width:520px){#upgradeHUD{right:8px;bottom:124px;font-size:.45rem;padding:6px 8px}#workshopPrompt{bottom:72px;font-size:.58rem;max-width:82vw}}
 
 #secretsHUD{position:fixed;right:14px;bottom:78px;z-index:13;background:rgba(4,22,44,.38);border:1px solid rgba(255,230,120,.28);border-radius:16px;padding:8px 10px;font-size:.56rem;color:#fff2b8;letter-spacing:1px;line-height:1.55;pointer-events:none;backdrop-filter:blur(2px);box-shadow:0 8px 24px rgba(0,0,0,.2)}
-#routeHUD{position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:13;min-width:190px;padding:7px 12px;border-radius:999px;background:rgba(4,22,44,.38);border:1px solid rgba(120,255,210,.26);color:#dfffee;font-size:.56rem;letter-spacing:1px;text-align:center;pointer-events:none;backdrop-filter:blur(2px)}
-#achievementToast{position:fixed;right:18px;top:150px;z-index:36;width:min(280px,80vw);padding:12px 14px;border-radius:18px;background:linear-gradient(160deg,rgba(70,40,8,.92),rgba(10,34,58,.92));border:1.5px solid rgba(255,230,120,.55);color:#fff2c0;font-size:.7rem;line-height:1.45;box-shadow:0 14px 36px rgba(0,0,0,.38);opacity:0;transform:translateX(20px);transition:opacity .2s,transform .2s;pointer-events:none}
+#routeHUD{display:none!important}
+#achievementToast{display:none!important}
 #achievementToast.on{opacity:1;transform:translateX(0)}
 body.photo #secretsHUD,body.photo #routeHUD,body.photo #achievementToast{display:none!important}
 @media (max-width:520px){#secretsHUD{right:8px;bottom:62px;font-size:.46rem;padding:6px 8px}#routeHUD{top:42px;min-width:140px;font-size:.46rem;padding:6px 9px}#achievementToast{right:8px;top:124px;font-size:.58rem;width:230px}}
@@ -293,7 +293,7 @@ body.photo #hud,body.photo #quest,body.photo #compass,body.photo #minimapBox,bod
 
 @media (max-width:520px){#quest{font-size:.62rem;max-width:210px;top:52px}#compass{width:72px;height:88px;right:8px;top:100px}#compass img{width:54px;height:54px}#coords{font-size:.48rem}}
 </style>
-<link rel="manifest" href="manifest.webmanifest?v=43">
+<link rel="manifest" href="manifest.webmanifest?v=44">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
@@ -349,12 +349,12 @@ body.photo #hud,body.photo #quest,body.photo #compass,body.photo #minimapBox,bod
   <div class="btn3d" id="bCanvas">2,5D</div>
 </div>
 <div id="perfWarn3D">3D lento detectado<br><button id="perfCanvasBtn">ABRIR 2,5D</button></div>
-<div id="debugPanel3D"><div id="dbgInfo" class="dbgLine">DEBUG v43</div><div class="dbgBtns"><button id="dbgStart">START</button><button id="dbgFix" class="warn">FIX</button><button id="dbgLite">LITE</button><button id="dbgUltra">ULTRA</button><button id="dbg25">2,5D</button><button id="dbgCanvas">CANVAS</button><button id="dbgHome">HOME</button><button id="dbgDiag">DIAG</button></div></div>
+<div id="debugPanel3D"><div id="dbgInfo" class="dbgLine">DEBUG v44</div><div class="dbgBtns"><button id="dbgStart">START</button><button id="dbgFix" class="warn">FIX</button><button id="dbgLite">LITE</button><button id="dbgUltra">ULTRA</button><button id="dbg25">2,5D</button><button id="dbgCanvas">CANVAS</button><button id="dbgHome">HOME</button><button id="dbgDiag">DIAG</button></div></div>
 <div id="mobileHelp3D">V41 · SAFE/FIX/2,5D disponibles</div>
 <div id="debugMove">V41 · joystick listo</div>
 <div id="ov">
   <div id="ov-t">COSMO KID 3D</div>
-  <div id="ov-s">Aventura Espacial · Mundo abierto v43</div>
+  <div id="ov-s">Aventura Espacial · Mundo abierto v44</div>
   <div id="ov-m"></div>
   <button id="ov-btn">JUGAR</button>
 </div>
@@ -1172,10 +1172,7 @@ const checkpoints = [], portals = [], relics = [], boostPads = [], critters = []
 const npcs = [];
 const worldStats = { checkpointsActivated:0, portalsUsed:0, savedAt:0, chestsOpened:0, loreRead:0 };
 let toastT = 0;
-function showToast(msg, time=2.6){
-  const el=document.getElementById('toast'); if(!el) return;
-  el.innerHTML=msg; el.classList.add('on'); toastT=time;
-}
+function showToast(msg, time=2.6){ /* mensajes desactivados */ }
 function addIconSprite(name, x, y, z, sx=1.65, sy=1.65){
   const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map:imgTex(name,1,1), transparent:true, depthTest:false }));
   spr.scale.set(sx, sy, 1); spr.position.set(x,y,z); scene.add(spr); return spr;
@@ -1459,8 +1456,6 @@ function updateWeather(dt,t){
 function showAchievement(id,title,desc=''){
   if(achievements.has(id)) return;
   achievements.add(id);
-  const el=document.getElementById('achievementToast');
-  if(el){ el.innerHTML='<b>LOGRO DESBLOQUEADO</b><br>'+title+(desc?'<br><span style="color:#dff6ff">'+desc+'</span>':''); el.classList.add('on'); achievementToastT=3.4; }
   updateSecretsHUD();
 }
 function updateSecretsHUD(){
@@ -3040,7 +3035,7 @@ function updQuest(){
 function showMenu(){
   state='menu'; stopMusic(); ov.classList.remove('off');
   const best=loadBestProgress();
-  ovT.textContent='COSMO KID 3D'; ovS.textContent='Mundo abierto v43 · PWA';
+  ovT.textContent='COSMO KID 3D'; ovS.textContent='Mundo abierto v44 · PWA';
   ovM.innerHTML='Explora un <b>mundo abierto</b> con minimapa, checkpoints, portales, NPCs, reliquias, misiones, guardado local, ciclo de luz, modo foto, selector de calidad, flecha de objetivo, escáner, dron compañero, planeo, clima dinámico, cofres, cápsulas de historia, logros, ruta sugerida, Taller Cosmo, baterías, mejoras desbloqueables, pruebas con cronómetro, medallas, constelación, santuarios y portal supremo, progreso 100%, rango final, diario, viaje rápido, guía de controles, zonas descubiertas y modos de cámara. Reúne las <b>estrellas</b> ★ para abrir la <b>META</b> y busca 6 reliquias especiales.<br><br>'+
     (best.bestStars ? '<b>Récord guardado:</b> '+best.bestStars+' estrellas · '+(best.bestRelics||0)+' reliquias<br><br>' : '')+
     (isTouch ? 'Joystick (izq) mover · Arrastra lado derecho: rotar cámara · Deslizar arriba (derecha): saltar · <b>SALTO</b> doble · <b>FIX</b> recoloca · <b>SAFE</b> modo seguro · <b>2,5D</b> estable · Mando USB compatible'
@@ -3067,11 +3062,11 @@ function forcePlayerCamera(resetPos=false){
 }
 
 
-function openHome(){ location.href='index.html?v=43&t='+Date.now(); }
-function openCanvasLite(){ location.href='game.html?v=43&t='+Date.now(); }
+function openHome(){ location.href='index.html?v=44&t='+Date.now(); }
+function openCanvasLite(){ location.href='game.html?v=44&t='+Date.now(); }
 function open25D(){
   showToast('Abriendo modo 2,5D estable...',1.2);
-  setTimeout(()=>{ location.href='game.html?v=43&t='+Date.now(); }, 250);
+  setTimeout(()=>{ location.href='game.html?v=44&t='+Date.now(); }, 250);
 }
 
 
@@ -3307,7 +3302,7 @@ function updateDebugPanel(dt,t){
     cd=camera.position.distanceTo(player.pos).toFixed(1);
   }catch(e){}
   el.innerHTML='FPS '+_dbgFps+' / perf '+_perfFps+' · estado '+state+' · safe '+(safe3dMode?'ON':'OFF')+' · ultra '+(document.body.classList.contains('ultra3d')?'ON':'OFF')+' · demo '+Math.ceil(demoAutoT||0)+'s<br>'+
-               'player X '+px+' Y '+py+' Z '+pz+' · camDist '+cd+' · joy '+(joyActive?'ON':'OFF')+' · v43';
+               'player X '+px+' Y '+py+' Z '+pz+' · camDist '+cd+' · joy '+(joyActive?'ON':'OFF')+' · v44';
 }
 function bindPerformanceButtons(){ const p=document.getElementById('perfCanvasBtn'); if(p) p.onclick=()=>openCanvasLite(); }
 function bindDebugPanel(){
@@ -3319,7 +3314,7 @@ function bindDebugPanel(){
   if(q('dbg25')) q('dbg25').onclick=()=>open25D();
   if(q('dbgCanvas')) q('dbgCanvas').onclick=()=>open25D();
   if(q('dbgHome')) q('dbgHome').onclick=()=>openHome();
-  if(q('dbgDiag')) q('dbgDiag').onclick=()=>{location.href='diagnostico.html?v=43&t='+Date.now()};
+  if(q('dbgDiag')) q('dbgDiag').onclick=()=>{location.href='diagnostico.html?v=44&t='+Date.now()};
 }
 
 
@@ -3718,7 +3713,7 @@ if(URL_DEBUG_3D) setTimeout(()=>{ setDebug3D(true); setSafe3D(true); setLite3D(t
 if(URL_ULTRA_3D) setTimeout(()=>{ setDebug3D(true); setUltra3D(true); },420);
 if(URL_AUTOPLAY_3D || URL_DEMO_3D || URL_DEBUG_3D) setTimeout(()=>{ if(state==='menu') startGame(); },950);
 tick();
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=43').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=44').catch(()=>{}));}
 </script>
 </body>
 </html>

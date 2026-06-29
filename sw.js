@@ -1,11 +1,11 @@
-const COSMO_CACHE = 'cosmo-kid-v43';
+const COSMO_CACHE = 'cosmo-kid-v44';
 const CORE = [
   './',
-  './index.html?v=43',
-  './game.html?v=43',
-  './game3d.html?v=43',
+  './index.html?v=44',
+  './game.html?v=44',
+  './game3d.html?v=44',
 
-  './diagnostico.html?v=43',
+  './diagnostico.html?v=44',
   './manifest.webmanifest',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png'
@@ -34,7 +34,7 @@ self.addEventListener('fetch', event => {
         const copy = res.clone();
         caches.open(COSMO_CACHE).then(cache => cache.put(req, copy));
         return res;
-      }).catch(() => caches.match(req).then(cached => cached || caches.match('./index.html?v=43')))
+      }).catch(() => caches.match(req).then(cached => cached || caches.match('./index.html?v=44')))
     );
     return;
   }

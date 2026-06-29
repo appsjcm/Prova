@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a2040">
-<title>Cosmo Kid 2.5D v43</title>
+<title>Cosmo Kid 2.5D v44</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{overscroll-behavior:none;touch-action:none}
@@ -154,7 +154,7 @@ body.touch h1{display:none}
 .hp-c{margin:12px 0 4px;background:rgba(0,60,90,.85);border:1.5px solid rgba(0,200,255,.45);color:#bfefff;font-size:.85rem;letter-spacing:2px;padding:10px 28px;border-radius:10px;cursor:pointer;font-family:monospace;min-height:48px}
 .hp-c:hover,.hp-c:active{background:rgba(0,110,160,.6);border-color:#00ccff}
 </style>
-<link rel="manifest" href="manifest.webmanifest?v=43">
+<link rel="manifest" href="manifest.webmanifest?v=44">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 </head>
@@ -175,7 +175,7 @@ body.touch h1{display:none}
   <canvas id="c" width="600" height="380"></canvas>
   <div id="ov">
     <div id="ov-t">COSMO KID</div>
-    <div id="ov-sub">Aventura Espacial · 8 Misiones · v43</div>
+    <div id="ov-sub">Aventura Espacial · 8 Misiones · v44</div>
     <div id="ov-hi"></div>
     <div id="ov-m"></div>
     <div id="ov-b"></div>
@@ -1120,7 +1120,7 @@ function updLaser(lb,sl){
 
 // ── PARTICLES ───────────────────────────────────────────────
 class Pop{constructor(x,y,vx,vy,col,life){Object.assign(this,{x,y,vx,vy,col,life,ml:life});}tick(){this.x+=this.vx;this.y+=this.vy;this.vy+=.35;this.life--;return this.life>0;}draw(ox){ct.globalAlpha=this.life/this.ml;ct.fillStyle=this.col;ct.fillRect(Math.round(this.x-ox),Math.round(this.y),4,4);ct.globalAlpha=1;}}
-class TextPop{constructor(x,y,txt,col){Object.assign(this,{x,y,txt,col,life:52});}tick(){this.y-=.6;this.life--;return this.life>0;}draw(ox){ct.globalAlpha=this.life/52;ct.fillStyle=this.col;ct.font='bold 11px monospace';ct.textAlign='center';ct.fillText(this.txt,this.x-ox,this.y);ct.globalAlpha=1;}}
+class TextPop{constructor(x,y,txt,col){Object.assign(this,{x,y,txt,col,life:52});}tick(){this.y-=.6;this.life--;return this.life>0;}draw(ox){}}
 class Dust{
   constructor(x,y){this.x=x+(Math.random()-.5)*14;this.y=y;this.vx=(Math.random()-.5)*1.6;this.vy=-1.2-Math.random()*1.4;this.life=10+Math.random()*8|0;this.ml=this.life;this.sz=2+Math.random()*2.5;}
   tick(){this.x+=this.vx;this.y+=this.vy;this.vy+=.14;this.life--;return this.life>0;}
@@ -2527,7 +2527,7 @@ const ppP=e=>{e.preventDefault();tcpEl.classList.add('on');togglePause();hap(15)
 const ppR=e=>{e.preventDefault();tcpEl.classList.remove('on');};
 tcpEl.addEventListener('touchstart',ppP,{passive:false});tcpEl.addEventListener('touchend',ppR,{passive:false});
 tcpEl.addEventListener('mousedown',ppP);tcpEl.addEventListener('mouseup',ppR);
-if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=43').catch(()=>{}));}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js?v=44').catch(()=>{}));}
 </script>
 </body>
 </html>
