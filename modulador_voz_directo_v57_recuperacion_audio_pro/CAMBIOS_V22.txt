@@ -1,0 +1,15 @@
+CAMBIOS V22
+
+- Añadida pestaña Barra rápida.
+- Añadido banner Barra Rápida Premium.
+- Añadidas voces rápidas.
+- Añadidos sonidos rápidos.
+- Los favoritos aparecen primero en voces rápidas.
+- Añadidos temas visuales:
+  - Neón morado
+  - Azul cyberpunk
+  - Verde hacker
+  - Rojo oscuro
+  - Dorado premium
+- Añadido selector de tema visual.
+- Actualizados README, guía, scripts, EXE e instalador.

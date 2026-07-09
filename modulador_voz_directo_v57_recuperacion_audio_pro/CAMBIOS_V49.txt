@@ -1,0 +1,11 @@
+CAMBIOS V49
+
+- Añadida pestaña Analizador.
+- Añadido banner Analizador Vocal Pro.
+- Añadido check rápido de calidad vocal.
+- Añadidas recomendaciones con semáforo.
+- Añadido auto-ajuste seguro.
+- Añadida reducción de ruido.
+- Añadida exportación de informe JSON/TXT.
+- Añadidos assets analizador_vocal.
+- Actualizados scripts, README e instalador.

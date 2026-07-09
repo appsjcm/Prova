@@ -1,0 +1,10 @@
+CAMBIOS V47
+
+- Añadida pestaña Timeline.
+- Añadido editor de secciones.
+- Añadido BPM y tonalidad.
+- Añadidas plantillas Pop, Trap, Balada y Rock.
+- Añadida generación de base desde timeline.
+- Añadida exportación JSON/TXT.
+- Añadidos assets timeline_pro.
+- Actualizados scripts, README e instalador.

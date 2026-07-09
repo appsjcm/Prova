@@ -1,0 +1,17 @@
+CAMBIOS V30
+
+- Añadida pestaña Personas Pro.
+- Añadido banner Personas Pro.
+- Añadidos filtros visuales:
+  - Mujeres
+  - Hombres
+  - Niños
+  - Niñas
+  - Abuelos
+  - Abuelas
+- Añadidas tarjetas grandes para voces humanas.
+- Añadido botón Aplicar en cada persona.
+- Añadido botón favoritos en cada persona.
+- Añadido acceso a Grabadora, Ecualizador y Mini Panel.
+- Añadidos assets personas.
+- Actualizados README, guía, scripts, EXE e instalador.

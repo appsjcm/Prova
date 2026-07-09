@@ -1,0 +1,21 @@
+CAMBIOS V41
+
+- Añadida pestaña Karaoke.
+- Añadido banner Karaoke Pro.
+- Añadido reproductor de pista instrumental WAV.
+- Añadidos controles:
+  - Cargar instrumental WAV
+  - Play
+  - Pausa
+  - Stop
+  - Loop
+  - Volumen de pista
+- Añadida pantalla de letra editable.
+- Añadida grabación demo WAV con voz + instrumental.
+- Añadidas voces:
+  - Karaoke Pop
+  - Karaoke Trap
+  - Karaoke Balada
+- Añadidos assets karaoke.
+- Añadidas imágenes para voces karaoke.
+- Actualizados README, guía, scripts, EXE e instalador.

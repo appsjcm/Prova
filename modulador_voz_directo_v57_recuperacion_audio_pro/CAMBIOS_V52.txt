@@ -1,0 +1,23 @@
+CAMBIOS V52
+
+- Nuevo pitch shifter granular con fase continua entre bloques:
+  elimina los clics/zumbido del cambio de tono (Fortnite grave,
+  voces graves y agudas, personas, coro y autotune).
+- Nueva puerta de ruido por envolvente con histéresis: elimina la
+  distorsión de cruce que la puerta antigua añadía a la voz alta
+  (afectaba a Discord claro y a todos los presets con gate).
+- Apertura de puerta rápida y cierre suave: no se come el inicio
+  de las palabras y no corta de golpe.
+- Efectos de graves, radio y eco vectorizados (antes bucles muestra
+  a muestra): menos CPU por bloque y menos riesgo de cortes con
+  latencia Ultra baja.
+- Graves y radio con continuidad entre bloques (antes reiniciaban
+  su filtro en cada bloque).
+- Preset Discord claro afinado: bass 12, gate 9, comp 58, vol 94.
+- Preset Fortnite grave afinado: sin eco, bass 46, comp 52, vol 92.
+- Nueva voz: Discord nítido (presencia tipo emisora, comp 64).
+- Nueva voz: Fortnite épico (grave -7 con toque de cine).
+- Pack Gaming actualizado con las dos voces nuevas.
+- Verificación DSP: eco idéntico al anterior, graves/radio
+  equivalentes, tono medido +12 st = x2 y -12 st = x0.5 sin saltos.
+- Actualizados scripts, README e instalador a V52.

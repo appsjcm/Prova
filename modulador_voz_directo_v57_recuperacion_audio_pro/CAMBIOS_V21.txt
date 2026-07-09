@@ -1,0 +1,14 @@
+CAMBIOS V21
+
+- Añadida pestaña Asistente.
+- Añadido banner Asistente Pro.
+- Añadidas imágenes de pasos:
+  - Micrófono
+  - Salida
+  - Cable virtual
+  - Prueba
+- Añadida configuración guiada para Discord, Fortnite y OBS.
+- Añadida prueba de sonido desde asistente.
+- Añadida prueba de voz Gaming limpio.
+- Añadido estado del asistente con consejos.
+- Actualizados README, guía, scripts, EXE e instalador.

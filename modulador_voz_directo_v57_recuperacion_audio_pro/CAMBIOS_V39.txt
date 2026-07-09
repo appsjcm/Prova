@@ -1,0 +1,16 @@
+CAMBIOS V39
+
+- Añadida pestaña Test de Voz.
+- Añadido banner Test de Voz Pro.
+- Añadidas pruebas rápidas:
+  - Beep
+  - Grabar WAV
+  - Test Discord
+  - Test Fortnite
+  - Test OBS
+  - Check voz
+- Añadidas frases de prueba.
+- Añadido checklist antes del directo.
+- Añadidos accesos a Rendimiento, Cable Virtual, Grabadora y Streamer Hub.
+- Añadidos assets test_voz.
+- Actualizados README, guía, scripts, EXE e instalador.

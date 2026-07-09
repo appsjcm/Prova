@@ -1,0 +1,22 @@
+
+CAMBIOS V9 PREMIUM
+
+- Interfaz rediseñada con tema oscuro/neón.
+- Pestañas nuevas: Inicio, Voces, Ajustes, Directo y Guía.
+- Biblioteca de voces con categorías.
+- Buscador de voces.
+- Panel de estado mejorado.
+- Nuevas voces:
+  - Tryhard oscuro
+  - Gamer nocturno
+  - Héroe final
+  - Sombra
+  - Guardián oscuro
+  - Drone
+  - Computadora retro
+  - Radio militar
+  - Gnomo rápido
+  - Dragón suave
+  - Mago neón
+  - Voz cálida
+- Instalador actualizado a V9.

@@ -1,0 +1,44 @@
+name: Compilar Modulador EXE
+
+on:
+  push:
+    branches: ["claude/new-session-94jxsw"]
+    paths:
+      - "modulador_voz_directo_v57_recuperacion_audio_pro/**"
+      - ".github/workflows/compilar_exe.yml"
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: modulador_voz_directo_v57_recuperacion_audio_pro
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Compilar EXE
+        run: >
+          python -m PyInstaller --noconsole --onefile
+          --name ModuladorVozDirectoV57
+          --icon assets/app_icon.ico
+          --add-data "assets;assets"
+          src/modulador_voz_directo_v57.py
+
+      - name: Publicar EXE como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModuladorVozDirectoV57-Windows
+          path: modulador_voz_directo_v57_recuperacion_audio_pro/dist/ModuladorVozDirectoV57.exe
+          retention-days: 30

@@ -1,0 +1,20 @@
+CAMBIOS V56
+
+- Nuevo ecualizador REAL de 3 bandas en el motor: graves (<250 Hz),
+  medios y agudos (>4 kHz), de -12 a +12 dB, cruces de 12 dB/octava.
+- A 0 dB el ecualizador es transparente bit a bit: las tres bandas
+  suman exactamente la señal original.
+- Tarjeta "Bandas reales (dB)" en la pestaña Ecualizador.
+- El EQ forma parte de la voz: se guarda en Mis Voces, perfiles y
+  configuración, y se resetea al aplicar voces que no lo definen.
+- Nueva sección Mis Voces en el Creador: las voces personalizadas
+  entran en la biblioteca como categoría "Mis voces".
+- Aparecen en la biblioteca, la caja de voces y los filtros; pueden
+  ser favoritas como cualquier voz oficial.
+- Guardar (con protección de nombres oficiales), aplicar con doble
+  clic y borrar con confirmación.
+- Persisten en JSON en la carpeta personal del usuario.
+- Verificación: EQ transparente e invariante al troceo; bandas
+  medidas con tonos (graves x1.94 al subir +6 dB sin tocar agudos);
+  flujo completo de Mis Voces probado en simulación.
+- Actualizados scripts, README e instalador a V56.

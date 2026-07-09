@@ -1,0 +1,10 @@
+CAMBIOS V45
+
+- Añadida pestaña Master Final.
+- Normalizar volumen.
+- Limiter suave.
+- Fade in/out.
+- Calidez.
+- Ganancia final.
+- Presets de master.
+- Exportar MASTER_FINAL WAV.

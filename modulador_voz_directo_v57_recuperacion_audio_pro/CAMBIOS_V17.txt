@@ -1,0 +1,15 @@
+CAMBIOS V17
+
+- Añadida pestaña Pro Mode.
+- Añadido panel lateral tipo app premium.
+- Añadido Voicebox rápido en cuadrícula.
+- Añadido botón Voice Changer ON/OFF.
+- Añadido panel Estado Pro.
+- Añadidos medidores en Pro Mode.
+- Añadidas imágenes pro:
+  - pro_banner.png
+  - pro_voicebox.png
+  - pro_soundboard.png
+  - pro_studio.png
+  - pro_settings.png
+- Actualizados README, guía, EXE e instalador.

@@ -1,0 +1,7 @@
+CAMBIOS V13
+
+- Añadidas imágenes/cartas visuales para las voces.
+- Añadida carpeta assets/voices con miniaturas PNG.
+- Añadida vista previa de la voz seleccionada.
+- Mejorada la pestaña Voces con galería visual.
+- Actualizados README, guía, EXE e instalador.

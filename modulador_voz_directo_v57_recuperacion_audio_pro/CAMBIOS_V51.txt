@@ -1,0 +1,17 @@
+CAMBIOS V51
+
+- Añadida pestaña Clips (Clip Instantáneo Pro).
+- Añadido buffer circular en memoria con los últimos 60 s de la salida
+  procesada (voz + efectos + karaoke + soundboard).
+- Añadidos botones para guardar los últimos 10 / 30 / 60 segundos en WAV.
+- Añadido atajo Ctrl+Shift+C: guarda clip de 30 segundos.
+- Añadido historial de clips: escuchar, actualizar, abrir carpeta y borrar.
+- Añadido medidor en vivo de segundos disponibles en el buffer.
+- Añadido interruptor del buffer y botón para vaciarlo.
+- Añadido acceso a Clips en el sidebar del Modo Pro.
+- Carpeta de clips: ModuladorVozDirecto_Clips (carpeta personal).
+- Corregidos los 8 errores de arranque heredados de la V50.
+- Corregido datetime en 11 exportaciones que fallaban en silencio.
+- Corregido el instalador Inno Setup (comillas y accesos directos).
+- Corregido el Mapa de teclas de Atajos (mostraba \n literales).
+- Actualizados scripts, README e instalador a V51.

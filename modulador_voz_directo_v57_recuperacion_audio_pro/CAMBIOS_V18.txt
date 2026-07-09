@@ -1,0 +1,10 @@
+CAMBIOS V18
+
+- Añadida pestaña Voicebox Grid.
+- Añadida cuadrícula visual de voces.
+- Añadidos filtros rápidos por categoría.
+- Añadido botón Aplicar en cada tarjeta.
+- Añadido botón ★ en cada tarjeta.
+- Añadido banner Voicebox Grid.
+- Añadidos assets en assets/grid.
+- Actualizados README, guía, EXE e instalador.

@@ -1,0 +1,15 @@
+CAMBIOS V20
+
+- Añadida pestaña Directo Pro.
+- Añadido banner Panel Directo Pro.
+- Añadidos medidores grandes.
+- Añadidas voces rápidas para directo.
+- Los favoritos aparecen primero en voces rápidas.
+- Añadidos sonidos rápidos por categorías:
+  - Reacciones
+  - Gaming
+  - Directo
+  - Ambiente
+- Añadidos accesos para Discord, Fortnite y OBS.
+- Añadido botón Actualizar voces rápidas.
+- Actualizados README, guía, scripts, EXE e instalador.

@@ -1,0 +1,12 @@
+CAMBIOS V10
+
+- Añadida bandeja del sistema de Windows.
+- Al cerrar la ventana, el programa se oculta junto al reloj.
+- Menú de bandeja:
+  - Mostrar modulador
+  - Ocultar a la bandeja
+  - Empezar directo
+  - Parar directo
+  - Salir del programa
+- Añadidas dependencias pystray y pillow.
+- Actualizados README, guía, EXE e instalador a V10.

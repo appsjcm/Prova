@@ -1,0 +1,12 @@
+CAMBIOS V15
+
+- Añadida pestaña Studio Premium.
+- Añadidas 4 escenas rápidas premium:
+  - Gaming Pro
+  - Podcast Pro
+  - Meme Energy
+  - Cinematic FX
+- Añadido panel de métricas premium.
+- Añadido sistema de perfiles personalizados.
+- Añadidas imágenes de escenas premium.
+- Actualizados README, guía, EXE e instalador.

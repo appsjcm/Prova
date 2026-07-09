@@ -1,0 +1,10 @@
+CAMBIOS V12 VISUAL
+
+- Añadido icono propio app_icon.ico.
+- Añadido banner premium.
+- Añadidos iconos PNG para pestañas y funciones.
+- Añadido panel visual en Inicio.
+- Añadidos iconos a botones de efectos de sonido.
+- Actualizado PyInstaller para incluir assets.
+- Actualizado Inno Setup para usar icono del instalador.
+- Actualizado README y guía.

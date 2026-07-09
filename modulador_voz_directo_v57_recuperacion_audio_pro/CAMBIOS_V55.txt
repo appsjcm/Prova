@@ -1,0 +1,21 @@
+CAMBIOS V55
+
+- Nueva pestaña Ruido: reducción de ruido de fondo en tiempo real.
+- Botón Aprender ruido (2 s): memoriza el ruido de la habitación con
+  el micrófono en silencio y crea un perfil espectral.
+- Sustracción espectral: FFT de 512 muestras, ventana Hann, solape 50%,
+  sobre-sustracción según la intensidad elegida y suavizado temporal
+  de ganancias contra el ruido musical.
+- Reconstrucción por solapamiento-suma con cola de salida cebada:
+  latencia fija de ~12 ms solo cuando está activa; sin huecos ni ceros
+  a mitad de stream con ningún tamaño de bloque.
+- Slider de intensidad 0-100 con recomendación 60-80.
+- La reducción se activa sola al terminar el aprendizaje.
+- Botón Olvidar perfil para volver a empezar.
+- El perfil sobrevive a parar/reanudar el directo; se aplica también
+  en modo voz limpia (modulador OFF).
+- Acceso desde el sidebar del Modo Pro.
+- Verificado con tests: reconstrucción exacta sin perfil, invariancia
+  al troceo de bloques, ruido aprendido atenuado a ~0% de potencia y
+  voz conservada al 100% en señal sintética.
+- Actualizados scripts, README e instalador a V55.

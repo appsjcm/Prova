@@ -1,0 +1,22 @@
+CAMBIOS V48
+
+- Añadida pestaña Cadena Vocal.
+- Añadido banner Cadena Vocal Pro.
+- Añadidos controles de cadena:
+  - Puerta de ruido
+  - Compresor
+  - Presencia
+  - Aire/brillo
+  - Calidez
+  - Reverb
+  - Delay
+  - Volumen
+- Añadidos presets:
+  - Voz limpia
+  - Pop vocal
+  - Trap vocal
+  - Podcast
+  - Karaoke
+- Añadido exportar cadena JSON.
+- Añadidos assets cadena_vocal.
+- Actualizados scripts, README e instalador.

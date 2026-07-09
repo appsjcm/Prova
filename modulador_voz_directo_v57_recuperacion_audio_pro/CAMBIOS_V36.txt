@@ -1,0 +1,14 @@
+CAMBIOS V36
+
+- Añadida pestaña Streamer Hub.
+- Añadido banner Streamer Hub Pro.
+- Añadidos modos rápidos:
+  - Discord claro
+  - Fortnite grave
+  - OBS listo
+- Añadido checklist de directo.
+- Añadido check rápido de entrada/salida/cable virtual.
+- Añadidos botones de empezar/parar directo.
+- Añadidos accesos a Mini Panel, Diagnóstico, Escenas, Favoritos, Atajos y Creador.
+- Añadidos assets streamer_hub.
+- Actualizados README, guía, scripts, EXE e instalador.

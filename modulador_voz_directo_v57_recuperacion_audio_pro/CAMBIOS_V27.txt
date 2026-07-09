@@ -1,0 +1,15 @@
+CAMBIOS V27
+
+- Añadida pestaña Ecualizador.
+- Añadido banner Ecualizador Pro.
+- Añadidos presets:
+  - Directo limpio
+  - Grave potente
+  - Radio directa
+  - Robot claro
+  - Cine épico
+- Añadidos controles grandes para tono, graves, radio, robot, eco y volumen.
+- Añadido estado de ecualizador.
+- Añadido acceso a Guardar perfil, Grabadora y Reiniciar voz.
+- Añadidos assets ecualizador.
+- Actualizados README, guía, scripts, EXE e instalador.

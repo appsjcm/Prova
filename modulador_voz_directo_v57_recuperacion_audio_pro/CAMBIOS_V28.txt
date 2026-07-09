@@ -1,0 +1,16 @@
+CAMBIOS V28
+
+- Añadida pestaña Perfiles Pro+.
+- Añadido banner Perfiles Pro+.
+- Añadido gestor de perfiles.
+- Añadido exportar perfiles a JSON.
+- Añadido importar perfiles desde JSON.
+- Añadidas plantillas rápidas:
+  - Discord Claro
+  - Fortnite Grave
+  - Podcast Pro
+  - Robot Directo
+  - Cine Épico
+- Añadido estado de perfiles.
+- Añadidos assets perfiles.
+- Actualizados README, guía, scripts, EXE e instalador.

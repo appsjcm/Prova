@@ -1,0 +1,10 @@
+CAMBIOS V26
+
+- Añadida pestaña Mini Panel.
+- Añadida ventana flotante siempre encima.
+- Añadidas voces rápidas en Mini Panel.
+- Añadidos sonidos rápidos en Mini Panel.
+- Añadidos controles de directo en Mini Panel.
+- Añadido acceso a Caja de voces, Mesa Pro y Directo Pro.
+- Añadidos assets mini_panel.
+- Actualizados README, guía, scripts, EXE e instalador.
