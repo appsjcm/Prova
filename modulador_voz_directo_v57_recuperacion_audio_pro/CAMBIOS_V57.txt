@@ -19,3 +19,5 @@ CAMBIOS V57
   detección de congelación, recuperación al tercer intento, recasado
   por nombre e idempotencia tras recuperar.
 - Actualizados scripts, README e instalador a V57.
+- Corregido error de arranque en Windows: faltaba importar math para
+  el visualizador (NameError al abrir la app).

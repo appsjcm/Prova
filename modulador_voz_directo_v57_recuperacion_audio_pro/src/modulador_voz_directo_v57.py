@@ -9,6 +9,7 @@ import subprocess
 import platform
 import random
 import time
+import math
 from datetime import datetime
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog, simpledialog
