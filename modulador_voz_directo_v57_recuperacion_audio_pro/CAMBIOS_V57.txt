@@ -21,3 +21,8 @@ CAMBIOS V57
 - Actualizados scripts, README e instalador a V57.
 - Corregido error de arranque en Windows: faltaba importar math para
   el visualizador (NameError al abrir la app).
+- Entradas/salidas robustas: el directo prueba automáticamente
+  44100/48000 Hz (y la tasa nativa del dispositivo) en mono y estéreo
+  hasta dar con la configuración que acepta tu equipo. Se preseleccionan
+  los dispositivos predeterminados de Windows y se recasan por nombre
+  antes de dar error.

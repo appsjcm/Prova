@@ -258,6 +258,8 @@ class AudioEngine:
         # Latido: número total de callbacks procesados. Si deja de subir
         # con el directo activo, el dispositivo se desconectó o falló.
         self.callback_count = 0
+        # Canales reales de la salida abierta (1=mono, 2=estéreo).
+        self.out_channels = 1
 
         # Ecualizador real de 3 bandas: dos cruces de una etapa (250 Hz y
         # 4 kHz) aproximados con FIR, con cola de contexto entre bloques.
@@ -767,7 +769,10 @@ class AudioEngine:
 
 
     def process(self, indata):
-        x = indata[:, 0].astype(np.float32)
+        if indata.shape[1] > 1:
+            x = indata.mean(axis=1).astype(np.float32)
+        else:
+            x = indata[:, 0].astype(np.float32)
         self.mic_level = float(np.sqrt(np.mean(x * x))) if len(x) else 0
 
         with self.lock:
@@ -835,10 +840,33 @@ class AudioEngine:
         if status:
             self.xrun_count += 1
         try:
-            outdata[:] = self.process(indata)
+            y = self.process(indata)
+            if outdata.shape[1] > 1:
+                outdata[:] = np.repeat(y, outdata.shape[1], axis=1)
+            else:
+                outdata[:] = y
         except Exception as e:
             print("Error de audio:", e)
             outdata[:] = np.zeros_like(outdata)
+
+    def configure_rate(self, rate):
+        """Reconfigura los buffers que dependen de la tasa de muestreo."""
+        rate = int(rate)
+        if rate == self.rate:
+            return
+        self.rate = rate
+        self.echo_buf = np.zeros(rate * 2, dtype=np.float32)
+        self.echo_pos = 0
+        self.replay_buffer = np.zeros(rate * self.replay_seconds, dtype=np.float32)
+        self.replay_pos = 0
+        self.replay_filled = 0
+        a1 = 1.0 - math.exp(-2.0 * math.pi * 250.0 / rate)
+        a2 = 1.0 - math.exp(-2.0 * math.pi * 4000.0 / rate)
+        f1 = (a1 * (1.0 - a1) ** np.arange(160)).astype(np.float32)
+        f2 = (a2 * (1.0 - a2) ** np.arange(24)).astype(np.float32)
+        self._eq_fir_low = np.convolve(f1, f1).astype(np.float32)
+        self._eq_fir_lm = np.convolve(f2, f2).astype(np.float32)
+        self._eq_tail = np.zeros(len(self._eq_fir_low) - 1, dtype=np.float32)
 
     def start(self, input_id, output_id, latency_name):
         if self.running:
@@ -851,18 +879,56 @@ class AudioEngine:
         }
         block = block_map.get(latency_name, 256)
         self.xrun_count = 0
-        self.reset_buffers()
-        self.stream = sd.Stream(
-            samplerate=self.rate,
-            blocksize=block,
-            dtype="float32",
-            channels=1,
-            device=(input_id, output_id),
-            callback=self.callback,
-            latency="low" if block <= 512 else "high",
+
+        # Tasas a probar: las clásicas más las nativas de cada dispositivo.
+        # Muchos equipos Windows solo aceptan su tasa nativa (normalmente
+        # 48000) o salida estéreo según el modo del driver.
+        rates = [44100, 48000]
+        try:
+            for dev in (input_id, output_id):
+                nativa = int(sd.query_devices(dev).get("default_samplerate") or 0)
+                if nativa and nativa not in rates:
+                    rates.append(nativa)
+        except Exception:
+            pass
+
+        last_error = None
+        for rate in rates:
+            for in_ch, out_ch in ((1, 1), (1, 2), (2, 1), (2, 2)):
+                try:
+                    stream = sd.Stream(
+                        samplerate=rate,
+                        blocksize=block,
+                        dtype="float32",
+                        channels=(in_ch, out_ch),
+                        device=(input_id, output_id),
+                        callback=self.callback,
+                        latency="low" if block <= 512 else "high",
+                    )
+                except Exception as e:
+                    last_error = e
+                    continue
+                try:
+                    self.configure_rate(rate)
+                    self.out_channels = out_ch
+                    self.reset_buffers()
+                    stream.start()
+                except Exception as e:
+                    last_error = e
+                    try:
+                        stream.close()
+                    except Exception:
+                        pass
+                    continue
+                self.stream = stream
+                self.running = True
+                return
+
+        raise RuntimeError(
+            "No se pudo abrir el audio con ninguna configuración "
+            f"(tasas probadas: {rates} Hz, mono y estéreo).\n"
+            f"Último error: {last_error}"
         )
-        self.stream.start()
-        self.running = True
 
     def stop(self):
         if self.stream:
@@ -9779,10 +9845,25 @@ class PremiumApp:
         self.input_combo["values"] = inputs
         self.output_combo["values"] = outputs
 
+        # Preselecciona los dispositivos predeterminados de Windows: son
+        # los que el usuario ya usa y los que seguro funcionan.
+        default_in = default_out = None
+        try:
+            d = sd.default.device
+            for label, idx in self.input_map.items():
+                if idx == d[0]:
+                    default_in = label
+                    break
+            for label, idx in self.output_map.items():
+                if idx == d[1]:
+                    default_out = label
+                    break
+        except Exception:
+            pass
         if inputs and not self.input_dev.get():
-            self.input_dev.set(inputs[0])
+            self.input_dev.set(default_in or inputs[0])
         if outputs and not self.output_dev.get():
-            self.output_dev.set(outputs[0])
+            self.output_dev.set(default_out or outputs[0])
 
     def find_virtual(self):
         words = ["cable input", "vb-audio", "voicemeeter input", "virtual", "sonic studio"]
@@ -9994,8 +10075,14 @@ class PremiumApp:
         output_id = self.output_map.get(self.output_dev.get())
 
         if input_id is None or output_id is None:
+            # El nombre guardado puede tener otro índice hoy: recasa y reintenta.
+            self._rematch_devices()
+            input_id = self.input_map.get(self.input_dev.get())
+            output_id = self.output_map.get(self.output_dev.get())
+
+        if input_id is None or output_id is None:
             if not silent:
-                messagebox.showwarning("Faltan dispositivos", "Selecciona micrófono y salida.")
+                messagebox.showwarning("Faltan dispositivos", "Selecciona micrófono y salida en la pestaña Ajustes o en el Asistente.")
             return False
 
         try:
