@@ -1,15 +1,15 @@
 @echo off
-title Crear EXE - Modulador V82 Búsqueda Pro
+title Crear EXE - Modulador de Voz 1.0
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install pyinstaller
 python -m PyInstaller ^
   --noconsole ^
   --onefile ^
-  --name ModuladorVozDirectoV82 ^
+  --name ModuladorVoz ^
   --icon assets\app_icon.ico ^
   --add-data "assets;assets" ^
-  src\modulador_voz_directo_v82.py
+  src\modulador_voz.py
 echo.
-echo EXE creado en dist\ModuladorVozDirectoV82.exe
+echo EXE creado en dist\ModuladorVoz.exe
 pause

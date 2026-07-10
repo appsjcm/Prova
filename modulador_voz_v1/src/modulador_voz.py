@@ -49,8 +49,8 @@ except Exception:
 
 
 APP_NAME = "Modulador de Voz en Directo"
-VERSION = "82.0 Búsqueda Pro"
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_config.json")
+VERSION = "1.0"
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_config.json")
 
 
 COLORS = {
@@ -1302,6 +1302,9 @@ class PremiumApp:
         self.root.after(5000, self.watchdog_tick)
         self.root.after(2000, self.stream_guard_tick)
 
+        # Versión 1.0: el programa abre siempre en Directo → Inicio.
+        self.root.after(100, lambda: self.select_tab(self.tab_inicio))
+
         self.root.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
         self.root.after(450, self.show_welcome)
 
@@ -2021,7 +2024,7 @@ class PremiumApp:
         left.pack(side="left", fill="x", expand=True)
         self.main_title_label = ttk.Label(left, text="🎙️ Modulador de Voz en Directo", font=("Segoe UI", 28, "bold"))
         self.main_title_label.pack(anchor="w")
-        self.main_subtitle_label = ttk.Label(left, text="V82 Búsqueda Pro · coherencia visual · auditoría premium · ES / EN")
+        self.main_subtitle_label = ttk.Label(left, text="Versión 1.0 · coherencia visual · auditoría premium · ES / EN")
         self.main_subtitle_label.pack(anchor="w")
 
         right = ttk.Frame(header)
@@ -3385,8 +3388,8 @@ class PremiumApp:
             self.main_title_label.configure(text=self.language_text("🎙️ Modulador de Voz en Directo", "🎙️ Live Voice Modulator"))
         if hasattr(self, 'main_subtitle_label'):
             self.main_subtitle_label.configure(text=self.language_text(
-                "V82 Búsqueda Pro · sistema visual premium · 2 idiomas",
-                "V82 Búsqueda Pro · premium visual system · 2 languages"
+                "Versión 1.0 · sistema visual premium · 2 idiomas",
+                "Versión 1.0 · premium visual system · 2 languages"
             ))
         if hasattr(self, 'main_hint_label'):
             self.main_hint_label.configure(text=self.language_text(
@@ -3590,7 +3593,7 @@ class PremiumApp:
 
         ttk.Label(
             frame,
-            text=self.language_text("V82 Búsqueda Pro está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "V82 Búsqueda Pro is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
+            text=self.language_text("Versión 1.0 está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "Versión 1.0 is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
             style="Muted.TLabel",
             wraplength=690,
             justify="center",
@@ -7155,7 +7158,7 @@ class PremiumApp:
         self.state.set(f"Estado: voz creada · {base} + {style}")
 
     def custom_voices_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_voces.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_voces.json")
 
     def load_custom_voices(self):
         try:
@@ -10023,7 +10026,7 @@ class PremiumApp:
         title = self.landing_title.get() if hasattr(self, "landing_title") else "Mi proyecto"
         artist = self.landing_artist.get() if hasattr(self, "landing_artist") else "Atenea Studio"
         desc = self.landing_description.get("1.0", "end").strip() if hasattr(self, "landing_description") else "Proyecto generado con Modulador de Voz en Directo."
-        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo V82 Búsqueda Pro.</p></div></main></body></html>")
+        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo Versión 1.0.</p></div></main></body></html>")
 
     def deploy_manifest_data(self, included):
         return {
@@ -15910,7 +15913,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
 
     def profiles_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_profiles.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_profiles.json")
 
     def load_profiles(self):
         try:
@@ -16191,7 +16194,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.refresh_voice_list()
 
     def favorites_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_favoritos.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_favoritos.json")
 
     def load_favorites(self):
         try:
@@ -16953,8 +16956,6 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            if data.get("ultima_seccion"):
-                self.root.after(200, lambda: self._restaurar_seccion(data.get("ultima_seccion")))
 
             self.preset.set(data.get("preset", "Gaming limpio"))
             self.category.set(data.get("category", "Todas"))

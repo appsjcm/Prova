@@ -1,8 +1,7 @@
-
-#define MyAppName "Modulador de Voz en Directo V82 Búsqueda Pro
-#define MyAppVersion "82.0"
+#define MyAppName "Modulador de Voz"
+#define MyAppVersion "1.0"
 #define MyAppPublisher "Atenea"
-#define MyAppExeName "ModuladorVozDirectoV82.exe"
+#define MyAppExeName "ModuladorVoz.exe"
 
 [Setup]
 AppId={{91DD2C3D-9424-4FE8-AE84-E6A6D2A0F9E9}
@@ -12,12 +11,13 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=..\salida_instalador
-OutputBaseFilename=ModuladorVozDirectoV82_Setup
+OutputBaseFilename=ModuladorVoz_Setup_1.0
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 DisableProgramGroupPage=yes
 UninstallDisplayIcon={app}\{#MyAppExeName}
+UninstallDisplayName={#MyAppName}
 SetupIconFile=..\assets\app_icon.ico
 
 [Languages]
@@ -27,7 +27,7 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "desktopicon"; Description: "Crear acceso directo en el escritorio"; GroupDescription: "Accesos directos:"; Flags: unchecked
 
 [Files]
-Source: "..\dist\ModuladorVozDirectoV82.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\dist\ModuladorVoz.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\README.md"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\assets\*"; DestDir: "{app}\assets"; Flags: ignoreversion recursesubdirs
 Source: "..\docs\GUIA_DISCORD_FORTNITE_OBS.md"; DestDir: "{app}\docs"; Flags: ignoreversion
@@ -35,7 +35,7 @@ Source: "..\docs\GUIA_DISCORD_FORTNITE_OBS.md"; DestDir: "{app}\docs"; Flags: ig
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Guía Discord Fortnite OBS"; Filename: "{app}\docs\GUIA_DISCORD_FORTNITE_OBS.md"
-Name: "{group}\Desinstalar"; Filename: "{uninstallexe}"
+Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]

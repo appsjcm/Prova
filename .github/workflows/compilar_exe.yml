@@ -4,7 +4,7 @@ on:
   push:
     branches: ["claude/new-session-94jxsw"]
     paths:
-      - "modulador_voz_directo_v82_busqueda_pro/**"
+      - "modulador_voz_v1/**"
       - ".github/workflows/compilar_exe.yml"
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: modulador_voz_directo_v82_busqueda_pro
+        working-directory: modulador_voz_v1
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -31,14 +31,27 @@ jobs:
       - name: Compilar EXE
         run: >
           python -m PyInstaller --noconsole --onefile
-          --name ModuladorVozDirectoV82
+          --name ModuladorVoz
           --icon assets/app_icon.ico
           --add-data "assets;assets"
-          src/modulador_voz_directo_v82.py
+          src/modulador_voz.py
 
-      - name: Publicar EXE como artefacto
+      - name: Instalar Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Crear instalador de Windows
+        run: iscc instalador\ModuladorVoz.iss
+
+      - name: Publicar EXE
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVozDirectoV82-Windows
-          path: modulador_voz_directo_v82_busqueda_pro/dist/ModuladorVozDirectoV82.exe
+          name: ModuladorVoz-1.0-EXE
+          path: modulador_voz_v1/dist/ModuladorVoz.exe
+          retention-days: 30
+
+      - name: Publicar instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: ModuladorVoz-1.0-Instalador
+          path: modulador_voz_v1/salida_instalador/ModuladorVoz_Setup_1.0.exe
           retention-days: 30
