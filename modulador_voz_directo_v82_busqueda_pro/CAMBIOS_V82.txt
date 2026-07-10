@@ -1,0 +1,16 @@
+CAMBIOS V82
+
+- Búsqueda global (Ctrl+K o botón 🔍 de la cabecera): escribe y
+  encuentra al instante cualquiera de las 66 pestañas o cualquier voz.
+- Los resultados muestran la sección de cada pestaña y la categoría
+  de cada voz; Enter o doble clic te lleva (o aplica la voz).
+- Búsqueda sin acentos ni mayúsculas: "dragon" encuentra
+  "Dragón suave".
+- Navegación con flechas ↑/↓ y Esc para cerrar, estilo paleta de
+  comandos.
+- El programa recuerda la última sección abierta y vuelve a ella al
+  arrancar.
+- Ctrl+K añadido al Mapa de teclas de la pestaña Atajos.
+- Verificado: registro completo de 66 pestañas, búsqueda de pestañas
+  y voces, acciones de salto y aplicación de voz, y arranque completo
+  con toda la batería anterior en verde.

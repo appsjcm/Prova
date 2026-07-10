@@ -49,8 +49,8 @@ except Exception:
 
 
 APP_NAME = "Modulador de Voz en Directo"
-VERSION = "81.0 Navegación Pro"
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_config.json")
+VERSION = "82.0 Búsqueda Pro"
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_config.json")
 
 
 COLORS = {
@@ -1013,6 +1013,9 @@ class PremiumApp:
         self.output_map = {}
         self.input_combos = []
         self.output_combos = []
+        # Registro para la búsqueda global: (título, pestaña).
+        self._tab_registry = []
+        self._nombre_seccion = {}
         self.recording = False
         self.tray_icon = None
         self.tray_thread_started = False
@@ -1892,6 +1895,7 @@ class PremiumApp:
             sub = ttk.Notebook(marco)
             sub.pack(fill="both", expand=True)
             self._secciones[nombre] = sub
+            self._nombre_seccion[str(sub)] = nombre
         return self._secciones[nombre]
 
     def _parent_for(self, attr):
@@ -1899,6 +1903,103 @@ class PremiumApp:
 
     def _add_tab(self, tab, text):
         tab.master.add(tab, text=text)
+        self._tab_registry.append((text, tab))
+
+    @staticmethod
+    def _normalizar(texto):
+        tabla = str.maketrans("áéíóúüñÁÉÍÓÚÜÑ", "aeiouunAEIOUUN")
+        return str(texto).translate(tabla).lower()
+
+    def search_matches(self, consulta):
+        """Coincidencias de la búsqueda global: pestañas y voces."""
+        q = self._normalizar(consulta).strip()
+        resultados = []
+        for texto, tab in self._tab_registry:
+            if not q or q in self._normalizar(texto):
+                seccion = self._nombre_seccion.get(str(tab.master), "")
+                resultados.append((f"{texto}   ·  {seccion}", lambda t=tab: self.select_tab(t)))
+        if q:
+            for nombre, (categoria, _valores) in VoiceBank.all_presets().items():
+                if q in self._normalizar(nombre) or q in self._normalizar(categoria):
+                    resultados.append((f"🎙 {nombre}   ·  voz {categoria}", lambda n=nombre: self.apply_pro_voice(n)))
+        return resultados[:40]
+
+    def open_search_palette(self):
+        """Paleta de búsqueda global (Ctrl+K): pestañas y voces."""
+        if getattr(self, "_search_win", None) is not None:
+            try:
+                self._search_win.lift()
+                return
+            except Exception:
+                self._search_win = None
+        win = tk.Toplevel(self.root)
+        self._search_win = win
+        win.title("Buscar en el modulador")
+        win.configure(bg=COLORS["bg"])
+        win.geometry("560x420")
+        win.transient(self.root)
+
+        marco = ttk.Frame(win, padding=14)
+        marco.pack(fill="both", expand=True)
+        ttk.Label(marco, text="Escribe para buscar pestañas o voces:", style="Muted.TLabel").pack(anchor="w")
+        consulta = tk.StringVar()
+        entrada = ttk.Entry(marco, textvariable=consulta, font=("Segoe UI", 13))
+        entrada.pack(fill="x", pady=(4, 8))
+
+        lista = tk.Listbox(
+            marco,
+            bg=COLORS["panel2"],
+            fg=COLORS["text"],
+            selectbackground=COLORS["accent"],
+            relief="flat",
+            font=("Segoe UI", 11),
+            activestyle="none"
+        )
+        lista.pack(fill="both", expand=True)
+        acciones = []
+
+        def refrescar(*_):
+            lista.delete(0, tk.END)
+            acciones.clear()
+            for texto, accion in self.search_matches(consulta.get()):
+                lista.insert(tk.END, "  " + texto)
+                acciones.append(accion)
+            if acciones:
+                lista.selection_set(0)
+
+        def cerrar(*_):
+            self._search_win = None
+            try:
+                win.destroy()
+            except Exception:
+                pass
+
+        def ejecutar(*_):
+            sel = lista.curselection()
+            if not sel or sel[0] >= len(acciones):
+                return
+            accion = acciones[sel[0]]
+            cerrar()
+            accion()
+
+        def mover(delta):
+            sel = lista.curselection()
+            idx = (sel[0] if sel else 0) + delta
+            idx = max(0, min(lista.size() - 1, idx))
+            lista.selection_clear(0, tk.END)
+            lista.selection_set(idx)
+            lista.see(idx)
+
+        consulta.trace_add("write", refrescar)
+        entrada.bind("<Return>", ejecutar)
+        entrada.bind("<Down>", lambda e: mover(1))
+        entrada.bind("<Up>", lambda e: mover(-1))
+        entrada.bind("<Escape>", cerrar)
+        lista.bind("<Double-Button-1>", ejecutar)
+        lista.bind("<Return>", ejecutar)
+        win.protocol("WM_DELETE_WINDOW", cerrar)
+        refrescar()
+        entrada.focus_set()
 
     def select_tab(self, tab):
         """Selecciona la sección de la pestaña y luego la pestaña."""
@@ -1920,11 +2021,12 @@ class PremiumApp:
         left.pack(side="left", fill="x", expand=True)
         self.main_title_label = ttk.Label(left, text="🎙️ Modulador de Voz en Directo", font=("Segoe UI", 28, "bold"))
         self.main_title_label.pack(anchor="w")
-        self.main_subtitle_label = ttk.Label(left, text="V81 Navegación Pro · coherencia visual · auditoría premium · ES / EN")
+        self.main_subtitle_label = ttk.Label(left, text="V82 Búsqueda Pro · coherencia visual · auditoría premium · ES / EN")
         self.main_subtitle_label.pack(anchor="w")
 
         right = ttk.Frame(header)
         right.pack(side="right")
+        ttk.Button(right, text="🔍 Buscar (Ctrl+K)", command=self.open_search_palette).pack(anchor="e", pady=(0, 4))
         ttk.Label(right, textvariable=self.state, style="Accent.TLabel").pack(anchor="e")
         self.main_hint_label = ttk.Label(right, text="Micrófono real → Voz modificada → Cable virtual", style="Muted.TLabel")
         self.main_hint_label.pack(anchor="e")
@@ -3283,8 +3385,8 @@ class PremiumApp:
             self.main_title_label.configure(text=self.language_text("🎙️ Modulador de Voz en Directo", "🎙️ Live Voice Modulator"))
         if hasattr(self, 'main_subtitle_label'):
             self.main_subtitle_label.configure(text=self.language_text(
-                "V81 Navegación Pro · sistema visual premium · 2 idiomas",
-                "V81 Navegación Pro · premium visual system · 2 languages"
+                "V82 Búsqueda Pro · sistema visual premium · 2 idiomas",
+                "V82 Búsqueda Pro · premium visual system · 2 languages"
             ))
         if hasattr(self, 'main_hint_label'):
             self.main_hint_label.configure(text=self.language_text(
@@ -3488,7 +3590,7 @@ class PremiumApp:
 
         ttk.Label(
             frame,
-            text=self.language_text("V81 Navegación Pro está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "V81 Navegación Pro is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
+            text=self.language_text("V82 Búsqueda Pro está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "V82 Búsqueda Pro is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
             style="Muted.TLabel",
             wraplength=690,
             justify="center",
@@ -6702,6 +6804,7 @@ class PremiumApp:
             ("Ctrl + Shift + P", "Abrir Mini Panel"),
             ("Ctrl + Shift + G", "Grabar prueba WAV"),
             ("Ctrl + Shift + C", "Guardar clip instantáneo (30 s)"),
+            ("Ctrl + K", "Buscar pestañas y voces"),
         ]
 
         text.insert("1.0", "ATAJOS PRO\n\n")
@@ -6765,6 +6868,8 @@ class PremiumApp:
                 "<Control-Shift-g>": lambda e: self.record(),
                 "<Control-Shift-C>": lambda e: self.hotkey_save_clip(),
                 "<Control-Shift-c>": lambda e: self.hotkey_save_clip(),
+                "<Control-k>": lambda e: self.open_search_palette(),
+                "<Control-K>": lambda e: self.open_search_palette(),
             }
             for key, callback in bindings.items():
                 self.root.bind_all(key, callback)
@@ -7050,7 +7155,7 @@ class PremiumApp:
         self.state.set(f"Estado: voz creada · {base} + {style}")
 
     def custom_voices_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_voces.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_voces.json")
 
     def load_custom_voices(self):
         try:
@@ -9918,7 +10023,7 @@ class PremiumApp:
         title = self.landing_title.get() if hasattr(self, "landing_title") else "Mi proyecto"
         artist = self.landing_artist.get() if hasattr(self, "landing_artist") else "Atenea Studio"
         desc = self.landing_description.get("1.0", "end").strip() if hasattr(self, "landing_description") else "Proyecto generado con Modulador de Voz en Directo."
-        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo V81 Navegación Pro.</p></div></main></body></html>")
+        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo V82 Búsqueda Pro.</p></div></main></body></html>")
 
     def deploy_manifest_data(self, included):
         return {
@@ -15805,7 +15910,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
 
     def profiles_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_profiles.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_profiles.json")
 
     def load_profiles(self):
         try:
@@ -16086,7 +16191,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.refresh_voice_list()
 
     def favorites_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_favoritos.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v82_favoritos.json")
 
     def load_favorites(self):
         try:
@@ -16814,11 +16919,30 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "output": self.output_dev.get(),
             "language": self.app_language.get(),
             "values": self.current_values(),
+            "ultima_seccion": self._seccion_actual(),
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
         if not silent:
             messagebox.showinfo("Guardado", "Configuración guardada correctamente.")
+
+    def _seccion_actual(self):
+        try:
+            actual = self.notebook.select()
+            for nombre, sub in self._secciones.items():
+                if str(sub.master) == str(actual):
+                    return nombre
+        except Exception:
+            pass
+        return ""
+
+    def _restaurar_seccion(self, nombre):
+        try:
+            sub = self._secciones.get(nombre)
+            if sub is not None:
+                self.notebook.select(sub.master)
+        except Exception:
+            pass
 
     def load_config(self, silent=False):
         if not os.path.exists(CONFIG_FILE):
@@ -16829,6 +16953,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            if data.get("ultima_seccion"):
+                self.root.after(200, lambda: self._restaurar_seccion(data.get("ultima_seccion")))
 
             self.preset.set(data.get("preset", "Gaming limpio"))
             self.category.set(data.get("category", "Todas"))
