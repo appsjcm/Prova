@@ -1,0 +1,13 @@
+CAMBIOS V64
+
+- Añadida pestaña Export Pack.
+- Añadido banner Export Pack Pro.
+- Añadida lista de archivos para paquete final.
+- Añadidos filtros de Audio/Portadas/Docs.
+- Añadida vista previa de WAV/PNG/TXT/JSON.
+- Añadida creación de ZIP final con carpetas organizadas.
+- Añadido manifest.json dentro del pack.
+- Añadido LEEME.txt dentro del pack.
+- Añadida apertura de carpeta de salida.
+- Corregido uso de datetime.datetime generado en versiones anteriores.
+- Actualizados scripts, README e instalador.

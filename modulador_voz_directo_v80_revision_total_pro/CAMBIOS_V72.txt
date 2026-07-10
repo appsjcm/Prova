@@ -1,0 +1,12 @@
+CAMBIOS V72
+
+- Añadida pestaña Professional Polish.
+- Añadido Polish Score 0-100.
+- Añadido modo Showroom.
+- Añadidos modos de producto.
+- Añadido pulido premium completo.
+- Añadida exportación de informe JSON/TXT.
+- Añadida exportación de tema polish JSON.
+- Añadida exportación de badge PNG.
+- Añadidos assets professional_polish.
+- Actualizados scripts, README e instalador.

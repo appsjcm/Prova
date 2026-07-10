@@ -1,0 +1,16 @@
+CAMBIOS V70
+
+- Añadida pestaña Premium Experience.
+- Añadido banner Premium Experience Pro.
+- Añadido panel de checklist de acabado premium.
+- Añadidos modos:
+  - Studio Creator
+  - Streamer
+  - Karaoke
+  - Launch / Publicar
+- Añadido diagnóstico de calidad premium 0-100.
+- Añadido botón de acabado premium completo.
+- Añadido exportar Badge PNG.
+- Añadido exportar informe JSON/TXT.
+- Añadidos assets premium_experience.
+- Actualizados scripts, README e instalador.

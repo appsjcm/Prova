@@ -1,0 +1,12 @@
+CAMBIOS V68
+
+- Añadida pestaña Web Pack.
+- Añadido banner Web Pack Pro.
+- Añadido escaneo de HTML/WAV/PNG/JSON/TXT.
+- Añadida vista previa por tipo de archivo.
+- Añadida generación de index.html.
+- Añadido ZIP web con assets/audio, assets/images, assets/docs, assets/html.
+- Añadidos manifest.json y LEEME.txt al ZIP.
+- Añadida exportación de manifest JSON separado.
+- Añadidos assets web_pack.
+- Actualizados scripts, README e instalador.

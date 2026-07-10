@@ -1,0 +1,14 @@
+CAMBIOS V71
+
+- Añadida pestaña UI Premium.
+- Añadido banner Ultra Premium UI.
+- Añadido mockup visual de producto.
+- Añadidos temas Glass Studio, Creator Pro, Streamer Pro, Gold Launch y Focus Dark.
+- Añadida densidad Premium cómodo, Compacto pro y Grande presentación.
+- Añadido Focus Mode.
+- Añadido Pulido premium completo.
+- Añadida puntuación de acabado UI.
+- Añadida exportación JSON/TXT de UI.
+- Añadida exportación de badge PNG.
+- Corregidas referencias datetime.datetime heredadas.
+- Actualizados scripts, README e instalador.

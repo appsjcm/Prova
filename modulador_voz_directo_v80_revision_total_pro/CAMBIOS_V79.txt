@@ -1,0 +1,12 @@
+CAMBIOS V79
+
+- Añadida pestaña Interface Consistency Pro.
+- Añadida auditoría visual de consistencia.
+- Añadida puntuación 0-100 de coherencia de interfaz.
+- Añadidos modos de consistencia visual.
+- Añadida exportación de informe JSON/TXT.
+- Añadida exportación de tablero visual PNG.
+- Añadidos assets interface_consistency.
+- Reforzada traducción de pestañas ES/EN.
+- Actualizados scripts, README e instalador.
+- Validado con py_compile.

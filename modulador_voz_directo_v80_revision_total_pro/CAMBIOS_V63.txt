@@ -1,0 +1,12 @@
+CAMBIOS V63
+
+- Añadida pestaña Portadas Premium.
+- Añadido banner Portadas Premium Pro.
+- Añadida vista previa de portada.
+- Añadido editor de título/artista/subtítulo/estilo.
+- Añadidos estilos Neón, Pop, Trap, Lofi, Dorado y Gaming.
+- Añadida exportación PNG 1600x1600.
+- Añadida exportación de metadatos JSON.
+- Añadida conexión con Biblioteca Premium.
+- Añadidos assets portadas_premium.
+- Actualizados scripts, README e instalador.

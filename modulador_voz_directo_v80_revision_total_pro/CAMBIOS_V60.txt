@@ -1,0 +1,18 @@
+CAMBIOS V60
+
+- Añadida pestaña Inicio Premium.
+- Añadido banner Inicio Premium Pro.
+- Añadido mapa visual del flujo recomendado.
+- Añadidas tarjetas grandes:
+  - Directo
+  - Karaoke
+  - Canción
+  - Revisión
+  - Visual
+  - Finalizar
+- Añadido resumen rápido del proyecto.
+- Añadido modo rápido.
+- Añadida preparación segura.
+- Añadidos accesos de exportación final.
+- Añadidos assets inicio_premium.
+- Actualizados scripts, README e instalador.

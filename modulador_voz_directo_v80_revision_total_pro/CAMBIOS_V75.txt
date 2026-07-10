@@ -1,0 +1,9 @@
+CAMBIOS V75
+
+- Añadida pestaña Full Translation Pro.
+- Añadida traducción de botones y labels comunes.
+- Añadido sistema de pares ES/EN.
+- Añadido reporte de cobertura de traducción.
+- Añadida exportación JSON/TXT de traducción.
+- Añadidos assets full_translation.
+- Actualizados scripts, README e instalador.

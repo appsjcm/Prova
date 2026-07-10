@@ -1,0 +1,11 @@
+CAMBIOS V78
+
+- Añadida pestaña Design System Pro.
+- Añadidos tokens de color, tipografía y componentes.
+- Añadidos temas Aurora Premium, Glass Studio, Gold Launch y Focus Clean.
+- Añadida exportación de guía visual JSON/TXT.
+- Añadida exportación CSS.
+- Añadida exportación de tablero PNG.
+- Añadidos nuevos assets en assets/design_system.
+- Actualizados scripts, README e instalador.
+- Validado con py_compile.

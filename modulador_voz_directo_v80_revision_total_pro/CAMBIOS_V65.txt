@@ -1,0 +1,11 @@
+CAMBIOS V65
+
+- Añadida pestaña Publicación Pro.
+- Añadida ficha de publicación.
+- Añadido generador de descripción tipo YouTube.
+- Añadido generador de tags.
+- Añadidas release notes.
+- Añadido checklist final.
+- Añadida exportación JSON/TXT.
+- Añadidos assets publicacion_pro.
+- Actualizados scripts, README e instalador.
