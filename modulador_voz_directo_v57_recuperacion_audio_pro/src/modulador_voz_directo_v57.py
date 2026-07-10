@@ -972,6 +972,10 @@ class PremiumApp:
         self.engine = AudioEngine()
         self.input_map = {}
         self.output_map = {}
+        # Todos los desplegables de dispositivos de la app, para
+        # refrescarlos a la vez (antes el del Asistente quedaba vacío).
+        self.input_combos = []
+        self.output_combos = []
         self.recording = False
         self.tray_icon = None
         self.tray_thread_started = False
@@ -4042,6 +4046,94 @@ class PremiumApp:
         self.update_engine()
         self.nr_status.set("Perfil olvidado. Aprende el ruido de nuevo cuando quieras.")
 
+    def on_device_changed(self):
+        """Al cambiar micro o salida con el directo activo, lo reinicia."""
+        if not self.engine.running:
+            return
+        self.stop()
+        if self.start(silent=True):
+            self.state.set("Estado: dispositivo cambiado · directo reiniciado")
+        else:
+            self.state.set("Estado: dispositivo cambiado · pulsa ▶ Empezar directo")
+
+    def _device_test_report(self, mensaje):
+        self.assistant_status.set(mensaje)
+        self.state.set(f"Estado: {mensaje}")
+
+    def test_microphone(self):
+        """Prueba el micrófono seleccionado sin necesidad de empezar el directo."""
+        if self.engine.running:
+            self._device_test_report("Para probar el micro, para primero el directo.")
+            return
+        dev = self.input_map.get(self.input_dev.get())
+        if dev is None:
+            self._device_test_report("Selecciona primero un micrófono en la lista.")
+            return
+        self._device_test_report("Probando micrófono… habla ahora (2 segundos).")
+        threading.Thread(target=self._test_mic_worker, args=(dev,), daemon=True).start()
+
+    def _test_mic_worker(self, dev):
+        niveles = []
+        error = None
+        for rate in (44100, 48000):
+            for ch in (1, 2):
+                try:
+                    with sd.InputStream(device=dev, channels=ch, samplerate=rate, dtype="float32") as stream:
+                        for _ in range(10):
+                            datos, _ = stream.read(int(rate * 0.2))
+                            niveles.append(float(np.sqrt(np.mean(datos ** 2))))
+                    error = None
+                    break
+                except Exception as e:
+                    error = e
+            if error is None:
+                break
+        def informar():
+            if error is not None:
+                self._device_test_report(f"❌ El micrófono no se pudo abrir: {error}")
+                return
+            pico = max(niveles) if niveles else 0.0
+            pct = min(100, int(pico * 700))
+            if pico < 0.005:
+                self._device_test_report(f"⚠ Micrófono abierto pero no se oye nada (nivel {pct}%). Revisa el volumen del micro en Windows.")
+            else:
+                self._device_test_report(f"✅ Micrófono funciona · nivel de voz {pct}%.")
+        self.root.after(0, informar)
+
+    def test_headphones(self):
+        """Reproduce un pitido en la salida seleccionada, sin empezar el directo."""
+        if self.engine.running:
+            self._device_test_report("Para probar la salida, para primero el directo.")
+            return
+        dev = self.output_map.get(self.output_dev.get())
+        if dev is None:
+            self._device_test_report("Selecciona primero una salida en la lista.")
+            return
+        self._device_test_report("Enviando pitido a la salida seleccionada…")
+        threading.Thread(target=self._test_out_worker, args=(dev,), daemon=True).start()
+
+    def _test_out_worker(self, dev):
+        error = None
+        for rate in (44100, 48000):
+            for ch in (2, 1):
+                try:
+                    t = np.arange(int(rate * 0.8)) / rate
+                    tono = (0.30 * np.sin(2 * np.pi * 440 * t)).astype(np.float32)
+                    datos = np.repeat(tono.reshape(-1, 1), ch, axis=1)
+                    sd.play(datos, samplerate=rate, device=dev, blocking=True)
+                    error = None
+                    break
+                except Exception as e:
+                    error = e
+            if error is None:
+                break
+        def informar():
+            if error is not None:
+                self._device_test_report(f"❌ La salida no se pudo abrir: {error}")
+            else:
+                self._device_test_report("✅ Pitido enviado. Si no lo oíste y era tus auriculares, revisa el volumen. Si era el cable virtual, es normal no oírlo.")
+        self.root.after(0, informar)
+
     def stream_guard_tick(self):
         """Detecta la muerte del stream (dispositivo desconectado) por latido."""
         try:
@@ -4077,7 +4169,9 @@ class PremiumApp:
                 continue
             nombre = actual.split(": ", 1)[1] if ": " in actual else actual
             for etiqueta in mapping:
-                if etiqueta.endswith(nombre):
+                candidato = etiqueta.split(": ", 1)[1] if ": " in etiqueta else etiqueta
+                # Igualdad o prefijo (MME corta los nombres a 31 letras).
+                if candidato == nombre or candidato.startswith(nombre) or nombre.startswith(candidato):
                     var.set(etiqueta)
                     break
 
@@ -8491,16 +8585,24 @@ class PremiumApp:
         row1 = ttk.Frame(devices, style="Card.TFrame")
         row1.pack(fill="x", pady=4)
         ttk.Label(row1, text="Micrófono real:", style="Card.TLabel", width=20).pack(side="left")
-        ttk.Combobox(row1, textvariable=self.input_dev, state="readonly", values=self.input_combo["values"] if hasattr(self, "input_combo") else [], width=70).pack(side="left", fill="x", expand=True, padx=8)
+        combo_in = ttk.Combobox(row1, textvariable=self.input_dev, state="readonly", width=70)
+        combo_in.pack(side="left", fill="x", expand=True, padx=8)
+        self.input_combos.append(combo_in)
+        combo_in.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
 
         row2 = ttk.Frame(devices, style="Card.TFrame")
         row2.pack(fill="x", pady=4)
         ttk.Label(row2, text="Salida modificada:", style="Card.TLabel", width=20).pack(side="left")
-        ttk.Combobox(row2, textvariable=self.output_dev, state="readonly", values=self.output_combo["values"] if hasattr(self, "output_combo") else [], width=70).pack(side="left", fill="x", expand=True, padx=8)
+        combo_out = ttk.Combobox(row2, textvariable=self.output_dev, state="readonly", width=70)
+        combo_out.pack(side="left", fill="x", expand=True, padx=8)
+        self.output_combos.append(combo_out)
+        combo_out.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
 
         dev_buttons = ttk.Frame(devices, style="Card.TFrame")
         dev_buttons.pack(fill="x", pady=(8, 0))
         ttk.Button(dev_buttons, text="Actualizar dispositivos", command=self.assistant_refresh_devices).pack(side="left", padx=4)
+        ttk.Button(dev_buttons, text="🎙 Probar micro", style="Accent.TButton", command=self.test_microphone).pack(side="left", padx=4)
+        ttk.Button(dev_buttons, text="🎧 Probar auriculares", style="Accent.TButton", command=self.test_headphones).pack(side="left", padx=4)
         ttk.Button(dev_buttons, text="Buscar cable virtual", command=self.assistant_find_virtual).pack(side="left", padx=4)
         ttk.Button(dev_buttons, text="Usar auriculares para probar", command=self.assistant_headphones_tip).pack(side="left", padx=4)
 
@@ -8968,16 +9070,22 @@ class PremiumApp:
         ttk.Label(row1, text="Entrada / micrófono:", style="Card.TLabel", width=22).pack(side="left")
         self.input_combo = ttk.Combobox(row1, textvariable=self.input_dev, state="readonly")
         self.input_combo.pack(side="left", fill="x", expand=True, padx=8)
+        self.input_combos.append(self.input_combo)
+        self.input_combo.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
 
         row2 = ttk.Frame(devices, style="Card.TFrame")
         row2.pack(fill="x", pady=4)
         ttk.Label(row2, text="Salida modificada:", style="Card.TLabel", width=22).pack(side="left")
         self.output_combo = ttk.Combobox(row2, textvariable=self.output_dev, state="readonly")
         self.output_combo.pack(side="left", fill="x", expand=True, padx=8)
+        self.output_combos.append(self.output_combo)
+        self.output_combo.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
 
         row3 = ttk.Frame(devices, style="Card.TFrame")
         row3.pack(fill="x", pady=(10, 0))
         ttk.Button(row3, text="Actualizar dispositivos", command=self.load_devices).pack(side="left", padx=(0, 8))
+        ttk.Button(row3, text="🎙 Probar micro", command=self.test_microphone).pack(side="left", padx=8)
+        ttk.Button(row3, text="🎧 Probar auriculares", command=self.test_headphones).pack(side="left", padx=8)
         ttk.Button(row3, text="Auto cable virtual", command=self.find_virtual).pack(side="left", padx=8)
         ttk.Button(row3, text="Guardar configuración", command=self.save_config).pack(side="left", padx=8)
         ttk.Button(row3, text="Cargar configuración", command=self.load_config).pack(side="left", padx=8)
@@ -9828,22 +9936,61 @@ class PremiumApp:
             messagebox.showerror("Error", f"No se pudieron leer los dispositivos de audio:\n{e}")
             return
 
-        inputs = []
-        outputs = []
+        # En Windows cada dispositivo aparece 4 veces (MME, DirectSound,
+        # WASAPI, WDM-KS) y MME corta los nombres a 31 letras. Nos quedamos
+        # con WASAPI (nombres completos, un dispositivo = una entrada) y si
+        # no existe o queda vacío, usamos la lista completa.
+        wasapi = None
+        try:
+            for i, api in enumerate(sd.query_hostapis()):
+                if "wasapi" in str(api.get("name", "")).lower():
+                    wasapi = i
+                    break
+        except Exception:
+            wasapi = None
+
+        def construir(filtro):
+            ins, outs, imap, omap = [], [], {}, {}
+            for i, dev in enumerate(devices):
+                if filtro is not None and dev.get("hostapi") != filtro:
+                    continue
+                name = f"{i}: {dev['name']}"
+                if dev.get("max_input_channels", 0) > 0:
+                    ins.append(name)
+                    imap[name] = i
+                if dev.get("max_output_channels", 0) > 0:
+                    outs.append(name)
+                    omap[name] = i
+            return ins, outs, imap, omap
+
+        inputs, outputs, imap, omap = construir(wasapi)
+        if not inputs or not outputs:
+            inputs, outputs, imap, omap = construir(None)
+
         self.input_map.clear()
+        self.input_map.update(imap)
         self.output_map.clear()
+        self.output_map.update(omap)
 
-        for i, dev in enumerate(devices):
-            name = f"{i}: {dev['name']}"
-            if dev.get("max_input_channels", 0) > 0:
-                inputs.append(name)
-                self.input_map[name] = i
-            if dev.get("max_output_channels", 0) > 0:
-                outputs.append(name)
-                self.output_map[name] = i
+        for combo in self.input_combos:
+            try:
+                combo["values"] = inputs
+            except Exception:
+                pass
+        for combo in self.output_combos:
+            try:
+                combo["values"] = outputs
+            except Exception:
+                pass
 
-        self.input_combo["values"] = inputs
-        self.output_combo["values"] = outputs
+        # Si la selección actual ya no existe (cambio de driver o de
+        # nombre), recásala por nombre y, si no, déjala vacía para que
+        # entren los predeterminados.
+        self._rematch_devices()
+        if self.input_dev.get() and self.input_dev.get() not in self.input_map:
+            self.input_dev.set("")
+        if self.output_dev.get() and self.output_dev.get() not in self.output_map:
+            self.output_dev.set("")
 
         # Preselecciona los dispositivos predeterminados de Windows: son
         # los que el usuario ya usa y los que seguro funcionan.
