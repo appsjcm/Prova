@@ -1,0 +1,26 @@
+CAMBIOS V81
+
+- Navegación por secciones: las 66 pestañas se agrupan en 6 secciones
+  con dos niveles de pestañas (arriba la sección, debajo sus pestañas):
+  · 🎮 Directo: Inicio, Modo Pro, Barra rápida, Mini Panel, Directo,
+    Directo Pro, Streamer Hub, Escenas, Clips, Test de Voz.
+  · 🎙 Voces: Voces, Caja de voces, Packs, Personas, Cambiador,
+    Creador, Favoritos, Perfiles, Ultra, Estudio.
+  · 🎵 Música: Autotune, Karaoke, Karaoke Studio, Canción, Mezclador,
+    Master, Studio Dashboard, Analizador, Cadena Vocal, Timeline,
+    Multipista, Biblioteca.
+  · 🛠 Herramientas: Asistentes, Mesa Pro, Sonidos, Grabadora,
+    Diagnóstico, Ecualizador, Ruido, Rendimiento, Cable Virtual,
+    Revisión Técnica, Visualizador, Command Center.
+  · 🚀 Publicar: Deploy, Web Pack, Landing, Brand Kit, Publicación,
+    Export Pack, Portadas.
+  · ⚙ Ajustes: Ajustes, Atajos, Guía, Diseño, Iconos, Idiomas,
+    Traducción, Consistencia, Visual Pro, UI Premium, Premium, Polish.
+- Todos los botones de "abrir pestaña" (163 accesos) seleccionan
+  ahora la sección correcta y dentro de ella la pestaña.
+- La traducción ES/EN de los títulos de pestaña funciona con la nueva
+  estructura (antes fallaba en silencio al renombrar).
+- Sin cambios en el contenido de ninguna pestaña: solo la navegación.
+- Verificado: arranque completo, 66 pestañas repartidas en 6 secciones
+  sin ninguna huérfana, navegación sección+pestaña y toda la batería
+  (DSP, dispositivos, E/S, guardián) de la V80 sigue en verde.

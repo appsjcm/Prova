@@ -4,7 +4,7 @@ on:
   push:
     branches: ["claude/new-session-94jxsw"]
     paths:
-      - "modulador_voz_directo_v80_revision_total_pro/**"
+      - "modulador_voz_directo_v81_navegacion_pro/**"
       - ".github/workflows/compilar_exe.yml"
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: modulador_voz_directo_v80_revision_total_pro
+        working-directory: modulador_voz_directo_v81_navegacion_pro
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -31,14 +31,14 @@ jobs:
       - name: Compilar EXE
         run: >
           python -m PyInstaller --noconsole --onefile
-          --name ModuladorVozDirectoV80
+          --name ModuladorVozDirectoV81
           --icon assets/app_icon.ico
           --add-data "assets;assets"
-          src/modulador_voz_directo_v80.py
+          src/modulador_voz_directo_v81.py
 
       - name: Publicar EXE como artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVozDirectoV80-Windows
-          path: modulador_voz_directo_v80_revision_total_pro/dist/ModuladorVozDirectoV80.exe
+          name: ModuladorVozDirectoV81-Windows
+          path: modulador_voz_directo_v81_navegacion_pro/dist/ModuladorVozDirectoV81.exe
           retention-days: 30

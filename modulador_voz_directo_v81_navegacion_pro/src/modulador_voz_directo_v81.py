@@ -49,8 +49,8 @@ except Exception:
 
 
 APP_NAME = "Modulador de Voz en Directo"
-VERSION = "80.0 Revisión Total Pro"
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v80_config.json")
+VERSION = "81.0 Navegación Pro"
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_config.json")
 
 
 COLORS = {
@@ -1883,6 +1883,32 @@ class PremiumApp:
             ttk.Label(frame, text=title, style="Card.TLabel", font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(0, 8))
         return frame
 
+    SECCION_POR_DEFECTO = "🛠 Herramientas"
+
+    def _crear_seccion(self, nombre):
+        if nombre not in self._secciones:
+            marco = ttk.Frame(self.notebook)
+            self.notebook.add(marco, text=nombre)
+            sub = ttk.Notebook(marco)
+            sub.pack(fill="both", expand=True)
+            self._secciones[nombre] = sub
+        return self._secciones[nombre]
+
+    def _parent_for(self, attr):
+        return self._crear_seccion(self._seccion_de.get(attr, self.SECCION_POR_DEFECTO))
+
+    def _add_tab(self, tab, text):
+        tab.master.add(tab, text=text)
+
+    def select_tab(self, tab):
+        """Selecciona la sección de la pestaña y luego la pestaña."""
+        try:
+            sub = tab.master
+            self.notebook.select(sub.master)
+            sub.select(tab)
+        except Exception:
+            pass
+
     def build_ui(self):
         main = ttk.Frame(self.root, padding=18)
         main.pack(fill="both", expand=True)
@@ -1894,7 +1920,7 @@ class PremiumApp:
         left.pack(side="left", fill="x", expand=True)
         self.main_title_label = ttk.Label(left, text="🎙️ Modulador de Voz en Directo", font=("Segoe UI", 28, "bold"))
         self.main_title_label.pack(anchor="w")
-        self.main_subtitle_label = ttk.Label(left, text="V80 Revisión Total Pro · coherencia visual · auditoría premium · ES / EN")
+        self.main_subtitle_label = ttk.Label(left, text="V81 Navegación Pro · coherencia visual · auditoría premium · ES / EN")
         self.main_subtitle_label.pack(anchor="w")
 
         right = ttk.Frame(header)
@@ -1906,139 +1932,188 @@ class PremiumApp:
         self.notebook = ttk.Notebook(main)
         self.notebook.pack(fill="both", expand=True)
 
-        self.tab_interface_consistency = ttk.Frame(self.notebook, padding=14)
-        self.tab_design_system = ttk.Frame(self.notebook, padding=14)
-        self.tab_icon_system = ttk.Frame(self.notebook, padding=14)
-        self.tab_language_pack = ttk.Frame(self.notebook, padding=14)
-        self.tab_full_translation = ttk.Frame(self.notebook, padding=14)
-        self.tab_bilingual_visual = ttk.Frame(self.notebook, padding=14)
-        self.tab_inicio = ttk.Frame(self.notebook, padding=14)
-        self.tab_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_asistente = ttk.Frame(self.notebook, padding=14)
-        self.tab_barra_rapida = ttk.Frame(self.notebook, padding=14)
-        self.tab_mesa_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_diagnostico = ttk.Frame(self.notebook, padding=14)
-        self.tab_mini_panel = ttk.Frame(self.notebook, padding=14)
-        self.tab_ecualizador = ttk.Frame(self.notebook, padding=14)
-        self.tab_perfiles_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_personas_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_cambiador_personas = ttk.Frame(self.notebook, padding=14)
-        self.tab_creador_voces = ttk.Frame(self.notebook, padding=14)
-        self.tab_atajos = ttk.Frame(self.notebook, padding=14)
-        self.tab_favoritos_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_escenas_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_streamer_hub = ttk.Frame(self.notebook, padding=14)
-        self.tab_rendimiento = ttk.Frame(self.notebook, padding=14)
-        self.tab_ruido = ttk.Frame(self.notebook, padding=14)
-        self.tab_cable_virtual = ttk.Frame(self.notebook, padding=14)
-        self.tab_test_voz = ttk.Frame(self.notebook, padding=14)
-        self.tab_autotune = ttk.Frame(self.notebook, padding=14)
-        self.tab_karaoke = ttk.Frame(self.notebook, padding=14)
-        self.tab_karaoke_studio = ttk.Frame(self.notebook, padding=14)
-        self.tab_cancion_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_mezclador_musical = ttk.Frame(self.notebook, padding=14)
-        self.tab_master_final = ttk.Frame(self.notebook, padding=14)
-        self.tab_command_center = ttk.Frame(self.notebook, padding=14)
-        self.tab_professional_polish = ttk.Frame(self.notebook, padding=14)
-        self.tab_ultra_premium_ui = ttk.Frame(self.notebook, padding=14)
-        self.tab_premium_experience = ttk.Frame(self.notebook, padding=14)
-        self.tab_deploy_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_web_pack = ttk.Frame(self.notebook, padding=14)
-        self.tab_landing_page = ttk.Frame(self.notebook, padding=14)
-        self.tab_brand_kit = ttk.Frame(self.notebook, padding=14)
-        self.tab_publicacion_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_export_pack = ttk.Frame(self.notebook, padding=14)
-        self.tab_portadas_premium = ttk.Frame(self.notebook, padding=14)
-        self.tab_biblioteca_premium = ttk.Frame(self.notebook, padding=14)
-        self.tab_asistente_inicial = ttk.Frame(self.notebook, padding=14)
-        self.tab_inicio_premium = ttk.Frame(self.notebook, padding=14)
-        self.tab_visual_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_revision_tecnica = ttk.Frame(self.notebook, padding=14)
-        self.tab_studio_dashboard = ttk.Frame(self.notebook, padding=14)
-        self.tab_analizador_vocal = ttk.Frame(self.notebook, padding=14)
-        self.tab_cadena_vocal = ttk.Frame(self.notebook, padding=14)
-        self.tab_timeline_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_multipista = ttk.Frame(self.notebook, padding=14)
-        self.tab_clips = ttk.Frame(self.notebook, padding=14)
-        self.tab_grabadora = ttk.Frame(self.notebook, padding=14)
-        self.tab_directo_pro = ttk.Frame(self.notebook, padding=14)
-        self.tab_voicebox_grid = ttk.Frame(self.notebook, padding=14)
-        self.tab_ultra = ttk.Frame(self.notebook, padding=14)
-        self.tab_voces = ttk.Frame(self.notebook, padding=14)
-        self.tab_studio = ttk.Frame(self.notebook, padding=14)
-        self.tab_packs = ttk.Frame(self.notebook, padding=14)
-        self.tab_ajustes = ttk.Frame(self.notebook, padding=14)
-        self.tab_directo = ttk.Frame(self.notebook, padding=14)
-        self.tab_sonidos = ttk.Frame(self.notebook, padding=14)
-        self.tab_visualizador = ttk.Frame(self.notebook, padding=14)
-        self.tab_guia = ttk.Frame(self.notebook, padding=14)
+        # Navegación por secciones (V81): el notebook principal contiene
+        # 6 secciones y cada una un sub-notebook con sus pestañas.
+        self._secciones = {}
+        self._seccion_de = {
+            # 🎮 Directo
+            "tab_inicio": "🎮 Directo", "tab_inicio_premium": "🎮 Directo",
+            "tab_pro": "🎮 Directo", "tab_barra_rapida": "🎮 Directo",
+            "tab_mini_panel": "🎮 Directo", "tab_directo_pro": "🎮 Directo",
+            "tab_directo": "🎮 Directo", "tab_streamer_hub": "🎮 Directo",
+            "tab_escenas_pro": "🎮 Directo", "tab_clips": "🎮 Directo",
+            "tab_test_voz": "🎮 Directo",
+            # 🎙 Voces
+            "tab_voces": "🎙 Voces", "tab_voicebox_grid": "🎙 Voces",
+            "tab_packs": "🎙 Voces", "tab_personas_pro": "🎙 Voces",
+            "tab_cambiador_personas": "🎙 Voces", "tab_creador_voces": "🎙 Voces",
+            "tab_favoritos_pro": "🎙 Voces", "tab_perfiles_pro": "🎙 Voces",
+            "tab_ultra": "🎙 Voces", "tab_studio": "🎙 Voces",
+            # 🎵 Música
+            "tab_autotune": "🎵 Música", "tab_karaoke": "🎵 Música",
+            "tab_karaoke_studio": "🎵 Música", "tab_cancion_pro": "🎵 Música",
+            "tab_mezclador_musical": "🎵 Música", "tab_master_final": "🎵 Música",
+            "tab_studio_dashboard": "🎵 Música", "tab_analizador_vocal": "🎵 Música",
+            "tab_cadena_vocal": "🎵 Música", "tab_timeline_pro": "🎵 Música",
+            "tab_multipista": "🎵 Música", "tab_biblioteca_premium": "🎵 Música",
+            # 🛠 Herramientas
+            "tab_asistente": "🛠 Herramientas", "tab_asistente_inicial": "🛠 Herramientas",
+            "tab_mesa_pro": "🛠 Herramientas", "tab_sonidos": "🛠 Herramientas",
+            "tab_grabadora": "🛠 Herramientas", "tab_diagnostico": "🛠 Herramientas",
+            "tab_ecualizador": "🛠 Herramientas", "tab_ruido": "🛠 Herramientas",
+            "tab_rendimiento": "🛠 Herramientas", "tab_cable_virtual": "🛠 Herramientas",
+            "tab_revision_tecnica": "🛠 Herramientas", "tab_visualizador": "🛠 Herramientas",
+            "tab_command_center": "🛠 Herramientas",
+            # 🚀 Publicar
+            "tab_deploy_pro": "🚀 Publicar", "tab_web_pack": "🚀 Publicar",
+            "tab_landing_page": "🚀 Publicar", "tab_brand_kit": "🚀 Publicar",
+            "tab_publicacion_pro": "🚀 Publicar", "tab_export_pack": "🚀 Publicar",
+            "tab_portadas_premium": "🚀 Publicar",
+            # ⚙ Ajustes
+            "tab_ajustes": "⚙ Ajustes", "tab_atajos": "⚙ Ajustes",
+            "tab_guia": "⚙ Ajustes", "tab_design_system": "⚙ Ajustes",
+            "tab_icon_system": "⚙ Ajustes", "tab_language_pack": "⚙ Ajustes",
+            "tab_full_translation": "⚙ Ajustes", "tab_bilingual_visual": "⚙ Ajustes",
+            "tab_interface_consistency": "⚙ Ajustes", "tab_visual_pro": "⚙ Ajustes",
+            "tab_ultra_premium_ui": "⚙ Ajustes", "tab_premium_experience": "⚙ Ajustes",
+            "tab_professional_polish": "⚙ Ajustes",
+        }
+        for _nombre in ["🎮 Directo", "🎙 Voces", "🎵 Música", "🛠 Herramientas", "🚀 Publicar", "⚙ Ajustes"]:
+            self._crear_seccion(_nombre)
 
-        self.notebook.add(self.tab_interface_consistency, text="🧭 Consistencia")
-        self.notebook.add(self.tab_design_system, text="🎨 Diseño")
-        self.notebook.add(self.tab_icon_system, text="🖼 Iconos")
-        self.notebook.add(self.tab_language_pack, text="🧩 Lang Pack")
-        self.notebook.add(self.tab_full_translation, text="🌍 Traducción")
-        self.notebook.add(self.tab_bilingual_visual, text="🌐 Idiomas")
-        self.notebook.add(self.tab_inicio, text="🏠 Inicio")
-        self.notebook.add(self.tab_pro, text="🎛 Modo Pro")
-        self.notebook.add(self.tab_asistente, text="🧭 Asistente")
-        self.notebook.add(self.tab_barra_rapida, text="⚡ Barra rápida")
-        self.notebook.add(self.tab_mesa_pro, text="🎚 Mesa Pro")
-        self.notebook.add(self.tab_diagnostico, text="🛠 Diagnóstico")
-        self.notebook.add(self.tab_mini_panel, text="🪟 Mini Panel")
-        self.notebook.add(self.tab_ecualizador, text="🎚 Ecualizador")
-        self.notebook.add(self.tab_perfiles_pro, text="👤 Perfiles Pro+")
-        self.notebook.add(self.tab_personas_pro, text="👥 Personas Pro")
-        self.notebook.add(self.tab_cambiador_personas, text="🎭 Cambiador")
-        self.notebook.add(self.tab_creador_voces, text="🧪 Creador")
-        self.notebook.add(self.tab_atajos, text="⌨ Atajos")
-        self.notebook.add(self.tab_favoritos_pro, text="⭐ Favoritos")
-        self.notebook.add(self.tab_escenas_pro, text="🎬 Escenas")
-        self.notebook.add(self.tab_streamer_hub, text="📡 Streamer Hub")
-        self.notebook.add(self.tab_rendimiento, text="🚀 Rendimiento")
-        self.notebook.add(self.tab_ruido, text="🤫 Ruido")
-        self.notebook.add(self.tab_cable_virtual, text="🔌 Cable Virtual")
-        self.notebook.add(self.tab_test_voz, text="🎙 Test de Voz")
-        self.notebook.add(self.tab_autotune, text="🎵 Autotune")
-        self.notebook.add(self.tab_karaoke, text="🎤 Karaoke")
-        self.notebook.add(self.tab_karaoke_studio, text="🎧 Karaoke Studio")
-        self.notebook.add(self.tab_cancion_pro, text="🎼 Canción Pro")
-        self.notebook.add(self.tab_mezclador_musical, text="🎚 Mezclador")
-        self.notebook.add(self.tab_master_final, text="💿 Master Final")
-        self.notebook.add(self.tab_command_center, text="⌘ Command")
-        self.notebook.add(self.tab_professional_polish, text="💼 Polish")
-        self.notebook.add(self.tab_ultra_premium_ui, text="💠 UI Premium")
-        self.notebook.add(self.tab_premium_experience, text="💎 Premium")
-        self.notebook.add(self.tab_deploy_pro, text="🚢 Deploy")
-        self.notebook.add(self.tab_web_pack, text="🌍 Web Pack")
-        self.notebook.add(self.tab_landing_page, text="🌐 Landing")
-        self.notebook.add(self.tab_brand_kit, text="🏷 Brand Kit")
-        self.notebook.add(self.tab_publicacion_pro, text="🚀 Publicación")
-        self.notebook.add(self.tab_export_pack, text="📦 Export Pack")
-        self.notebook.add(self.tab_portadas_premium, text="🖼 Portadas")
-        self.notebook.add(self.tab_biblioteca_premium, text="📚 Biblioteca")
-        self.notebook.add(self.tab_asistente_inicial, text="🪄 Asistente")
-        self.notebook.add(self.tab_inicio_premium, text="🏠 Inicio")
-        self.notebook.add(self.tab_visual_pro, text="🎨 Visual Pro")
-        self.notebook.add(self.tab_revision_tecnica, text="🧪 Revisión")
-        self.notebook.add(self.tab_studio_dashboard, text="🏁 Studio")
-        self.notebook.add(self.tab_analizador_vocal, text="📊 Analizador")
-        self.notebook.add(self.tab_cadena_vocal, text="🎙 Cadena Vocal")
-        self.notebook.add(self.tab_timeline_pro, text="🧱 Timeline")
-        self.notebook.add(self.tab_multipista, text="🎛 Multipista")
-        self.notebook.add(self.tab_clips, text="🎬 Clips")
-        self.notebook.add(self.tab_grabadora, text="⏺ Grabadora")
-        self.notebook.add(self.tab_directo_pro, text="🎬 Directo Pro")
-        self.notebook.add(self.tab_voicebox_grid, text="▦ Caja de voces")
-        self.notebook.add(self.tab_ultra, text="💠 Ultra")
-        self.notebook.add(self.tab_voces, text="🎙 Voces")
-        self.notebook.add(self.tab_studio, text="💎 Estudio")
-        self.notebook.add(self.tab_packs, text="🧩 Packs")
-        self.notebook.add(self.tab_ajustes, text="🎚 Ajustes")
-        self.notebook.add(self.tab_directo, text="▶ Directo")
-        self.notebook.add(self.tab_sonidos, text="🔊 Sonidos")
-        self.notebook.add(self.tab_visualizador, text="📊 Visualizador")
-        self.notebook.add(self.tab_guia, text="📘 Guía")
+        self.tab_interface_consistency = ttk.Frame(self._parent_for("tab_interface_consistency"), padding=14)
+        self.tab_design_system = ttk.Frame(self._parent_for("tab_design_system"), padding=14)
+        self.tab_icon_system = ttk.Frame(self._parent_for("tab_icon_system"), padding=14)
+        self.tab_language_pack = ttk.Frame(self._parent_for("tab_language_pack"), padding=14)
+        self.tab_full_translation = ttk.Frame(self._parent_for("tab_full_translation"), padding=14)
+        self.tab_bilingual_visual = ttk.Frame(self._parent_for("tab_bilingual_visual"), padding=14)
+        self.tab_inicio = ttk.Frame(self._parent_for("tab_inicio"), padding=14)
+        self.tab_pro = ttk.Frame(self._parent_for("tab_pro"), padding=14)
+        self.tab_asistente = ttk.Frame(self._parent_for("tab_asistente"), padding=14)
+        self.tab_barra_rapida = ttk.Frame(self._parent_for("tab_barra_rapida"), padding=14)
+        self.tab_mesa_pro = ttk.Frame(self._parent_for("tab_mesa_pro"), padding=14)
+        self.tab_diagnostico = ttk.Frame(self._parent_for("tab_diagnostico"), padding=14)
+        self.tab_mini_panel = ttk.Frame(self._parent_for("tab_mini_panel"), padding=14)
+        self.tab_ecualizador = ttk.Frame(self._parent_for("tab_ecualizador"), padding=14)
+        self.tab_perfiles_pro = ttk.Frame(self._parent_for("tab_perfiles_pro"), padding=14)
+        self.tab_personas_pro = ttk.Frame(self._parent_for("tab_personas_pro"), padding=14)
+        self.tab_cambiador_personas = ttk.Frame(self._parent_for("tab_cambiador_personas"), padding=14)
+        self.tab_creador_voces = ttk.Frame(self._parent_for("tab_creador_voces"), padding=14)
+        self.tab_atajos = ttk.Frame(self._parent_for("tab_atajos"), padding=14)
+        self.tab_favoritos_pro = ttk.Frame(self._parent_for("tab_favoritos_pro"), padding=14)
+        self.tab_escenas_pro = ttk.Frame(self._parent_for("tab_escenas_pro"), padding=14)
+        self.tab_streamer_hub = ttk.Frame(self._parent_for("tab_streamer_hub"), padding=14)
+        self.tab_rendimiento = ttk.Frame(self._parent_for("tab_rendimiento"), padding=14)
+        self.tab_ruido = ttk.Frame(self._parent_for("tab_ruido"), padding=14)
+        self.tab_cable_virtual = ttk.Frame(self._parent_for("tab_cable_virtual"), padding=14)
+        self.tab_test_voz = ttk.Frame(self._parent_for("tab_test_voz"), padding=14)
+        self.tab_autotune = ttk.Frame(self._parent_for("tab_autotune"), padding=14)
+        self.tab_karaoke = ttk.Frame(self._parent_for("tab_karaoke"), padding=14)
+        self.tab_karaoke_studio = ttk.Frame(self._parent_for("tab_karaoke_studio"), padding=14)
+        self.tab_cancion_pro = ttk.Frame(self._parent_for("tab_cancion_pro"), padding=14)
+        self.tab_mezclador_musical = ttk.Frame(self._parent_for("tab_mezclador_musical"), padding=14)
+        self.tab_master_final = ttk.Frame(self._parent_for("tab_master_final"), padding=14)
+        self.tab_command_center = ttk.Frame(self._parent_for("tab_command_center"), padding=14)
+        self.tab_professional_polish = ttk.Frame(self._parent_for("tab_professional_polish"), padding=14)
+        self.tab_ultra_premium_ui = ttk.Frame(self._parent_for("tab_ultra_premium_ui"), padding=14)
+        self.tab_premium_experience = ttk.Frame(self._parent_for("tab_premium_experience"), padding=14)
+        self.tab_deploy_pro = ttk.Frame(self._parent_for("tab_deploy_pro"), padding=14)
+        self.tab_web_pack = ttk.Frame(self._parent_for("tab_web_pack"), padding=14)
+        self.tab_landing_page = ttk.Frame(self._parent_for("tab_landing_page"), padding=14)
+        self.tab_brand_kit = ttk.Frame(self._parent_for("tab_brand_kit"), padding=14)
+        self.tab_publicacion_pro = ttk.Frame(self._parent_for("tab_publicacion_pro"), padding=14)
+        self.tab_export_pack = ttk.Frame(self._parent_for("tab_export_pack"), padding=14)
+        self.tab_portadas_premium = ttk.Frame(self._parent_for("tab_portadas_premium"), padding=14)
+        self.tab_biblioteca_premium = ttk.Frame(self._parent_for("tab_biblioteca_premium"), padding=14)
+        self.tab_asistente_inicial = ttk.Frame(self._parent_for("tab_asistente_inicial"), padding=14)
+        self.tab_inicio_premium = ttk.Frame(self._parent_for("tab_inicio_premium"), padding=14)
+        self.tab_visual_pro = ttk.Frame(self._parent_for("tab_visual_pro"), padding=14)
+        self.tab_revision_tecnica = ttk.Frame(self._parent_for("tab_revision_tecnica"), padding=14)
+        self.tab_studio_dashboard = ttk.Frame(self._parent_for("tab_studio_dashboard"), padding=14)
+        self.tab_analizador_vocal = ttk.Frame(self._parent_for("tab_analizador_vocal"), padding=14)
+        self.tab_cadena_vocal = ttk.Frame(self._parent_for("tab_cadena_vocal"), padding=14)
+        self.tab_timeline_pro = ttk.Frame(self._parent_for("tab_timeline_pro"), padding=14)
+        self.tab_multipista = ttk.Frame(self._parent_for("tab_multipista"), padding=14)
+        self.tab_clips = ttk.Frame(self._parent_for("tab_clips"), padding=14)
+        self.tab_grabadora = ttk.Frame(self._parent_for("tab_grabadora"), padding=14)
+        self.tab_directo_pro = ttk.Frame(self._parent_for("tab_directo_pro"), padding=14)
+        self.tab_voicebox_grid = ttk.Frame(self._parent_for("tab_voicebox_grid"), padding=14)
+        self.tab_ultra = ttk.Frame(self._parent_for("tab_ultra"), padding=14)
+        self.tab_voces = ttk.Frame(self._parent_for("tab_voces"), padding=14)
+        self.tab_studio = ttk.Frame(self._parent_for("tab_studio"), padding=14)
+        self.tab_packs = ttk.Frame(self._parent_for("tab_packs"), padding=14)
+        self.tab_ajustes = ttk.Frame(self._parent_for("tab_ajustes"), padding=14)
+        self.tab_directo = ttk.Frame(self._parent_for("tab_directo"), padding=14)
+        self.tab_sonidos = ttk.Frame(self._parent_for("tab_sonidos"), padding=14)
+        self.tab_visualizador = ttk.Frame(self._parent_for("tab_visualizador"), padding=14)
+        self.tab_guia = ttk.Frame(self._parent_for("tab_guia"), padding=14)
+
+        self._add_tab(self.tab_interface_consistency, text="🧭 Consistencia")
+        self._add_tab(self.tab_design_system, text="🎨 Diseño")
+        self._add_tab(self.tab_icon_system, text="🖼 Iconos")
+        self._add_tab(self.tab_language_pack, text="🧩 Lang Pack")
+        self._add_tab(self.tab_full_translation, text="🌍 Traducción")
+        self._add_tab(self.tab_bilingual_visual, text="🌐 Idiomas")
+        self._add_tab(self.tab_inicio, text="🏠 Inicio")
+        self._add_tab(self.tab_pro, text="🎛 Modo Pro")
+        self._add_tab(self.tab_asistente, text="🧭 Asistente")
+        self._add_tab(self.tab_barra_rapida, text="⚡ Barra rápida")
+        self._add_tab(self.tab_mesa_pro, text="🎚 Mesa Pro")
+        self._add_tab(self.tab_diagnostico, text="🛠 Diagnóstico")
+        self._add_tab(self.tab_mini_panel, text="🪟 Mini Panel")
+        self._add_tab(self.tab_ecualizador, text="🎚 Ecualizador")
+        self._add_tab(self.tab_perfiles_pro, text="👤 Perfiles Pro+")
+        self._add_tab(self.tab_personas_pro, text="👥 Personas Pro")
+        self._add_tab(self.tab_cambiador_personas, text="🎭 Cambiador")
+        self._add_tab(self.tab_creador_voces, text="🧪 Creador")
+        self._add_tab(self.tab_atajos, text="⌨ Atajos")
+        self._add_tab(self.tab_favoritos_pro, text="⭐ Favoritos")
+        self._add_tab(self.tab_escenas_pro, text="🎬 Escenas")
+        self._add_tab(self.tab_streamer_hub, text="📡 Streamer Hub")
+        self._add_tab(self.tab_rendimiento, text="🚀 Rendimiento")
+        self._add_tab(self.tab_ruido, text="🤫 Ruido")
+        self._add_tab(self.tab_cable_virtual, text="🔌 Cable Virtual")
+        self._add_tab(self.tab_test_voz, text="🎙 Test de Voz")
+        self._add_tab(self.tab_autotune, text="🎵 Autotune")
+        self._add_tab(self.tab_karaoke, text="🎤 Karaoke")
+        self._add_tab(self.tab_karaoke_studio, text="🎧 Karaoke Studio")
+        self._add_tab(self.tab_cancion_pro, text="🎼 Canción Pro")
+        self._add_tab(self.tab_mezclador_musical, text="🎚 Mezclador")
+        self._add_tab(self.tab_master_final, text="💿 Master Final")
+        self._add_tab(self.tab_command_center, text="⌘ Command")
+        self._add_tab(self.tab_professional_polish, text="💼 Polish")
+        self._add_tab(self.tab_ultra_premium_ui, text="💠 UI Premium")
+        self._add_tab(self.tab_premium_experience, text="💎 Premium")
+        self._add_tab(self.tab_deploy_pro, text="🚢 Deploy")
+        self._add_tab(self.tab_web_pack, text="🌍 Web Pack")
+        self._add_tab(self.tab_landing_page, text="🌐 Landing")
+        self._add_tab(self.tab_brand_kit, text="🏷 Brand Kit")
+        self._add_tab(self.tab_publicacion_pro, text="🚀 Publicación")
+        self._add_tab(self.tab_export_pack, text="📦 Export Pack")
+        self._add_tab(self.tab_portadas_premium, text="🖼 Portadas")
+        self._add_tab(self.tab_biblioteca_premium, text="📚 Biblioteca")
+        self._add_tab(self.tab_asistente_inicial, text="🪄 Asistente")
+        self._add_tab(self.tab_inicio_premium, text="🏠 Inicio")
+        self._add_tab(self.tab_visual_pro, text="🎨 Visual Pro")
+        self._add_tab(self.tab_revision_tecnica, text="🧪 Revisión")
+        self._add_tab(self.tab_studio_dashboard, text="🏁 Studio")
+        self._add_tab(self.tab_analizador_vocal, text="📊 Analizador")
+        self._add_tab(self.tab_cadena_vocal, text="🎙 Cadena Vocal")
+        self._add_tab(self.tab_timeline_pro, text="🧱 Timeline")
+        self._add_tab(self.tab_multipista, text="🎛 Multipista")
+        self._add_tab(self.tab_clips, text="🎬 Clips")
+        self._add_tab(self.tab_grabadora, text="⏺ Grabadora")
+        self._add_tab(self.tab_directo_pro, text="🎬 Directo Pro")
+        self._add_tab(self.tab_voicebox_grid, text="▦ Caja de voces")
+        self._add_tab(self.tab_ultra, text="💠 Ultra")
+        self._add_tab(self.tab_voces, text="🎙 Voces")
+        self._add_tab(self.tab_studio, text="💎 Estudio")
+        self._add_tab(self.tab_packs, text="🧩 Packs")
+        self._add_tab(self.tab_ajustes, text="🎚 Ajustes")
+        self._add_tab(self.tab_directo, text="▶ Directo")
+        self._add_tab(self.tab_sonidos, text="🔊 Sonidos")
+        self._add_tab(self.tab_visualizador, text="📊 Visualizador")
+        self._add_tab(self.tab_guia, text="📘 Guía")
 
         self.build_interface_consistency_tab()
         self.build_design_system_tab()
@@ -2546,7 +2621,7 @@ class PremiumApp:
         links.pack(fill="x")
         for label, tab in [("🎨 Diseño", "tab_design_system"), ("🖼 Iconos", "tab_icon_system"), ("🧩 Lang Pack", "tab_language_pack"), ("💠 UI Premium", "tab_ultra_premium_ui"), ("💼 Polish", "tab_professional_polish"), ("⌘ Command", "tab_command_center")]:
             if hasattr(self, tab):
-                ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill="x", pady=3)
+                ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill="x", pady=3)
 
         self.interface_consistency_refresh_preview()
 
@@ -2753,7 +2828,7 @@ class PremiumApp:
             ("token_type", "Typography", self.design_system_export_css),
             ("token_buttons", "Buttons", self.design_system_apply_theme),
             ("token_cards", "Cards", self.design_system_export_board),
-            ("token_icons", "Icons", lambda: self.notebook.select(self.tab_icon_system)),
+            ("token_icons", "Icons", lambda: self.select_tab(self.tab_icon_system)),
             ("token_export", "Export", self.design_system_export_guide),
         ]):
             box = ttk.Frame(grid, style="Card.TFrame", padding=5)
@@ -2794,7 +2869,7 @@ class PremiumApp:
         links.pack(fill="x")
         for label, tab in [("🖼 Iconos", "tab_icon_system"), ("🎨 Visual Pro", "tab_visual_pro"), ("💠 UI Premium", "tab_ultra_premium_ui"), ("🏷 Brand Kit", "tab_brand_kit"), ("🖼 Portadas", "tab_portadas_premium")]:
             if hasattr(self, tab):
-                ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill="x", pady=3)
+                ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill="x", pady=3)
 
         self.design_system_refresh_preview()
 
@@ -2892,7 +2967,7 @@ class PremiumApp:
         ttk.Button(settings, text="Export icon pack", style="Accent.TButton", command=self.icon_system_export_pack).pack(fill="x", pady=3)
         links = self.make_card(right, "Open visual modules"); links.pack(fill="x")
         for label, tab in [("🌍 Traducción", "tab_full_translation"), ("🧩 Lang Pack", "tab_language_pack"), ("🎨 Visual Pro", "tab_visual_pro"), ("💠 UI Premium", "tab_ultra_premium_ui"), ("🏷 Brand Kit", "tab_brand_kit"), ("🖼 Portadas", "tab_portadas_premium")]:
-            if hasattr(self, tab): ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill="x", pady=3)
+            if hasattr(self, tab): ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill="x", pady=3)
         self.icon_system_refresh_preview()
 
     def language_pack_data(self):
@@ -3056,7 +3131,7 @@ class PremiumApp:
             ("💼 Polish", "tab_professional_polish"),
         ]:
             if hasattr(self, tab):
-                ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill="x", pady=3)
+                ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill="x", pady=3)
 
         self.language_pack_refresh_preview()
 
@@ -3188,7 +3263,7 @@ class PremiumApp:
             ("💼 Polish", "tab_professional_polish"),
         ]:
             if hasattr(self, tab):
-                ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill="x", pady=3)
+                ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill="x", pady=3)
 
         self.full_translation_refresh_preview()
 
@@ -3208,8 +3283,8 @@ class PremiumApp:
             self.main_title_label.configure(text=self.language_text("🎙️ Modulador de Voz en Directo", "🎙️ Live Voice Modulator"))
         if hasattr(self, 'main_subtitle_label'):
             self.main_subtitle_label.configure(text=self.language_text(
-                "V80 Revisión Total Pro · sistema visual premium · 2 idiomas",
-                "V80 Revisión Total Pro · premium visual system · 2 languages"
+                "V81 Navegación Pro · sistema visual premium · 2 idiomas",
+                "V81 Navegación Pro · premium visual system · 2 languages"
             ))
         if hasattr(self, 'main_hint_label'):
             self.main_hint_label.configure(text=self.language_text(
@@ -3219,7 +3294,7 @@ class PremiumApp:
         if hasattr(self, 'tab_language_texts'):
             for tab, pair in self.tab_language_texts.items():
                 try:
-                    self.notebook.tab(tab, text=pair[0] if lang == 'Español' else pair[1])
+                    tab.master.tab(tab, text=pair[0] if lang == 'Español' else pair[1])
                 except Exception:
                     pass
         if hasattr(self, 'bilingual_lang_label'):
@@ -3384,7 +3459,7 @@ class PremiumApp:
             ('💼 Polish', 'tab_professional_polish'),
         ]:
             if hasattr(self, tab):
-                ttk.Button(links, text=label, command=lambda t=tab: self.notebook.select(getattr(self, t))).pack(fill='x', pady=3)
+                ttk.Button(links, text=label, command=lambda t=tab: self.select_tab(getattr(self, t))).pack(fill='x', pady=3)
 
         self.bilingual_refresh_preview()
 
@@ -3413,7 +3488,7 @@ class PremiumApp:
 
         ttk.Label(
             frame,
-            text=self.language_text("V80 Revisión Total Pro está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "V80 Revisión Total Pro is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
+            text=self.language_text("V81 Navegación Pro está preparada para directo, Discord, Fortnite, OBS, soundboard y perfiles personalizados.", "V81 Navegación Pro is ready for live use, Discord, Fortnite, OBS, soundboard and custom profiles."),
             style="Muted.TLabel",
             wraplength=690,
             justify="center",
@@ -3424,7 +3499,7 @@ class PremiumApp:
         buttons.pack(fill="x", pady=8)
         ttk.Button(buttons, text="Configurar Discord", style="Accent.TButton", command=lambda: [self.quick_mode("discord"), win.destroy()]).pack(side="left", expand=True, fill="x", padx=5)
         ttk.Button(buttons, text="Configurar Fortnite", style="Accent.TButton", command=lambda: [self.quick_mode("fortnite"), win.destroy()]).pack(side="left", expand=True, fill="x", padx=5)
-        ttk.Button(buttons, text="Abrir Export Pack", command=lambda: [self.notebook.select(self.tab_export_pack), win.destroy()]).pack(side="left", expand=True, fill="x", padx=5)
+        ttk.Button(buttons, text="Abrir Export Pack", command=lambda: [self.select_tab(self.tab_export_pack), win.destroy()]).pack(side="left", expand=True, fill="x", padx=5)
         ttk.Button(buttons, text="Cerrar", command=win.destroy).pack(side="left", expand=True, fill="x", padx=5)
 
         ttk.Label(
@@ -3458,59 +3533,59 @@ class PremiumApp:
         sidebar = self.make_card(body, "Panel")
         sidebar.pack(side="left", fill="y", padx=(0, 10))
 
-        ttk.Button(sidebar, text="⚡ Barra rápida", style="Accent.TButton", command=lambda: self.notebook.select(self.tab_barra_rapida)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🧭 Asistente", command=lambda: self.notebook.select(self.tab_asistente)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎙 Caja de voces", command=lambda: self.notebook.select(self.tab_voicebox_grid)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎬 Directo Pro", command=lambda: self.notebook.select(self.tab_directo_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="⌘ Command", command=lambda: self.notebook.select(self.tab_command_center)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="💼 Polish", command=lambda: self.notebook.select(self.tab_professional_polish)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="💠 UI Premium", command=lambda: self.notebook.select(self.tab_ultra_premium_ui)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="💎 Premium", command=lambda: self.notebook.select(self.tab_premium_experience)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🚢 Deploy", command=lambda: self.notebook.select(self.tab_deploy_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🌍 Web Pack", command=lambda: self.notebook.select(self.tab_web_pack)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🌐 Landing", command=lambda: self.notebook.select(self.tab_landing_page)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🏷 Brand Kit", command=lambda: self.notebook.select(self.tab_brand_kit)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🚀 Publicación", command=lambda: self.notebook.select(self.tab_publicacion_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="📦 Export Pack", command=lambda: self.notebook.select(self.tab_export_pack)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🖼 Portadas", command=lambda: self.notebook.select(self.tab_portadas_premium)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="📚 Biblioteca", command=lambda: self.notebook.select(self.tab_biblioteca_premium)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🪄 Asistente", command=lambda: self.notebook.select(self.tab_asistente_inicial)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🏠 Inicio", command=lambda: self.notebook.select(self.tab_inicio_premium)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎨 Visual Pro", command=lambda: self.notebook.select(self.tab_visual_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🧪 Revisión", command=lambda: self.notebook.select(self.tab_revision_tecnica)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🏁 Studio", command=lambda: self.notebook.select(self.tab_studio_dashboard)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="📊 Analizador", command=lambda: self.notebook.select(self.tab_analizador_vocal)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎙 Cadena Vocal", command=lambda: self.notebook.select(self.tab_cadena_vocal)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🧱 Timeline", command=lambda: self.notebook.select(self.tab_timeline_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎛 Multipista", command=lambda: self.notebook.select(self.tab_multipista)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="💿 Master Final", command=lambda: self.notebook.select(self.tab_master_final)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎚 Mezclador", command=lambda: self.notebook.select(self.tab_mezclador_musical)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎼 Canción Pro", command=lambda: self.notebook.select(self.tab_cancion_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎧 Karaoke Studio", command=lambda: self.notebook.select(self.tab_karaoke_studio)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎤 Karaoke", command=lambda: self.notebook.select(self.tab_karaoke)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎵 Autotune", command=lambda: self.notebook.select(self.tab_autotune)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎙 Test de Voz", command=lambda: self.notebook.select(self.tab_test_voz)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🔌 Cable Virtual", command=lambda: self.notebook.select(self.tab_cable_virtual)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🚀 Rendimiento", command=lambda: self.notebook.select(self.tab_rendimiento)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🤫 Ruido", command=lambda: self.notebook.select(self.tab_ruido)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="📡 Streamer Hub", command=lambda: self.notebook.select(self.tab_streamer_hub)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎬 Escenas", command=lambda: self.notebook.select(self.tab_escenas_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="⭐ Favoritos", command=lambda: self.notebook.select(self.tab_favoritos_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="⌨ Atajos", command=lambda: self.notebook.select(self.tab_atajos)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🧪 Creador", command=lambda: self.notebook.select(self.tab_creador_voces)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎭 Cambiador", command=lambda: self.notebook.select(self.tab_cambiador_personas)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="👥 Personas Pro", command=lambda: self.notebook.select(self.tab_personas_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="👤 Perfiles Pro+", command=lambda: self.notebook.select(self.tab_perfiles_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎚 Ecualizador", command=lambda: self.notebook.select(self.tab_ecualizador)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🪟 Mini Panel", command=lambda: self.notebook.select(self.tab_mini_panel)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🛠 Diagnóstico", command=lambda: self.notebook.select(self.tab_diagnostico)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎬 Clips", command=lambda: self.notebook.select(self.tab_clips)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="⏺ Grabadora", command=lambda: self.notebook.select(self.tab_grabadora)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🎚 Mesa Pro", command=lambda: self.notebook.select(self.tab_mesa_pro)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="🔊 Mesa de sonidos", command=lambda: self.notebook.select(self.tab_sonidos)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="💎 Estudio", command=lambda: self.notebook.select(self.tab_studio)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="📊 Visualizador", command=lambda: self.notebook.select(self.tab_visualizador)).pack(fill="x", pady=4)
-        ttk.Button(sidebar, text="⚙ Ajustes", command=lambda: self.notebook.select(self.tab_ajustes)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⚡ Barra rápida", style="Accent.TButton", command=lambda: self.select_tab(self.tab_barra_rapida)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🧭 Asistente", command=lambda: self.select_tab(self.tab_asistente)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎙 Caja de voces", command=lambda: self.select_tab(self.tab_voicebox_grid)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎬 Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⌘ Command", command=lambda: self.select_tab(self.tab_command_center)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="💼 Polish", command=lambda: self.select_tab(self.tab_professional_polish)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="💠 UI Premium", command=lambda: self.select_tab(self.tab_ultra_premium_ui)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="💎 Premium", command=lambda: self.select_tab(self.tab_premium_experience)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🚢 Deploy", command=lambda: self.select_tab(self.tab_deploy_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🌍 Web Pack", command=lambda: self.select_tab(self.tab_web_pack)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🌐 Landing", command=lambda: self.select_tab(self.tab_landing_page)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🏷 Brand Kit", command=lambda: self.select_tab(self.tab_brand_kit)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🚀 Publicación", command=lambda: self.select_tab(self.tab_publicacion_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="📦 Export Pack", command=lambda: self.select_tab(self.tab_export_pack)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🖼 Portadas", command=lambda: self.select_tab(self.tab_portadas_premium)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="📚 Biblioteca", command=lambda: self.select_tab(self.tab_biblioteca_premium)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🪄 Asistente", command=lambda: self.select_tab(self.tab_asistente_inicial)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🏠 Inicio", command=lambda: self.select_tab(self.tab_inicio_premium)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎨 Visual Pro", command=lambda: self.select_tab(self.tab_visual_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🧪 Revisión", command=lambda: self.select_tab(self.tab_revision_tecnica)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🏁 Studio", command=lambda: self.select_tab(self.tab_studio_dashboard)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="📊 Analizador", command=lambda: self.select_tab(self.tab_analizador_vocal)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎙 Cadena Vocal", command=lambda: self.select_tab(self.tab_cadena_vocal)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🧱 Timeline", command=lambda: self.select_tab(self.tab_timeline_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎛 Multipista", command=lambda: self.select_tab(self.tab_multipista)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="💿 Master Final", command=lambda: self.select_tab(self.tab_master_final)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎚 Mezclador", command=lambda: self.select_tab(self.tab_mezclador_musical)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎼 Canción Pro", command=lambda: self.select_tab(self.tab_cancion_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎧 Karaoke Studio", command=lambda: self.select_tab(self.tab_karaoke_studio)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎤 Karaoke", command=lambda: self.select_tab(self.tab_karaoke)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎵 Autotune", command=lambda: self.select_tab(self.tab_autotune)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎙 Test de Voz", command=lambda: self.select_tab(self.tab_test_voz)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🔌 Cable Virtual", command=lambda: self.select_tab(self.tab_cable_virtual)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🚀 Rendimiento", command=lambda: self.select_tab(self.tab_rendimiento)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🤫 Ruido", command=lambda: self.select_tab(self.tab_ruido)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="📡 Streamer Hub", command=lambda: self.select_tab(self.tab_streamer_hub)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎬 Escenas", command=lambda: self.select_tab(self.tab_escenas_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⭐ Favoritos", command=lambda: self.select_tab(self.tab_favoritos_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⌨ Atajos", command=lambda: self.select_tab(self.tab_atajos)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🧪 Creador", command=lambda: self.select_tab(self.tab_creador_voces)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎭 Cambiador", command=lambda: self.select_tab(self.tab_cambiador_personas)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="👥 Personas Pro", command=lambda: self.select_tab(self.tab_personas_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="👤 Perfiles Pro+", command=lambda: self.select_tab(self.tab_perfiles_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎚 Ecualizador", command=lambda: self.select_tab(self.tab_ecualizador)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🪟 Mini Panel", command=lambda: self.select_tab(self.tab_mini_panel)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🛠 Diagnóstico", command=lambda: self.select_tab(self.tab_diagnostico)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎬 Clips", command=lambda: self.select_tab(self.tab_clips)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⏺ Grabadora", command=lambda: self.select_tab(self.tab_grabadora)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🎚 Mesa Pro", command=lambda: self.select_tab(self.tab_mesa_pro)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="🔊 Mesa de sonidos", command=lambda: self.select_tab(self.tab_sonidos)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="💎 Estudio", command=lambda: self.select_tab(self.tab_studio)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="📊 Visualizador", command=lambda: self.select_tab(self.tab_visualizador)).pack(fill="x", pady=4)
+        ttk.Button(sidebar, text="⚙ Ajustes", command=lambda: self.select_tab(self.tab_ajustes)).pack(fill="x", pady=4)
         ttk.Button(sidebar, text="▾ Bandeja Windows", command=self.hide_to_tray).pack(fill="x", pady=(18, 4))
 
         center = ttk.Frame(body)
@@ -3543,7 +3618,7 @@ class PremiumApp:
             box.grid(row=0, column=i, sticky="nsew", padx=6)
             if img_key in self.pro_images:
                 ttk.Label(box, image=self.pro_images[img_key], style="Card.TLabel").pack()
-            ttk.Button(box, text="Abrir", command=lambda t=target: self.notebook.select(t)).pack(fill="x", pady=(6, 0))
+            ttk.Button(box, text="Abrir", command=lambda t=target: self.select_tab(t)).pack(fill="x", pady=(6, 0))
             tiles_grid.columnconfigure(i, weight=1)
 
         voicebox = self.make_card(center, "Caja de voces rápido")
@@ -3873,8 +3948,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Guardar proyecto JSON", style="Accent.TButton", command=self.mix_save_project).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Cargar proyecto JSON", command=self.mix_load_project).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Abrir carpeta canciones", command=self.mix_open_song_folder).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Canción Pro", command=lambda: self.notebook.select(self.tab_cancion_pro)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Karaoke Studio", command=lambda: self.notebook.select(self.tab_karaoke_studio)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Canción Pro", command=lambda: self.select_tab(self.tab_cancion_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Karaoke Studio", command=lambda: self.select_tab(self.tab_karaoke_studio)).pack(fill="x", pady=3)
         tips = self.make_card(right, "Consejos"); tips.pack(fill="x")
         ttk.Label(tips, text="• Voz delante: mejor para entender letra.\n• Base fuerte: mejor para practicar ritmo.\n• Demo final: mezcla más segura.\n• Guarda proyecto para continuar luego.\n• Exporta instrumental y letra por separado.", style="Card.TLabel", justify="left", wraplength=310).pack(anchor="w")
         self.mix_update_engine()
@@ -4085,8 +4160,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Exportar instrumental WAV", style="Accent.TButton", command=self.song_export_instrumental).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar letra TXT", command=self.song_save_lyrics_txt).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Grabar demo cantada", command=self.karaoke_record_demo).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Karaoke", command=lambda: self.notebook.select(self.tab_karaoke)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Autotune", command=lambda: self.notebook.select(self.tab_autotune)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Karaoke", command=lambda: self.select_tab(self.tab_karaoke)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Autotune", command=lambda: self.select_tab(self.tab_autotune)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -4347,7 +4422,7 @@ class PremiumApp:
             ("⏸ Pausa", self.karaoke_pause),
             ("⏹ Stop", self.karaoke_stop),
             ("Activar loop", self.karaoke_toggle_loop),
-            ("Abrir Karaoke", lambda: self.notebook.select(self.tab_karaoke)),
+            ("Abrir Karaoke", lambda: self.select_tab(self.tab_karaoke)),
         ]:
             ttk.Button(studio, text=label, command=cmd).pack(fill="x", pady=3)
 
@@ -4673,8 +4748,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Empezar directo", command=self.start).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Grabar demo WAV", style="Accent.TButton", command=self.karaoke_record_demo).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar voz como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Autotune", command=lambda: self.notebook.select(self.tab_autotune)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Grabadora", command=lambda: self.notebook.select(self.tab_grabadora)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Autotune", command=lambda: self.select_tab(self.tab_autotune)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Grabadora", command=lambda: self.select_tab(self.tab_grabadora)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -4881,8 +4956,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Grabar demo WAV", style="Accent.TButton", command=self.autotune_record_demo).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Probar beep", command=lambda: self.play_sfx("beep")).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Test de Voz", command=lambda: self.notebook.select(self.tab_test_voz)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Grabadora", command=lambda: self.notebook.select(self.tab_grabadora)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Test de Voz", command=lambda: self.select_tab(self.tab_test_voz)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Grabadora", command=lambda: self.select_tab(self.tab_grabadora)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -5068,10 +5143,10 @@ class PremiumApp:
 
         quick = ttk.Frame(checklist, style="Card.TFrame")
         quick.pack(fill="x")
-        ttk.Button(quick, text="Abrir Rendimiento", command=lambda: self.notebook.select(self.tab_rendimiento)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Cable Virtual", command=lambda: self.notebook.select(self.tab_cable_virtual)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Grabadora", command=lambda: self.notebook.select(self.tab_grabadora)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Streamer Hub", command=lambda: self.notebook.select(self.tab_streamer_hub)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Rendimiento", command=lambda: self.select_tab(self.tab_rendimiento)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Cable Virtual", command=lambda: self.select_tab(self.tab_cable_virtual)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Grabadora", command=lambda: self.select_tab(self.tab_grabadora)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Streamer Hub", command=lambda: self.select_tab(self.tab_streamer_hub)).pack(fill="x", pady=3)
 
         right = ttk.Frame(main)
         right.pack(side="right", fill="y", padx=(10, 0))
@@ -5090,7 +5165,7 @@ class PremiumApp:
         ttk.Button(acciones, text="Probar beep", command=self.test_voice_beep).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Grabar prueba WAV", style="Accent.TButton", command=self.test_voice_record).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Favoritos", command=lambda: self.notebook.select(self.tab_favoritos_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Favoritos", command=lambda: self.select_tab(self.tab_favoritos_pro)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -5301,8 +5376,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Actualizar dispositivos", command=self.assistant_refresh_devices).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Detectar cable virtual", style="Accent.TButton", command=self.cable_detect_virtual).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Copiar guía", command=self.cable_copy_current_guide).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Asistente", command=lambda: self.notebook.select(self.tab_asistente)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.notebook.select(self.tab_diagnostico)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Asistente", command=lambda: self.select_tab(self.tab_asistente)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.select_tab(self.tab_diagnostico)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Regla básica")
         tips.pack(fill="x")
@@ -5543,8 +5618,8 @@ class PremiumApp:
         ttk.Button(acciones, text="Check rendimiento", style="Accent.TButton", command=self.performance_quick_check).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Probar beep", command=lambda: self.play_sfx("beep")).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.notebook.select(self.tab_diagnostico)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Streamer Hub", command=lambda: self.notebook.select(self.tab_streamer_hub)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.select_tab(self.tab_diagnostico)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Streamer Hub", command=lambda: self.select_tab(self.tab_streamer_hub)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -6043,8 +6118,8 @@ class PremiumApp:
             ("tile_discord", "Discord claro", lambda: self.hub_apply_mode("discord")),
             ("tile_fortnite", "Fortnite grave", lambda: self.hub_apply_mode("fortnite")),
             ("tile_obs", "OBS listo", lambda: self.hub_apply_mode("obs")),
-            ("tile_escenas", "Escenas", lambda: self.notebook.select(self.tab_escenas_pro)),
-            ("tile_favoritos", "Favoritos", lambda: self.notebook.select(self.tab_favoritos_pro)),
+            ("tile_escenas", "Escenas", lambda: self.select_tab(self.tab_escenas_pro)),
+            ("tile_favoritos", "Favoritos", lambda: self.select_tab(self.tab_favoritos_pro)),
             ("tile_check", "Check rápido", self.hub_quick_check),
         ]
 
@@ -6076,7 +6151,7 @@ class PremiumApp:
         quick_row3 = ttk.Frame(setup, style="Card.TFrame")
         quick_row3.pack(fill="x", pady=4)
         ttk.Button(quick_row3, text="Probar beep", command=lambda: self.play_sfx("beep")).pack(side="left", fill="x", expand=True, padx=3, ipady=8)
-        ttk.Button(quick_row3, text="Diagnóstico", command=lambda: self.notebook.select(self.tab_diagnostico)).pack(side="left", fill="x", expand=True, padx=3, ipady=8)
+        ttk.Button(quick_row3, text="Diagnóstico", command=lambda: self.select_tab(self.tab_diagnostico)).pack(side="left", fill="x", expand=True, padx=3, ipady=8)
 
         checklist = self.make_card(center, "Checklist rápido")
         checklist.pack(side="left", fill="both", expand=True, padx=(5, 0))
@@ -6107,10 +6182,10 @@ class PremiumApp:
 
         accesos = self.make_card(right, "Accesos")
         accesos.pack(fill="x", pady=(0, 10))
-        ttk.Button(accesos, text="Escenas Pro", command=lambda: self.notebook.select(self.tab_escenas_pro)).pack(fill="x", pady=3)
-        ttk.Button(accesos, text="Favoritos Pro", command=lambda: self.notebook.select(self.tab_favoritos_pro)).pack(fill="x", pady=3)
-        ttk.Button(accesos, text="Atajos Pro", command=lambda: self.notebook.select(self.tab_atajos)).pack(fill="x", pady=3)
-        ttk.Button(accesos, text="Creador de Voces", command=lambda: self.notebook.select(self.tab_creador_voces)).pack(fill="x", pady=3)
+        ttk.Button(accesos, text="Escenas Pro", command=lambda: self.select_tab(self.tab_escenas_pro)).pack(fill="x", pady=3)
+        ttk.Button(accesos, text="Favoritos Pro", command=lambda: self.select_tab(self.tab_favoritos_pro)).pack(fill="x", pady=3)
+        ttk.Button(accesos, text="Atajos Pro", command=lambda: self.select_tab(self.tab_atajos)).pack(fill="x", pady=3)
+        ttk.Button(accesos, text="Creador de Voces", command=lambda: self.select_tab(self.tab_creador_voces)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -6275,8 +6350,8 @@ class PremiumApp:
         acciones.pack(fill="x", pady=(0, 10))
         ttk.Button(acciones, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Favoritos", command=lambda: self.notebook.select(self.tab_favoritos_pro)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Directo Pro", command=lambda: self.notebook.select(self.tab_directo_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Favoritos", command=lambda: self.select_tab(self.tab_favoritos_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Abrir Mini Panel", command=self.open_mini_panel).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
@@ -6435,7 +6510,7 @@ class PremiumApp:
         ttk.Button(acciones, text="Actualizar favoritos", style="Accent.TButton", command=self.refresh_favoritos_pro).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Añadir voz actual a favoritos", command=self.add_current_favorite_and_refresh).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar voz actual como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Caja de Voces", command=lambda: self.notebook.select(self.tab_voicebox_grid)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Caja de Voces", command=lambda: self.select_tab(self.tab_voicebox_grid)).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Abrir Mini Panel", command=self.open_mini_panel).pack(fill="x", pady=3)
 
         directo = self.make_card(right, "Directo")
@@ -6645,9 +6720,9 @@ class PremiumApp:
         acciones = self.make_card(right, "Accesos")
         acciones.pack(fill="x", pady=(0, 10))
         ttk.Button(acciones, text="Abrir Mini Panel", command=self.open_mini_panel).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Cambiador", command=lambda: self.notebook.select(self.tab_cambiador_personas)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Creador", command=lambda: self.notebook.select(self.tab_creador_voces)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Directo Pro", command=lambda: self.notebook.select(self.tab_directo_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Cambiador", command=lambda: self.select_tab(self.tab_cambiador_personas)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Creador", command=lambda: self.select_tab(self.tab_creador_voces)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -6886,9 +6961,9 @@ class PremiumApp:
 
         acciones = self.make_card(right, "Acciones rápidas")
         acciones.pack(fill="x", pady=(0, 10))
-        ttk.Button(acciones, text="Abrir Cambiador", command=lambda: self.notebook.select(self.tab_cambiador_personas)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Personas Pro", command=lambda: self.notebook.select(self.tab_personas_pro)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Perfiles Pro+", command=lambda: self.notebook.select(self.tab_perfiles_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Cambiador", command=lambda: self.select_tab(self.tab_cambiador_personas)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Personas Pro", command=lambda: self.select_tab(self.tab_personas_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Perfiles Pro+", command=lambda: self.select_tab(self.tab_perfiles_pro)).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Reset", command=self.reset).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
@@ -6975,7 +7050,7 @@ class PremiumApp:
         self.state.set(f"Estado: voz creada · {base} + {style}")
 
     def custom_voices_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v80_voces.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_voces.json")
 
     def load_custom_voices(self):
         try:
@@ -7150,8 +7225,8 @@ class PremiumApp:
         acciones.pack(fill="x", pady=(0, 10))
         ttk.Button(acciones, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Guardar como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Personas Pro", command=lambda: self.notebook.select(self.tab_personas_pro)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Mini Panel", command=lambda: self.notebook.select(self.tab_mini_panel)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Personas Pro", command=lambda: self.select_tab(self.tab_personas_pro)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Mini Panel", command=lambda: self.select_tab(self.tab_mini_panel)).pack(fill="x", pady=3)
 
         consejos = self.make_card(right, "Consejos")
         consejos.pack(fill="x")
@@ -7304,8 +7379,8 @@ class PremiumApp:
         acciones.pack(fill="x", pady=(0, 10))
         ttk.Button(acciones, text="Ver todas", style="Accent.TButton", command=lambda: self.populate_personas_grid("Todas")).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Ecualizador", command=lambda: self.notebook.select(self.tab_ecualizador)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Mini Panel", command=lambda: self.notebook.select(self.tab_mini_panel)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Ecualizador", command=lambda: self.select_tab(self.tab_ecualizador)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Mini Panel", command=lambda: self.select_tab(self.tab_mini_panel)).pack(fill="x", pady=3)
 
         consejos = self.make_card(right, "Consejos")
         consejos.pack(fill="x")
@@ -7720,7 +7795,7 @@ class PremiumApp:
         actions.pack(fill="x", pady=(0, 10))
         ttk.Button(actions, text="Guardar como perfil", command=self.save_current_profile).pack(fill="x", pady=3)
         ttk.Button(actions, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=3)
-        ttk.Button(actions, text="Abrir Grabadora", command=lambda: self.notebook.select(self.tab_grabadora)).pack(fill="x", pady=3)
+        ttk.Button(actions, text="Abrir Grabadora", command=lambda: self.select_tab(self.tab_grabadora)).pack(fill="x", pady=3)
         ttk.Button(actions, text="Reiniciar voz", command=self.reset).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
@@ -7844,7 +7919,7 @@ class PremiumApp:
         row.pack(fill="x")
         ttk.Button(row, text="Abrir Mini Panel flotante", style="Accent.TButton", command=self.open_mini_panel).pack(side="left", expand=True, fill="x", padx=4, pady=4)
         ttk.Button(row, text="Cerrar Mini Panel", style="Danger.TButton", command=self.close_mini_panel).pack(side="left", expand=True, fill="x", padx=4, pady=4)
-        ttk.Button(row, text="Abrir Directo Pro", command=lambda: self.notebook.select(self.tab_directo_pro)).pack(side="left", expand=True, fill="x", padx=4, pady=4)
+        ttk.Button(row, text="Abrir Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(side="left", expand=True, fill="x", padx=4, pady=4)
 
         info = self.make_card(left, "Cómo se usa")
         info.pack(fill="both", expand=True)
@@ -7969,9 +8044,9 @@ class PremiumApp:
         ttk.Label(outer, text="Accesos", style="Card.TLabel", font=("Segoe UI", 12, "bold")).pack(anchor="w", pady=(12, 4))
         access = ttk.Frame(outer)
         access.pack(fill="x")
-        ttk.Button(access, text="Caja de voces", command=lambda: [self.notebook.select(self.tab_voicebox_grid), win.lift()]).pack(fill="x", pady=2)
-        ttk.Button(access, text="Mesa Pro", command=lambda: [self.notebook.select(self.tab_mesa_pro), win.lift()]).pack(fill="x", pady=2)
-        ttk.Button(access, text="Directo Pro", command=lambda: [self.notebook.select(self.tab_directo_pro), win.lift()]).pack(fill="x", pady=2)
+        ttk.Button(access, text="Caja de voces", command=lambda: [self.select_tab(self.tab_voicebox_grid), win.lift()]).pack(fill="x", pady=2)
+        ttk.Button(access, text="Mesa Pro", command=lambda: [self.select_tab(self.tab_mesa_pro), win.lift()]).pack(fill="x", pady=2)
+        ttk.Button(access, text="Directo Pro", command=lambda: [self.select_tab(self.tab_directo_pro), win.lift()]).pack(fill="x", pady=2)
 
         ttk.Button(outer, text="Cerrar Mini Panel", command=self.close_mini_panel).pack(fill="x", pady=(12, 0))
 
@@ -8312,8 +8387,8 @@ class PremiumApp:
         controls.pack(fill="x", pady=(0, 10))
         ttk.Button(controls, text="Parar sonidos", style="Danger.TButton", command=self.stop_sfx).pack(fill="x", pady=3)
         ttk.Button(controls, text="Cargar WAV personalizado", command=self.add_custom_wav).pack(fill="x", pady=3)
-        ttk.Button(controls, text="Abrir mesa clásica", command=lambda: self.notebook.select(self.tab_sonidos)).pack(fill="x", pady=3)
-        ttk.Button(controls, text="Abrir Directo Pro", command=lambda: self.notebook.select(self.tab_directo_pro)).pack(fill="x", pady=3)
+        ttk.Button(controls, text="Abrir mesa clásica", command=lambda: self.select_tab(self.tab_sonidos)).pack(fill="x", pady=3)
+        ttk.Button(controls, text="Abrir Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -8676,7 +8751,7 @@ class PremiumApp:
 
     def command_open_attr(self, attr):
         if attr and hasattr(self, attr):
-            self.notebook.select(getattr(self, attr))
+            self.select_tab(getattr(self, attr))
             self.command_center_status.set(f"Abierto: {attr}")
             return True
         self.command_center_status.set(f"No se encontró el módulo: {attr}")
@@ -8843,7 +8918,7 @@ class PremiumApp:
             ("🚢 Deploy", "tab_deploy_pro"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         tips = self.make_card(side, "Qué mejora V73")
         tips.pack(fill="x")
@@ -9002,7 +9077,7 @@ class PremiumApp:
             if hasattr(self, "visual_apply_density"):
                 self.visual_apply_density("grande")
             if hasattr(self, "tab_inicio_premium"):
-                self.notebook.select(self.tab_inicio_premium)
+                self.select_tab(self.tab_inicio_premium)
             self.professional_polish_status.set("Showroom activado: vista grande y flujo de inicio.")
         except Exception as e:
             self.professional_polish_status.set(f"No se pudo activar showroom: {e}")
@@ -9156,7 +9231,7 @@ class PremiumApp:
         accesos.pack(fill="x", pady=(0, 10))
         for label, attr in [("🏠 Inicio", "tab_inicio_premium"), ("🪄 Asistente", "tab_asistente_inicial"), ("💎 Premium", "tab_premium_experience"), ("🎨 Visual Pro", "tab_visual_pro"), ("📚 Biblioteca", "tab_biblioteca_premium"), ("🚀 Publicación", "tab_publicacion_pro")]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Exportar")
         export.pack(fill="x")
@@ -9224,7 +9299,7 @@ class PremiumApp:
         self.ultra_premium_ui_density.set("Compacto pro")
         self.ultra_ui_apply_selected()
         if hasattr(self, "tab_inicio_premium"):
-            self.notebook.select(self.tab_inicio_premium)
+            self.select_tab(self.tab_inicio_premium)
         self.ultra_premium_ui_status.set("Focus Mode activado: menos ruido visual y vuelta al inicio premium.")
 
     def ultra_ui_apply_full_polish(self):
@@ -9421,7 +9496,7 @@ class PremiumApp:
             ("🚢 Deploy", "tab_deploy_pro"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Exportar acabado")
         export.pack(fill="x")
@@ -9582,7 +9657,7 @@ class PremiumApp:
                 if hasattr(self, "studio_dashboard_refresh_all"): self.studio_dashboard_refresh_all()
                 target = "tab_studio_dashboard" if hasattr(self, "tab_studio_dashboard") else "tab_inicio_premium"
             if hasattr(self, target):
-                self.notebook.select(getattr(self, target))
+                self.select_tab(getattr(self, target))
             self.premium_refresh_all()
             self.premium_experience_status.set(f"Modo premium aplicado: {self.premium_mode.get()}.")
         except Exception as e:
@@ -9742,7 +9817,7 @@ class PremiumApp:
         acc.pack(fill="x", pady=(0, 10))
         for label, attr in [("🌍 Web Pack", "tab_web_pack"), ("🌐 Landing", "tab_landing_page"), ("📦 Export Pack", "tab_export_pack"), ("📚 Biblioteca", "tab_biblioteca_premium"), ("🚀 Publicación", "tab_publicacion_pro")]:
             if hasattr(self, attr):
-                ttk.Button(acc, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(acc, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         info = self.make_card(right, "Qué añade")
         info.pack(fill="x")
@@ -9843,7 +9918,7 @@ class PremiumApp:
         title = self.landing_title.get() if hasattr(self, "landing_title") else "Mi proyecto"
         artist = self.landing_artist.get() if hasattr(self, "landing_artist") else "Atenea Studio"
         desc = self.landing_description.get("1.0", "end").strip() if hasattr(self, "landing_description") else "Proyecto generado con Modulador de Voz en Directo."
-        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo V80 Revisión Total Pro.</p></div></main></body></html>")
+        return ("<!doctype html><html lang=\"es\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + html.escape(title) + "</title><style>body{margin:0;font-family:Arial;background:#090b18;color:white}main{max-width:920px;margin:auto;padding:60px 24px}.card{border:1px solid #2ee9ff55;border-radius:28px;background:#151827;padding:28px}h1{font-size:44px}a{color:#00e5ff}</style></head><body><main><div class=\"card\"><h1>" + html.escape(title) + "</h1><h2>" + html.escape(artist) + "</h2><p>" + html.escape(desc) + "</p><p>Web generada con Modulador de Voz en Directo V81 Navegación Pro.</p></div></main></body></html>")
 
     def deploy_manifest_data(self, included):
         return {
@@ -9996,7 +10071,7 @@ class PremiumApp:
         btns.pack(fill="x", pady=(8, 0))
         ttk.Button(btns, text="Vista previa", command=self.web_pack_preview_selected).pack(side="left", fill="x", expand=True, padx=3, ipady=7)
         ttk.Button(btns, text="Crear ZIP web", style="Accent.TButton", command=self.web_pack_create_zip).pack(side="left", fill="x", expand=True, padx=3, ipady=7)
-        ttk.Button(btns, text="Landing", command=lambda: self.notebook.select(self.tab_landing_page)).pack(side="left", fill="x", expand=True, padx=3, ipady=7)
+        ttk.Button(btns, text="Landing", command=lambda: self.select_tab(self.tab_landing_page)).pack(side="left", fill="x", expand=True, padx=3, ipady=7)
 
         preview = self.make_card(body, "Vista previa")
         preview.pack(side="left", fill="both", expand=True, padx=(5, 0))
@@ -10031,7 +10106,7 @@ class PremiumApp:
             ("📦 Export Pack", "tab_export_pack"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Final")
         export.pack(fill="x")
@@ -10309,7 +10384,7 @@ class PremiumApp:
             ("tile_brand", "Usar Brand Kit", self.landing_use_brand),
             ("tile_neon", "Neón", lambda: self.landing_set_style("Neón")),
             ("tile_elegante", "Elegante", lambda: self.landing_set_style("Elegante")),
-            ("tile_pack", "Export Pack", lambda: self.notebook.select(self.tab_export_pack) if hasattr(self, "tab_export_pack") else None),
+            ("tile_pack", "Export Pack", lambda: self.select_tab(self.tab_export_pack) if hasattr(self, "tab_export_pack") else None),
         ]
         for i, (img, label, cmd) in enumerate(items):
             box = ttk.Frame(grid, style="Card.TFrame", padding=5)
@@ -10355,7 +10430,7 @@ class PremiumApp:
         accesos.pack(fill="x", pady=(0, 10))
         for label, attr in [("🚀 Publicación", "tab_publicacion_pro"), ("🏷 Brand Kit", "tab_brand_kit"), ("🖼 Portadas", "tab_portadas_premium"), ("📚 Biblioteca", "tab_biblioteca_premium"), ("📦 Export Pack", "tab_export_pack")]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Web final")
         export.pack(fill="x")
@@ -10571,7 +10646,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("tile_avatar", "Crear avatar", self.brand_export_avatar),
             ("tile_palette", "Paleta", self.brand_export_palette),
             ("tile_zip", "Pack ZIP", self.brand_export_full_pack),
-            ("tile_biblioteca", "Biblioteca", lambda: self.notebook.select(self.tab_biblioteca_premium)),
+            ("tile_biblioteca", "Biblioteca", lambda: self.select_tab(self.tab_biblioteca_premium)),
         ]
         for i, (img, label, cmd) in enumerate(items):
             box = ttk.Frame(grid, style="Card.TFrame", padding=5)
@@ -10645,7 +10720,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("🏠 Inicio", "tab_inicio_premium"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
     def brand_hex_to_rgb(self, value, fallback=(0, 229, 255)):
         try:
@@ -10926,7 +11001,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("tile_release", "Release", self.publicacion_release_notes),
             ("tile_check", "Checklist", self.publicacion_checklist),
             ("tile_export", "Exportar", self.publicacion_export_all),
-            ("tile_pack", "Export Pack", lambda: self.notebook.select(self.tab_export_pack)),
+            ("tile_pack", "Export Pack", lambda: self.select_tab(self.tab_export_pack)),
         ]
         for i, (img, label, cmd) in enumerate(items):
             box = ttk.Frame(grid, style="Card.TFrame", padding=5)
@@ -10988,7 +11063,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         accesos.pack(fill="x")
         for label, attr in [("📦 Export Pack", "tab_export_pack"), ("🖼 Portadas", "tab_portadas_premium"), ("📚 Biblioteca", "tab_biblioteca_premium"), ("💿 Master", "tab_master_final"), ("🏁 Studio", "tab_studio_dashboard")]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
     def publicacion_default_description(self):
         return (
@@ -11222,7 +11297,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         acc.pack(fill="x", pady=(0,10))
         for label, attr in [("📚 Biblioteca", "tab_biblioteca_premium"),("🖼 Portadas", "tab_portadas_premium"),("💿 Master Final", "tab_master_final"),("🏁 Studio", "tab_studio_dashboard"),("🏠 Inicio", "tab_inicio_premium")]:
             if hasattr(self, attr):
-                ttk.Button(acc, text=label, command=lambda a=attr: self.notebook.select(getattr(self,a))).pack(fill="x", pady=3)
+                ttk.Button(acc, text=label, command=lambda a=attr: self.select_tab(getattr(self,a))).pack(fill="x", pady=3)
 
         tips=self.make_card(right, "Qué mete en el ZIP")
         tips.pack(fill="x")
@@ -11401,7 +11476,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("tile_trap", "Trap", lambda: self.portada_set_style("Trap")),
             ("tile_lofi", "Lofi", lambda: self.portada_set_style("Lofi")),
             ("tile_cover", "Crear PNG", self.portada_export_png),
-            ("tile_biblio", "Biblioteca", lambda: self.notebook.select(self.tab_biblioteca_premium)),
+            ("tile_biblio", "Biblioteca", lambda: self.select_tab(self.tab_biblioteca_premium)),
         ]
         for i, (img, label, cmd) in enumerate(items):
             box = ttk.Frame(grid, style="Card.TFrame", padding=5)
@@ -11482,7 +11557,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("🎨 Visual Pro", "tab_visual_pro"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Guardar")
         export.pack(fill="x")
@@ -11801,7 +11876,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("🏁 Studio", "tab_studio_dashboard"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Informe")
         export.pack(fill="x")
@@ -12134,9 +12209,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         acciones = self.make_card(right, "Acciones del setup")
         acciones.pack(fill="x", pady=(0, 10))
         ttk.Button(acciones, text="Configurar todo seguro", style="Accent.TButton", command=self.asistente_apply_all_safe).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Inicio Premium", command=lambda: self.notebook.select(self.tab_inicio_premium)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Revisión", command=lambda: self.notebook.select(self.tab_revision_tecnica)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Studio", command=lambda: self.notebook.select(self.tab_studio_dashboard)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Inicio Premium", command=lambda: self.select_tab(self.tab_inicio_premium)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Revisión", command=lambda: self.select_tab(self.tab_revision_tecnica)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Studio", command=lambda: self.select_tab(self.tab_studio_dashboard)).pack(fill="x", pady=3)
         ttk.Button(acciones, text="Exportar setup JSON/TXT", command=self.asistente_export_setup).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Para qué sirve")
@@ -12245,7 +12320,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
     def asistente_open_target(self, target):
         if target and hasattr(self, target):
-            self.notebook.select(getattr(self, target))
+            self.select_tab(getattr(self, target))
             return True
         return False
 
@@ -12523,7 +12598,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             wraplength=320
         ).pack(anchor="w")
         if hasattr(self, "tab_visual_pro"):
-            ttk.Button(visual, text="Abrir Visual Pro", command=lambda: self.notebook.select(self.tab_visual_pro)).pack(fill="x", pady=(8, 3))
+            ttk.Button(visual, text="Abrir Visual Pro", command=lambda: self.select_tab(self.tab_visual_pro)).pack(fill="x", pady=(8, 3))
 
     def inicio_data(self):
         effects = {}
@@ -12633,7 +12708,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         candidates = [attr] + fallbacks.get(mode, [])
         for candidate in candidates:
             if candidate and hasattr(self, candidate):
-                self.notebook.select(getattr(self, candidate))
+                self.select_tab(getattr(self, candidate))
                 self.inicio_premium_status.set(f"Modo abierto: {mode}.")
                 return
         self.inicio_premium_status.set(f"No se encontró el módulo para: {mode}.")
@@ -12742,7 +12817,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         ttk.Button(settings, text="Aplicar tema seleccionado", style="Accent.TButton", command=self.visual_apply_selected).pack(fill="x", pady=4)
         ttk.Button(settings, text="Optimizar para portátil", command=lambda: self.visual_apply_density("compacto")).pack(fill="x", pady=4)
         ttk.Button(settings, text="Optimizar para pantalla grande", command=lambda: self.visual_apply_density("grande")).pack(fill="x", pady=4)
-        ttk.Button(settings, text="Abrir Studio Dashboard", command=lambda: self.notebook.select(self.tab_studio_dashboard)).pack(fill="x", pady=4)
+        ttk.Button(settings, text="Abrir Studio Dashboard", command=lambda: self.select_tab(self.tab_studio_dashboard)).pack(fill="x", pady=4)
 
         right = ttk.Frame(main)
         right.pack(side="right", fill="y", padx=(10, 0))
@@ -12779,12 +12854,12 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("💿 Master", "tab_master_final"),
         ]:
             if hasattr(self, attr):
-                ttk.Button(accesos, text=label, command=lambda a=attr: self.notebook.select(getattr(self, a))).pack(fill="x", pady=3)
+                ttk.Button(accesos, text=label, command=lambda a=attr: self.select_tab(getattr(self, a))).pack(fill="x", pady=3)
 
         export = self.make_card(right, "Exportar")
         export.pack(fill="x")
         ttk.Button(export, text="Exportar estilo JSON/TXT", style="Accent.TButton", command=self.visual_export_style).pack(fill="x", pady=3)
-        ttk.Button(export, text="Revisión técnica", command=lambda: self.notebook.select(self.tab_revision_tecnica)).pack(fill="x", pady=3)
+        ttk.Button(export, text="Revisión técnica", command=lambda: self.select_tab(self.tab_revision_tecnica)).pack(fill="x", pady=3)
 
     def visual_theme_palette(self, mode):
         palettes = {
@@ -12892,7 +12967,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         try:
             if self.visual_focus_mode.get():
                 if hasattr(self, "tab_studio_dashboard"):
-                    self.notebook.select(self.tab_studio_dashboard)
+                    self.select_tab(self.tab_studio_dashboard)
                 self.visual_pro_status.set("Modo enfoque activado: vuelve al flujo Studio para trabajar más limpio.")
                 self.visual_density.set("Compacto")
                 self.visual_apply_density("compacto")
@@ -13067,10 +13142,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         acciones = self.make_card(right, "Accesos")
         acciones.pack(fill="x", pady=(0, 10))
-        ttk.Button(acciones, text="Abrir Studio", command=lambda: self.notebook.select(self.tab_studio_dashboard)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Analizador", command=lambda: self.notebook.select(self.tab_analizador_vocal)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Rendimiento", command=lambda: self.notebook.select(self.tab_rendimiento)).pack(fill="x", pady=3)
-        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.notebook.select(self.tab_diagnostico)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Studio", command=lambda: self.select_tab(self.tab_studio_dashboard)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Analizador", command=lambda: self.select_tab(self.tab_analizador_vocal)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Rendimiento", command=lambda: self.select_tab(self.tab_rendimiento)).pack(fill="x", pady=3)
+        ttk.Button(acciones, text="Abrir Diagnóstico", command=lambda: self.select_tab(self.tab_diagnostico)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Lectura rápida")
         tips.pack(fill="x")
@@ -13539,7 +13614,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         }
         attr = mapping.get(step)
         if attr and hasattr(self, attr):
-            self.notebook.select(getattr(self, attr))
+            self.select_tab(getattr(self, attr))
             self.studio_dashboard_status.set(f"Abierto paso: {step}.")
         else:
             self.studio_dashboard_status.set(f"El paso {step} todavía no está disponible en esta versión.")
@@ -13705,11 +13780,11 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             wraplength=450
         ).pack(anchor="w", pady=(0, 10))
 
-        ttk.Button(checklist, text="Abrir Cadena Vocal", command=lambda: self.notebook.select(self.tab_cadena_vocal)).pack(fill="x", pady=3)
+        ttk.Button(checklist, text="Abrir Cadena Vocal", command=lambda: self.select_tab(self.tab_cadena_vocal)).pack(fill="x", pady=3)
         if hasattr(self, "tab_mezclador_musical"):
-            ttk.Button(checklist, text="Abrir Mezclador", command=lambda: self.notebook.select(self.tab_mezclador_musical)).pack(fill="x", pady=3)
+            ttk.Button(checklist, text="Abrir Mezclador", command=lambda: self.select_tab(self.tab_mezclador_musical)).pack(fill="x", pady=3)
         if hasattr(self, "tab_master_final"):
-            ttk.Button(checklist, text="Abrir Master Final", command=lambda: self.notebook.select(self.tab_master_final)).pack(fill="x", pady=3)
+            ttk.Button(checklist, text="Abrir Master Final", command=lambda: self.select_tab(self.tab_master_final)).pack(fill="x", pady=3)
         ttk.Button(checklist, text="Grabar prueba WAV", style="Accent.TButton", command=self.record).pack(fill="x", pady=3)
 
         right = ttk.Frame(main)
@@ -14073,13 +14148,13 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         acc = self.make_card(right, "Accesos")
         acc.pack(fill="x", pady=(0, 10))
         if hasattr(self, "tab_autotune"):
-            ttk.Button(acc, text="Abrir Autotune", command=lambda: self.notebook.select(self.tab_autotune)).pack(fill="x", pady=3)
+            ttk.Button(acc, text="Abrir Autotune", command=lambda: self.select_tab(self.tab_autotune)).pack(fill="x", pady=3)
         if hasattr(self, "tab_karaoke"):
-            ttk.Button(acc, text="Abrir Karaoke", command=lambda: self.notebook.select(self.tab_karaoke)).pack(fill="x", pady=3)
+            ttk.Button(acc, text="Abrir Karaoke", command=lambda: self.select_tab(self.tab_karaoke)).pack(fill="x", pady=3)
         if hasattr(self, "tab_mezclador_musical"):
-            ttk.Button(acc, text="Abrir Mezclador", command=lambda: self.notebook.select(self.tab_mezclador_musical)).pack(fill="x", pady=3)
+            ttk.Button(acc, text="Abrir Mezclador", command=lambda: self.select_tab(self.tab_mezclador_musical)).pack(fill="x", pady=3)
         if hasattr(self, "tab_master_final"):
-            ttk.Button(acc, text="Abrir Master Final", command=lambda: self.notebook.select(self.tab_master_final)).pack(fill="x", pady=3)
+            ttk.Button(acc, text="Abrir Master Final", command=lambda: self.select_tab(self.tab_master_final)).pack(fill="x", pady=3)
         ttk.Button(acc, text="Exportar cadena JSON", style="Accent.TButton", command=self.vocal_chain_export_json).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
@@ -14318,10 +14393,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         acc.pack(fill="x", pady=(0, 10))
         ttk.Button(acc, text="Exportar plan JSON", style="Accent.TButton", command=self.timeline_export_json).pack(fill="x", pady=3)
         ttk.Button(acc, text="Exportar plan TXT", command=self.timeline_export_txt).pack(fill="x", pady=3)
-        ttk.Button(acc, text="Abrir Canción Pro", command=lambda: self.notebook.select(self.tab_cancion_pro)).pack(fill="x", pady=3)
-        ttk.Button(acc, text="Abrir Multipista", command=lambda: self.notebook.select(self.tab_multipista)).pack(fill="x", pady=3)
+        ttk.Button(acc, text="Abrir Canción Pro", command=lambda: self.select_tab(self.tab_cancion_pro)).pack(fill="x", pady=3)
+        ttk.Button(acc, text="Abrir Multipista", command=lambda: self.select_tab(self.tab_multipista)).pack(fill="x", pady=3)
         if hasattr(self, "tab_master_final"):
-            ttk.Button(acc, text="Abrir Master Final", command=lambda: self.notebook.select(self.tab_master_final)).pack(fill="x", pady=3)
+            ttk.Button(acc, text="Abrir Master Final", command=lambda: self.select_tab(self.tab_master_final)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Consejos")
         tips.pack(fill="x")
@@ -14548,9 +14623,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         quick.pack(fill="x", pady=(0, 10))
         ttk.Button(quick, text="Guardar proyecto multipista", style="Accent.TButton", command=self.multitrack_save_project).pack(fill="x", pady=3)
         ttk.Button(quick, text="Exportar manifiesto stems", command=self.multitrack_export_stems_manifest).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Mezclador", command=lambda: self.notebook.select(self.tab_mezclador_musical)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Master Final", command=lambda: self.notebook.select(self.tab_master_final)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Canción Pro", command=lambda: self.notebook.select(self.tab_cancion_pro)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Mezclador", command=lambda: self.select_tab(self.tab_mezclador_musical)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Master Final", command=lambda: self.select_tab(self.tab_master_final)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Canción Pro", command=lambda: self.select_tab(self.tab_cancion_pro)).pack(fill="x", pady=3)
 
         tips = self.make_card(right, "Límite real")
         tips.pack(fill="x")
@@ -14741,9 +14816,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         ttk.Label(pista, text="Exporta la base actual con acabado final. Para voz + música, usa Grabar demo mientras suena la base.", style="Card.TLabel", wraplength=320).pack(anchor="w", pady=(8,0))
         quick = self.make_card(right, "Accesos")
         quick.pack(fill="x", pady=(0,10))
-        ttk.Button(quick, text="Abrir Canción Pro", command=lambda: self.notebook.select(self.tab_cancion_pro)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Mezclador", command=lambda: self.notebook.select(self.tab_mezclador_musical)).pack(fill="x", pady=3)
-        ttk.Button(quick, text="Abrir Karaoke Studio", command=lambda: self.notebook.select(self.tab_karaoke_studio)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Canción Pro", command=lambda: self.select_tab(self.tab_cancion_pro)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Mezclador", command=lambda: self.select_tab(self.tab_mezclador_musical)).pack(fill="x", pady=3)
+        ttk.Button(quick, text="Abrir Karaoke Studio", command=lambda: self.select_tab(self.tab_karaoke_studio)).pack(fill="x", pady=3)
 
     def master_slider(self, parent, label, var, mn, mx, unit):
         box = ttk.Frame(parent, style="Card.TFrame"); box.pack(fill="x", pady=7)
@@ -15510,7 +15585,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             if target == "discord":
                 ttk.Button(box, text=label, style="Accent.TButton", command=lambda: self.quick_mode("discord")).pack(fill="x")
             else:
-                ttk.Button(box, text=label, style="Accent.TButton", command=lambda t=target: self.notebook.select(t)).pack(fill="x")
+                ttk.Button(box, text=label, style="Accent.TButton", command=lambda t=target: self.select_tab(t)).pack(fill="x")
 
         for col in range(2):
             grid.columnconfigure(col, weight=1)
@@ -15730,7 +15805,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
 
     def profiles_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v80_profiles.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_profiles.json")
 
     def load_profiles(self):
         try:
@@ -15814,7 +15889,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.latency.set(latency)
         self.refresh_voice_list()
         self.apply_preset()
-        self.notebook.select(self.tab_voces)
+        self.select_tab(self.tab_voces)
         self.state.set(f"Estado: escena premium aplicada · {preset}")
 
     def build_studio_tab(self):
@@ -15957,7 +16032,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
     def open_pack(self, pack_name):
         self.category.set(pack_name)
-        self.notebook.select(self.tab_voces)
+        self.select_tab(self.tab_voces)
         self.refresh_voice_list()
         voices = PACKS_DATA[pack_name]["voices"]
         if voices:
@@ -15970,7 +16045,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         if voices:
             self.preset.set(voices[0])
             self.apply_preset()
-            self.notebook.select(self.tab_voces)
+            self.select_tab(self.tab_voces)
             self.state.set(f"Estado: voz aplicada · {voices[0]}")
 
     def add_current_favorite(self):
@@ -15991,7 +16066,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         name = self.fav_list.get(self.fav_list.curselection()[0])
         self.preset.set(name)
         self.apply_preset()
-        self.notebook.select(self.tab_voces)
+        self.select_tab(self.tab_voces)
 
     def remove_selected_favorite(self):
         if self.fav_list is None or not self.fav_list.curselection():
@@ -16011,7 +16086,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.refresh_voice_list()
 
     def favorites_path(self):
-        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v80_favoritos.json")
+        return os.path.join(os.path.expanduser("~"), "modulador_voz_directo_v81_favoritos.json")
 
     def load_favorites(self):
         try:
