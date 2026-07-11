@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.5.0 Barra de Control"
+VERSION = "2.6.0 Dashboard Vivo"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -15470,6 +15470,54 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.asistente_inicial_status.set(f"No se pudo exportar setup: {e}")
 
 
+    def sys_status_tick(self):
+        """Estado del sistema del dashboard: CPU del proceso, RAM,
+        latencia del bloque actual y calidad según cortes de audio."""
+        try:
+            ahora = time.perf_counter()
+            cpu_ahora = time.process_time()
+            previo = getattr(self, "_sys_prev", None)
+            self._sys_prev = (ahora, cpu_ahora)
+            if previo is not None and ahora > previo[0]:
+                pct = 100.0 * (cpu_ahora - previo[1]) / (ahora - previo[0])
+                self.sys_cpu_text.set(f"CPU proceso  ·  {min(100, pct):.0f}%")
+            ram_mb = None
+            try:
+                import ctypes
+                import ctypes.wintypes
+                class PMC(ctypes.Structure):
+                    _fields_ = [("cb", ctypes.wintypes.DWORD), ("PageFaultCount", ctypes.wintypes.DWORD),
+                                ("PeakWorkingSetSize", ctypes.c_size_t), ("WorkingSetSize", ctypes.c_size_t),
+                                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t), ("QuotaPagedPoolUsage", ctypes.c_size_t),
+                                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t), ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+                                ("PagefileUsage", ctypes.c_size_t), ("PeakPagefileUsage", ctypes.c_size_t)]
+                pmc = PMC()
+                pmc.cb = ctypes.sizeof(PMC)
+                h = ctypes.windll.kernel32.GetCurrentProcess()
+                if ctypes.windll.psapi.GetProcessMemoryInfo(h, ctypes.byref(pmc), pmc.cb):
+                    ram_mb = pmc.WorkingSetSize / (1024 * 1024)
+            except Exception:
+                pass
+            self.sys_ram_text.set(f"RAM  ·  {ram_mb:.0f} MB" if ram_mb else "RAM  ·  –")
+            if self.engine.running and self.engine.stream is not None:
+                bloque = getattr(self.engine.stream, "blocksize", 0) or 256
+                self.sys_lat_text.set(f"Latencia  ·  {1000.0 * bloque / self.engine.rate:.1f} ms")
+            else:
+                self.sys_lat_text.set("Latencia  ·  directo parado")
+            cortes = self.engine.xrun_count
+            if not self.engine.running:
+                calidad = "–"
+            elif cortes == 0:
+                calidad = "Óptima ✅"
+            elif cortes < 5:
+                calidad = f"Buena · {cortes} cortes"
+            else:
+                calidad = f"Revisar · {cortes} cortes"
+            self.sys_quality_text.set(f"Calidad de voz  ·  {calidad}")
+        except Exception:
+            pass
+        self.root.after(2000, self.sys_status_tick)
+
     def build_inicio_premium_tab(self):
         main = tk.Frame(self.tab_inicio_premium, bg="#090d16")
         main.pack(fill="both", expand=True)
@@ -15596,7 +15644,31 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             tk.Label(card,text=sub,bg="#111725",fg="#8e98b2",font=("Segoe UI",7),wraplength=145,justify="center").pack(padx=8,pady=(0,9))
             benefits.columnconfigure(idx,weight=1)
 
+        # Fila del diseño: Favoritos · Módulos recientes · Estado del sistema.
+        panels = tk.Frame(main, bg="#090d16")
+        panels.pack(fill="x", padx=8, pady=(4, 8))
+
+        self.home_favorites_frame = tk.Frame(panels, bg="#111725", highlightbackground="#242d45", highlightthickness=1)
+        self.home_favorites_frame.grid(row=0, column=0, sticky="nsew", padx=(0, 4), ipadx=8, ipady=8)
+        self.home_recents_frame = tk.Frame(panels, bg="#111725", highlightbackground="#242d45", highlightthickness=1)
+        self.home_recents_frame.grid(row=0, column=1, sticky="nsew", padx=4, ipadx=8, ipady=8)
+
+        estado_sys = tk.Frame(panels, bg="#111725", highlightbackground="#242d45", highlightthickness=1)
+        estado_sys.grid(row=0, column=2, sticky="nsew", padx=(4, 0), ipadx=8, ipady=8)
+        tk.Label(estado_sys, text="ESTADO DEL SISTEMA", bg="#111725", fg="#777b91", font=("Segoe UI", 8, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
+        self.sys_cpu_text = tk.StringVar(value="CPU  ·  –")
+        self.sys_ram_text = tk.StringVar(value="RAM  ·  –")
+        self.sys_lat_text = tk.StringVar(value="Latencia  ·  –")
+        self.sys_quality_text = tk.StringVar(value="Calidad de voz  ·  –")
+        for var, color in ((self.sys_cpu_text, "#00dff5"), (self.sys_ram_text, "#a65cff"), (self.sys_lat_text, "#ffd166"), (self.sys_quality_text, "#62ffb4")):
+            tk.Label(estado_sys, textvariable=var, bg="#111725", fg=color, font=("Consolas", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=2)
+
+        for col in range(3):
+            panels.columnconfigure(col, weight=1)
+
+        self.refresh_creator_hub_panels()
         self.voiceicc_refresh_dashboard_metrics()
+        self.root.after(2000, self.sys_status_tick)
 
     def inicio_data(self):
         effects = {}
@@ -18754,6 +18826,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.recent_tabs = [a for a in self.recent_tabs if a != attr]
         self.recent_tabs.insert(0, attr)
         self.recent_tabs = self.recent_tabs[:8]
+        try:
+            self.refresh_creator_hub_panels()
+        except Exception:
+            pass
 
     def refresh_creator_hub_panels(self):
         if hasattr(self, "home_favorites_frame"):
