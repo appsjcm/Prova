@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.3.0 Autotune Optimizado"
+VERSION = "3.4.0 Flotante Pro"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1653,6 +1653,7 @@ class PremiumApp:
         self.voiceicc_brand_images = {}
         self.start_with_windows = tk.BooleanVar(value=False)
         self.monitor_var = tk.BooleanVar(value=False)
+        self.ptt_mode = tk.BooleanVar(value=False)
         self.voiceicc_setup_progress = tk.DoubleVar(value=0)
         self.voiceicc_setup_text = tk.StringVar(value="Configuración VoiceICC · 0%")
         self.voiceicc_featured_cards = {}
@@ -3169,6 +3170,51 @@ class PremiumApp:
             pass
         return None
 
+    def toggle_voice_normal(self):
+        """Alterna entre voz modulada (efectos ON) y voz normal (limpia)."""
+        self.effects_enabled.set(not bool(self.effects_enabled.get()))
+        self.update_engine()
+        self._float_refresh()
+        if bool(self.effects_enabled.get()):
+            self.state.set("Estado: 🎭 voz modulada")
+        else:
+            self.state.set("Estado: 🙂 voz normal (sin efectos)")
+
+    def panic_reset(self):
+        """Modo pánico: si algo suena mal en directo, vuelve todo a voz
+        limpia al instante (sin efectos, sin silenciar, sin monitor)."""
+        self.effects_enabled.set(True)
+        self.mute.set(False)
+        limpia = "Voz clara" if "Voz clara" in VoiceBank.all_presets() else "Gaming limpio"
+        self.apply_pro_voice(limpia)
+        try:
+            self.engine.stop_monitor()
+            if hasattr(self, "monitor_var"):
+                self.monitor_var.set(False)
+        except Exception:
+            pass
+        self.update_engine()
+        self.state.set("Estado: 🆘 pánico · voz limpia restaurada")
+
+    def push_to_talk_press(self):
+        """Mantener pulsado: hablar (quita el silencio)."""
+        if bool(self.ptt_mode.get()):
+            self.mute.set(False)
+            self.update_engine()
+
+    def push_to_talk_release(self):
+        """Soltar: silencio (modo push-to-talk)."""
+        if bool(self.ptt_mode.get()):
+            self.mute.set(True)
+            self.update_engine()
+
+    def toggle_ptt_mode(self):
+        """Activa/desactiva push-to-talk. Al activar, empieza en silencio."""
+        activo = bool(self.ptt_mode.get())
+        self.mute.set(activo)  # en PTT arranca callado hasta pulsar
+        self.update_engine()
+        self.state.set("Estado: 🎙 push-to-talk ON (mantén la tecla)" if activo else "Estado: push-to-talk OFF")
+
     def toggle_previous_voice(self):
         """Alterna entre la voz actual y la anterior (Ctrl+Shift+X)."""
         anterior = getattr(self, "_voz_anterior", None)
@@ -3235,10 +3281,30 @@ class PremiumApp:
                                       activeforeground="#ffffff", relief="flat", bd=0,
                                       font=("Segoe UI", 14, "bold"), width=3, cursor="hand2")
         self._float_power.pack(side="left", padx=2)
+        self._float_voice_btn = tk.Button(fila, text="🎭", command=self.toggle_voice_normal,
+                                          bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
+                                          activeforeground="#ffffff", relief="flat", bd=0,
+                                          font=("Segoe UI", 12, "bold"), width=3, cursor="hand2")
+        self._float_voice_btn.pack(side="left", padx=2)
         boton("🔇", lambda: (self.mute.set(not bool(self.mute.get())), self.update_engine())).pack(side="left", padx=2)
         boton("↔", self.toggle_previous_voice).pack(side="left", padx=2)
+        boton("🆘", self.panic_reset, fg="#ffcf5c").pack(side="left", padx=2)
         boton("▢", self.show_window).pack(side="left", padx=2)
         boton("✕", self.toggle_float_panel, fg="#ff5c8a").pack(side="left", padx=2)
+
+        # Segunda fila: hasta 5 voces favoritas para cambiar en un clic.
+        fav_fila = tk.Frame(marco, bg="#111117")
+        fav_fila.pack(padx=6, pady=(0, 2))
+        favoritas = [v for v in self.favorites if v in VoiceBank.all_presets()][:5]
+        if not favoritas:
+            favoritas = ["Gaming limpio", "Fortnite grave", "Titán", "Robot directo", "Alien"]
+            favoritas = [v for v in favoritas if v in VoiceBank.all_presets()][:5]
+        for voz in favoritas:
+            corta = voz.split()[0][:6]
+            tk.Button(fav_fila, text=corta, command=lambda v=voz: self.apply_pro_voice(v),
+                      bg="#181d2e", fg="#c7d0ff", activebackground="#2a3150",
+                      activeforeground="#ffffff", relief="flat", bd=0,
+                      font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="left", padx=1)
 
         etiqueta = tk.Label(marco, textvariable=self.preset, bg="#111117", fg="#8e96b1",
                             font=("Segoe UI", 9), anchor="center")
@@ -3256,7 +3322,7 @@ class PremiumApp:
             win.geometry(f"+{x}+{y}")
             self._float_pos = (x, y)
 
-        for widget in (marco, fila, etiqueta):
+        for widget in (marco, fila, fav_fila, etiqueta):
             widget.bind("<Button-1>", empezar)
             widget.bind("<B1-Motion>", mover)
 
@@ -3270,6 +3336,11 @@ class PremiumApp:
                 self._float_power.configure(bg="#123524", fg="#62ffb4")
             else:
                 self._float_power.configure(bg="#241a3d", fg="#a78bfa")
+            if getattr(self, "_float_voice_btn", None) is not None:
+                if bool(self.effects_enabled.get()):
+                    self._float_voice_btn.configure(bg="#241a3d", fg="#c7a6ff")  # modulada
+                else:
+                    self._float_voice_btn.configure(bg="#1c1c25", fg="#8e96b1")  # normal
         except Exception:
             pass
 
@@ -3389,6 +3460,7 @@ class PremiumApp:
         _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
+        _vm_toggle("🎙 PUSH-TO-TALK (V)", self.ptt_mode, self.toggle_ptt_mode).pack(side="left", padx=4, pady=13)
         tk.Button(
             bottombar, text="🪟 FLOTANTE", command=self.toggle_float_panel,
             bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
@@ -10042,6 +10114,9 @@ class PremiumApp:
             ("Ctrl + K", "Buscar pestañas y voces"),
             ("Ctrl + Shift + X", "Volver a la voz anterior"),
             ("Ctrl + Shift + F", "Mostrar/ocultar el botón flotante"),
+            ("Ctrl + Shift + N", "Voz normal / voz modulada"),
+            ("Ctrl + Shift + Z", "PÁNICO: volver a voz limpia"),
+            ("V (mantener)", "Push-to-talk (si está activado)"),
         ]
 
         text.insert("1.0", "ATAJOS PRO\n\n")
@@ -10111,6 +10186,10 @@ class PremiumApp:
                 "<Control-Shift-x>": lambda e: self.toggle_previous_voice(),
                 "<Control-Shift-F>": lambda e: self.toggle_float_panel(),
                 "<Control-Shift-f>": lambda e: self.toggle_float_panel(),
+                "<Control-Shift-N>": lambda e: self.toggle_voice_normal(),
+                "<Control-Shift-n>": lambda e: self.toggle_voice_normal(),
+                "<Control-Shift-Z>": lambda e: self.panic_reset(),
+                "<Control-Shift-z>": lambda e: self.panic_reset(),
             }
             for key, callback in bindings.items():
                 self.root.bind_all(key, callback)
@@ -10157,10 +10236,15 @@ class PremiumApp:
             "ctrl+shift+c": en_ui(self.hotkey_save_clip),
             "ctrl+shift+x": en_ui(self.toggle_previous_voice),
             "ctrl+shift+f": en_ui(self.toggle_float_panel),
+            "ctrl+shift+n": en_ui(self.toggle_voice_normal),
+            "ctrl+shift+z": en_ui(self.panic_reset),
         }
         try:
             for key, action in mapping.items():
                 global_keyboard.add_hotkey(key, action)
+            # Push-to-talk global: mantener V para hablar (si el modo está ON).
+            global_keyboard.on_press_key("v", lambda e: self.root.after(0, self.push_to_talk_press))
+            global_keyboard.on_release_key("v", lambda e: self.root.after(0, self.push_to_talk_release))
             return True
         except Exception as e:
             print("No se pudieron activar atajos globales:", e)
