@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.6.0 Dashboard Vivo"
+VERSION = "2.7.0 Pulido Visual"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1873,6 +1873,8 @@ class PremiumApp:
 
         # Versión 1.0: el programa abre siempre en Directo → Inicio.
         self.root.after(100, lambda: self.select_tab(self.tab_inicio))
+
+        self._aplicar_barra_titulo_oscura()
 
         self.root.protocol("WM_DELETE_WINDOW", self.hide_to_tray)
         self.root.after(450, self.show_welcome)
@@ -15514,9 +15516,55 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             else:
                 calidad = f"Revisar · {cortes} cortes"
             self.sys_quality_text.set(f"Calidad de voz  ·  {calidad}")
+            if hasattr(self, "_spark_data"):
+                valores = {
+                    "cpu": float(str(self.sys_cpu_text.get()).split("·")[-1].replace("%", "").strip() or 0) if "%" in self.sys_cpu_text.get() else 0.0,
+                    "ram": ram_mb or 0.0,
+                    "lat": (1000.0 * (getattr(self.engine.stream, "blocksize", 0) or 256) / self.engine.rate) if (self.engine.running and self.engine.stream is not None) else 0.0,
+                    "calidad": float(max(0, 20 - cortes)),
+                }
+                for clave, valor in valores.items():
+                    datos = self._spark_data[clave]
+                    datos.append(valor)
+                    if len(datos) > 30:
+                        del datos[0]
+                    lienzo, color = self._spark_canvas.get(clave, (None, None))
+                    if lienzo is not None:
+                        self._spark_draw(lienzo, datos, color)
         except Exception:
             pass
         self.root.after(2000, self.sys_status_tick)
+
+    def _aplicar_barra_titulo_oscura(self):
+        """Barra de título de Windows en oscuro (DWM immersive dark mode)."""
+        try:
+            import ctypes
+            self.root.update_idletasks()
+            hwnd = ctypes.windll.user32.GetParent(self.root.winfo_id())
+            valor = ctypes.c_int(1)
+            for atributo in (20, 19):
+                if ctypes.windll.dwmapi.DwmSetWindowAttribute(hwnd, atributo, ctypes.byref(valor), ctypes.sizeof(valor)) == 0:
+                    break
+        except Exception:
+            pass
+
+    def _spark_draw(self, canvas, datos, color):
+        """Mini-gráfica de línea (sparkline) para el Estado del sistema."""
+        try:
+            canvas.delete("all")
+            if len(datos) < 2:
+                return
+            w, h = 70, 16
+            maximo = max(datos) or 1.0
+            paso = w / (len(datos) - 1)
+            puntos = []
+            for i, v in enumerate(datos):
+                x = i * paso
+                y = h - 2 - (h - 4) * (v / maximo)
+                puntos.extend([x, y])
+            canvas.create_line(*puntos, fill=color, width=1)
+        except Exception:
+            pass
 
     def build_inicio_premium_tab(self):
         main = tk.Frame(self.tab_inicio_premium, bg="#090d16")
@@ -15660,8 +15708,15 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.sys_ram_text = tk.StringVar(value="RAM  ·  –")
         self.sys_lat_text = tk.StringVar(value="Latencia  ·  –")
         self.sys_quality_text = tk.StringVar(value="Calidad de voz  ·  –")
-        for var, color in ((self.sys_cpu_text, "#00dff5"), (self.sys_ram_text, "#a65cff"), (self.sys_lat_text, "#ffd166"), (self.sys_quality_text, "#62ffb4")):
-            tk.Label(estado_sys, textvariable=var, bg="#111725", fg=color, font=("Consolas", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=2)
+        self._spark_data = {"cpu": [], "ram": [], "lat": [], "calidad": []}
+        self._spark_canvas = {}
+        for clave, var, color in (("cpu", self.sys_cpu_text, "#00dff5"), ("ram", self.sys_ram_text, "#a65cff"), ("lat", self.sys_lat_text, "#ffd166"), ("calidad", self.sys_quality_text, "#62ffb4")):
+            fila = tk.Frame(estado_sys, bg="#111725")
+            fila.pack(fill="x", padx=10, pady=2)
+            tk.Label(fila, textvariable=var, bg="#111725", fg=color, font=("Consolas", 9, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
+            lienzo = tk.Canvas(fila, width=70, height=16, bg="#0d1220", highlightthickness=0)
+            lienzo.pack(side="right")
+            self._spark_canvas[clave] = (lienzo, color)
 
         for col in range(3):
             panels.columnconfigure(col, weight=1)
@@ -20424,7 +20479,26 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
 def main():
     root = tk.Tk()
-    PremiumApp(root)
+    root.withdraw()
+    splash = tk.Toplevel(root)
+    splash.overrideredirect(True)
+    splash.configure(bg="#0a0a0f")
+    ancho, alto = 420, 240
+    sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
+    splash.geometry(f"{ancho}x{alto}+{(sw - ancho) // 2}+{(sh - alto) // 2}")
+    tk.Frame(splash, bg="#a65cff", height=3).pack(fill="x")
+    tk.Label(splash, text="VoiceICC", bg="#0a0a0f", fg="#a65cff", font=("Segoe UI", 34, "bold")).pack(pady=(52, 2))
+    tk.Label(splash, text="YOUR VOICE. YOUR IDENTITY.", bg="#0a0a0f", fg="#00dff5", font=("Segoe UI", 10, "bold")).pack()
+    tk.Label(splash, text="Cargando estudio de voz…", bg="#0a0a0f", fg="#777b91", font=("Segoe UI", 9)).pack(pady=(26, 0))
+    splash.update()
+    try:
+        PremiumApp(root)
+    finally:
+        try:
+            splash.destroy()
+        except Exception:
+            pass
+    root.deiconify()
     root.mainloop()
 
 

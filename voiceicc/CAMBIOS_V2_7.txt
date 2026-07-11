@@ -1,0 +1,10 @@
+VOICEICC 2.7 · PULIDO VISUAL
+
+- Pantalla de carga: al abrir VoiceICC aparece al instante el logo
+  con "Cargando estudio de voz…" mientras se construyen los módulos
+  (antes había varios segundos sin ninguna señal).
+- Barra de título de Windows en OSCURO (modo inmersivo DWM): se acabó
+  la franja blanca que rompía el diseño.
+- Mini-gráficas (sparklines) en el Estado del sistema, como en el
+  diseño: CPU, RAM, latencia y calidad con su historial de 60 s al
+  lado de cada dato.
