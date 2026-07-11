@@ -1,0 +1,17 @@
+VOICEICC 3.0 · PANTALLA PERFECTA
+
+Arreglos a partir de capturas reales del usuario (paneles cortados y
+letra muy pequeña):
+
+- Conciencia de DPI en Windows: en pantallas de alta densidad la app
+  se veía borrosa/diminuta y los paneles se cortaban. Ahora se declara
+  DPI-aware antes de crear la ventana (nitidez real).
+- Escala proporcional al DPI de TU pantalla: se acabó el encogido a
+  ciegas (la app se reducía sola al 92% al arrancar, y el modo
+  compacto al 88%). Los modos compacto/cómodo ahora son relativos a
+  la escala real.
+- La ventana se adapta al tamaño del monitor y abre MAXIMIZADA en
+  Windows: los carteles y paneles dejan de cortarse por abajo.
+- Letra mínima legible: todos los textos de 7 y 8 puntos suben a 9,
+  y los monoespaciados de 8/9 a 10 (49 textos del sidebar, botones,
+  paneles y estados).

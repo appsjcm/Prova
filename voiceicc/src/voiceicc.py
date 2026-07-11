@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.9.0 Memoria Pro"
+VERSION = "3.0.0 Pantalla Perfecta"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1530,11 +1530,21 @@ class PremiumApp:
     def __init__(self, root):
         self.root = root
         self.root.title(f"{APP_NAME} · V{VERSION}")
-        self.root.geometry("1200x760")
-        self.root.minsize(900, 600)
-        # V84: escala compacta para que quepa mejor en pantallas de PC/portátil.
+        # 3.0: la ventana se adapta a la pantalla real y abre maximizada,
+        # y la escala se calcula del DPI (nada de encoger a ciegas).
         try:
-            self.root.tk.call("tk", "scaling", 0.92)
+            ancho_p = self.root.winfo_screenwidth()
+            alto_p = self.root.winfo_screenheight()
+            ancho = min(1360, max(1000, ancho_p - 80))
+            alto = min(880, max(640, alto_p - 120))
+            self.root.geometry(f"{ancho}x{alto}")
+        except Exception:
+            self.root.geometry("1200x760")
+        self.root.minsize(900, 600)
+        self._aplicar_escala_dpi(1.0)
+        try:
+            if platform.system() == "Windows":
+                self.root.state("zoomed")
         except Exception:
             pass
 
@@ -2185,13 +2195,22 @@ class PremiumApp:
         self.root.bind_all("<Shift-MouseWheel>", on_mousewheel)
         return inner
 
+    def _aplicar_escala_dpi(self, factor=1.0):
+        """Escala de la interfaz proporcional al DPI real de la pantalla."""
+        try:
+            dpi = float(self.root.winfo_fpixels("1i"))
+            self.root.tk.call("tk", "scaling", max(1.0, factor * dpi / 72.0))
+        except Exception:
+            pass
+
     def toggle_compact_pc_mode(self):
         """Activa una vista más compacta sin cerrar el programa."""
         try:
+            self.root.state("normal")
             self.root.geometry("1120x680")
-            self.root.tk.call("tk", "scaling", 0.88)
+            self._aplicar_escala_dpi(0.88)
             if hasattr(self, "pc_fix_status"):
-                self.pc_fix_status.set("Modo compacto aplicado: 1120x680 + escala 0.88.")
+                self.pc_fix_status.set("Modo compacto aplicado (proporcional a tu pantalla).")
             self.state.set("Estado: modo compacto PC aplicado")
         except Exception as e:
             messagebox.showerror("Modo compacto", f"No se pudo aplicar el modo compacto:\n{e}")
@@ -2199,10 +2218,11 @@ class PremiumApp:
     def toggle_comfort_pc_mode(self):
         """Vuelve a una vista cómoda para pantallas grandes."""
         try:
+            self.root.state("normal")
             self.root.geometry("1280x760")
-            self.root.tk.call("tk", "scaling", 0.96)
+            self._aplicar_escala_dpi(1.0)
             if hasattr(self, "pc_fix_status"):
-                self.pc_fix_status.set("Modo cómodo aplicado: 1280x760 + escala 0.96.")
+                self.pc_fix_status.set("Modo cómodo aplicado (escala real de tu pantalla).")
             self.state.set("Estado: modo cómodo PC aplicado")
         except Exception as e:
             messagebox.showerror("Modo cómodo", f"No se pudo aplicar el modo cómodo:\n{e}")
@@ -3049,11 +3069,11 @@ class PremiumApp:
 
     def build_workspace_control_bar(self, parent):
         bar = tk.Frame(parent, bg="#12131b", highlightbackground="#2b2d3c", highlightthickness=1)
-        tk.Label(bar, text="WORKSPACE", bg="#12131b", fg="#8f91a5", font=("Segoe UI", 8, "bold")).pack(side="left", padx=(10, 6))
+        tk.Label(bar, text="WORKSPACE", bg="#12131b", fg="#8f91a5", font=("Segoe UI", 9, "bold")).pack(side="left", padx=(10, 6))
         for mode in ("Compacto", "Equilibrado", "Showroom"):
-            tk.Button(bar, text=mode.upper(), command=lambda m=mode: self.apply_workspace_mode(m), bg="#1d1f2b", fg="#dfe2ff", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=9, pady=5, font=("Segoe UI", 7, "bold"), cursor="hand2").pack(side="left", padx=2, pady=5)
-        tk.Checkbutton(bar, text="FOCUS", variable=self.workspace_focus_mode, command=self.toggle_workspace_focus, indicatoron=False, bg="#251c36", fg="#ffffff", selectcolor="#8c52ff", activebackground="#382650", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=5, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="right", padx=6, pady=5)
-        tk.Label(bar, textvariable=self.workspace_notifications, bg="#12131b", fg="#00e5ff", font=("Segoe UI", 8), anchor="e").pack(side="right", fill="x", expand=True, padx=8)
+            tk.Button(bar, text=mode.upper(), command=lambda m=mode: self.apply_workspace_mode(m), bg="#1d1f2b", fg="#dfe2ff", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=9, pady=5, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=2, pady=5)
+        tk.Checkbutton(bar, text="FOCUS", variable=self.workspace_focus_mode, command=self.toggle_workspace_focus, indicatoron=False, bg="#251c36", fg="#ffffff", selectcolor="#8c52ff", activebackground="#382650", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=5, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=6, pady=5)
+        tk.Label(bar, textvariable=self.workspace_notifications, bg="#12131b", fg="#00e5ff", font=("Segoe UI", 9), anchor="e").pack(side="right", fill="x", expand=True, padx=8)
         return bar
 
     def _monitor_device(self):
@@ -3129,7 +3149,7 @@ class PremiumApp:
             self.vm_logo_text.pack(anchor="w", padx=10, pady=12)
         tk.Button(logo_wrap, text="≡", command=self.vm_toggle_sidebar, bg="#1b1b24", fg="#d8d8e3", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=8, pady=2, font=("Segoe UI", 11, "bold"), cursor="hand2").pack(anchor="ne", padx=6, pady=(0, 4))
 
-        tk.Label(self.vm_sidebar, text="MODES" if not self.vm_sidebar_collapsed.get() else "•", bg="#111117", fg="#626270", font=("Segoe UI", 8, "bold"), anchor="w" if not self.vm_sidebar_collapsed.get() else "center").pack(fill="x", padx=20 if not self.vm_sidebar_collapsed.get() else 0, pady=(5, 4))
+        tk.Label(self.vm_sidebar, text="MODES" if not self.vm_sidebar_collapsed.get() else "•", bg="#111117", fg="#626270", font=("Segoe UI", 9, "bold"), anchor="w" if not self.vm_sidebar_collapsed.get() else "center").pack(fill="x", padx=20 if not self.vm_sidebar_collapsed.get() else 0, pady=(5, 4))
         self.vm_sidebar_nav = tk.Frame(self.vm_sidebar, bg="#111117")
         self.vm_sidebar_nav.pack(fill="x")
 
@@ -3138,13 +3158,13 @@ class PremiumApp:
         if not self.vm_sidebar_collapsed.get():
             vm_dev = tk.Frame(self.vm_sidebar, bg="#111117")
             vm_dev.pack(fill="x", padx=10, pady=(10, 0))
-            tk.Label(vm_dev, text="MICRÓFONO", bg="#111117", fg="#777b91", font=("Segoe UI", 7, "bold"), anchor="w").pack(fill="x")
-            vm_in = ttk.Combobox(vm_dev, textvariable=self.input_dev, state="readonly", font=("Segoe UI", 8))
+            tk.Label(vm_dev, text="MICRÓFONO", bg="#111117", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x")
+            vm_in = ttk.Combobox(vm_dev, textvariable=self.input_dev, state="readonly", font=("Segoe UI", 9))
             vm_in.pack(fill="x", pady=(2, 6))
             self.input_combos.append(vm_in)
             vm_in.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
-            tk.Label(vm_dev, text="SALIDA", bg="#111117", fg="#777b91", font=("Segoe UI", 7, "bold"), anchor="w").pack(fill="x")
-            vm_out = ttk.Combobox(vm_dev, textvariable=self.output_dev, state="readonly", font=("Segoe UI", 8))
+            tk.Label(vm_dev, text="SALIDA", bg="#111117", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x")
+            vm_out = ttk.Combobox(vm_dev, textvariable=self.output_dev, state="readonly", font=("Segoe UI", 9))
             vm_out.pack(fill="x", pady=(2, 2))
             self.output_combos.append(vm_out)
             vm_out.bind("<<ComboboxSelected>>", lambda e: self.on_device_changed())
@@ -3160,20 +3180,20 @@ class PremiumApp:
         self.vm_active_profile = tk.Frame(self.vm_sidebar, bg="#10131e", highlightbackground="#2f244f", highlightthickness=1)
         self.vm_active_profile.pack(fill="x", padx=10, pady=(10, 4))
         if not self.vm_sidebar_collapsed.get():
-            tk.Label(self.vm_active_profile, text="PERFIL ACTIVO", bg="#10131e", fg="#777b91", font=("Segoe UI", 7, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
+            tk.Label(self.vm_active_profile, text="PERFIL ACTIVO", bg="#10131e", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
             profile_row = tk.Frame(self.vm_active_profile, bg="#10131e")
             profile_row.pack(fill="x", padx=10)
             if "voice_luna_vega" in self.neon_ui_images:
                 tk.Label(profile_row, image=self.neon_ui_images["voice_luna_vega"], bg="#10131e", bd=0).pack(side="left")
             tk.Label(profile_row, textvariable=self.voiceicc_current_voice_name, bg="#10131e", fg="#ffffff", font=("Segoe UI", 10, "bold"), anchor="w").pack(side="left", padx=8)
-            tk.Label(self.vm_active_profile, textvariable=self.voiceicc_current_voice_role, bg="#10131e", fg="#8e96b1", font=("Segoe UI", 7), anchor="w", wraplength=160).pack(fill="x", padx=10, pady=(2, 6))
-            tk.Button(self.vm_active_profile, text="Cambiar voz", command=lambda: self.select_tab(self.tab_voice_characters), bg="#241a3d", fg="#d9c6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=6, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=10, pady=(0, 8))
+            tk.Label(self.vm_active_profile, textvariable=self.voiceicc_current_voice_role, bg="#10131e", fg="#8e96b1", font=("Segoe UI", 9), anchor="w", wraplength=160).pack(fill="x", padx=10, pady=(2, 6))
+            tk.Button(self.vm_active_profile, text="Cambiar voz", command=lambda: self.select_tab(self.tab_voice_characters), bg="#241a3d", fg="#d9c6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=10, pady=(0, 8))
 
         sidebar_bottom = tk.Frame(self.vm_sidebar, bg="#111117")
         sidebar_bottom.pack(side="bottom", fill="x", padx=10, pady=12)
         self.vm_search_hint_button = tk.Button(sidebar_bottom, text="⌨" if self.vm_sidebar_collapsed.get() else "⌨  Ctrl+K  Search", command=self.open_search_palette, bg="#1b1b24", fg="#d8d8e3", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 9, "bold"), cursor="hand2")
         self.vm_search_hint_button.pack(fill="x")
-        self.vm_sidebar_footer_label = tk.Label(sidebar_bottom, textvariable=self.release_health, bg="#111117", fg="#777787", font=("Segoe UI", 8), wraplength=54 if self.vm_sidebar_collapsed.get() else 175, justify="center" if self.vm_sidebar_collapsed.get() else "left")
+        self.vm_sidebar_footer_label = tk.Label(sidebar_bottom, textvariable=self.release_health, bg="#111117", fg="#777787", font=("Segoe UI", 9), wraplength=54 if self.vm_sidebar_collapsed.get() else 175, justify="center" if self.vm_sidebar_collapsed.get() else "left")
         self.vm_sidebar_footer_label.pack(fill="x", pady=(10, 0))
 
         workspace = tk.Frame(shell, bg="#0a0a0f")
@@ -3199,7 +3219,7 @@ class PremiumApp:
                 indicatoron=False, bg="#1c1c25", fg="#dfe2ff",
                 selectcolor="#1f7a4d", activebackground="#2a3150",
                 activeforeground="#ffffff", relief="flat", bd=0,
-                padx=12, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2"
+                padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
             )
 
         _vm_toggle("VOICE CHANGER", self.effects_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
@@ -3210,7 +3230,7 @@ class PremiumApp:
             bottombar, text="↔ VOZ ANTERIOR", command=self.toggle_previous_voice,
             bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
             activeforeground="#ffffff", relief="flat", bd=0,
-            padx=12, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2"
+            padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
         ).pack(side="left", padx=4, pady=13)
 
         vm_meters = tk.Frame(bottombar, bg="#101016")
@@ -3220,12 +3240,12 @@ class PremiumApp:
         self.vm_bottom_out_bar = ttk.Progressbar(vm_meters, maximum=100)
         self.vm_bottom_out_bar.pack(fill="x")
 
-        tk.Label(bottombar, textvariable=self.state, bg="#101016", fg="#8e96b1", font=("Segoe UI", 8), anchor="e").pack(side="left", padx=6)
+        tk.Label(bottombar, textvariable=self.state, bg="#101016", fg="#8e96b1", font=("Segoe UI", 9), anchor="e").pack(side="left", padx=6)
         tk.Button(
             bottombar, text="⛔ STOP ALL", command=self.vm_stop_all,
             bg="#3d1a2b", fg="#ff5c8a", activebackground="#7a2140",
             activeforeground="#ffffff", relief="flat", bd=0,
-            padx=14, pady=8, font=("Segoe UI", 8, "bold"), cursor="hand2"
+            padx=14, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2"
         ).pack(side="right", padx=12, pady=12)
 
         self.voiceicc_topbar = tk.Frame(workspace, bg="#101016", height=70)
@@ -3248,16 +3268,16 @@ class PremiumApp:
         search_entry = tk.Entry(search_box, textvariable=self.vm_search_var, bg="#1c1c25", fg="#ffffff", insertbackground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 11))
         search_entry.pack(side="left", fill="x", expand=True, ipady=9)
         search_entry.bind("<Return>", self.vm_search_submit)
-        tk.Button(search_box, text="SEARCH", command=self.vm_search_submit, bg="#8c52ff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=15, pady=8, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="right", padx=4, pady=4)
+        tk.Button(search_box, text="SEARCH", command=self.vm_search_submit, bg="#8c52ff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=15, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=4, pady=4)
         tk.Button(search_box, text="★", command=self.pin_current_module_to_hub, bg="#1d2135", fg="#ffd166", activebackground="#2a3150", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=(0,4), pady=4)
 
         status_area = tk.Frame(topbar, bg="#101016")
         status_area.pack(side="right", fill="y", padx=(4, 14))
-        tk.Label(status_area, text="V1.9 ULTRA", bg="#ff4fa3", fg="#ffffff", font=("Segoe UI", 8, "bold"), padx=10, pady=4).pack(anchor="e", pady=(11, 4))
-        tk.Button(status_area, text="★ HUB", command=lambda: self.select_tab(self.tab_inicio_premium), bg="#1d2135", fg="#ffffff", activebackground="#2b3151", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
-        tk.Button(status_area, text="✨ EXPERIENCE", command=self.experience_open_onboarding, bg="#142638", fg="#7fe8ff", activebackground="#1a3850", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
-        tk.Label(status_area, textvariable=self.vm_ui_status, bg="#101016", fg="#00ddeb", font=("Consolas", 9, "bold")).pack(anchor="e")
-        self.main_hint_label = tk.Label(status_area, textvariable=self.state, bg="#101016", fg="#858594", font=("Segoe UI", 8))
+        tk.Label(status_area, text="V1.9 ULTRA", bg="#ff4fa3", fg="#ffffff", font=("Segoe UI", 9, "bold"), padx=10, pady=4).pack(anchor="e", pady=(11, 4))
+        tk.Button(status_area, text="★ HUB", command=lambda: self.select_tab(self.tab_inicio_premium), bg="#1d2135", fg="#ffffff", activebackground="#2b3151", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
+        tk.Button(status_area, text="✨ EXPERIENCE", command=self.experience_open_onboarding, bg="#142638", fg="#7fe8ff", activebackground="#1a3850", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
+        tk.Label(status_area, textvariable=self.vm_ui_status, bg="#101016", fg="#00ddeb", font=("Consolas", 10, "bold")).pack(anchor="e")
+        self.main_hint_label = tk.Label(status_area, textvariable=self.state, bg="#101016", fg="#858594", font=("Segoe UI", 9))
         self.main_hint_label.pack(anchor="e")
 
         content_row = tk.Frame(workspace, bg="#0a0a0f")
@@ -3277,42 +3297,42 @@ class PremiumApp:
             tk.Label(brand_card, image=self.voiceicc_brand_images["right_brand_card"], bg="#121726", bd=0).pack(fill="x")
         else:
             tk.Label(brand_card, text="VoiceICC", bg="#121726", fg="#ffffff", font=("Segoe UI", 22, "bold")).pack(pady=(18, 2))
-            tk.Label(brand_card, text="YOUR VOICE. YOUR IDENTITY.", bg="#121726", fg="#9aa7c7", font=("Segoe UI", 8, "bold")).pack(pady=(0, 18))
+            tk.Label(brand_card, text="YOUR VOICE. YOUR IDENTITY.", bg="#121726", fg="#9aa7c7", font=("Segoe UI", 9, "bold")).pack(pady=(0, 18))
 
         profile_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#7c3cff", highlightthickness=1)
         profile_card.pack(fill="x", pady=(0, 10))
-        tk.Label(profile_card, text="PERFIL ACTIVO", bg="#121726", fg="#8e98b2", font=("Segoe UI", 8, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 4))
+        tk.Label(profile_card, text="PERFIL ACTIVO", bg="#121726", fg="#8e98b2", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 4))
         self.voiceicc_rail_voice_name = tk.Label(profile_card, text=self.voiceicc_current_voice_name.get(), bg="#121726", fg="#ffffff", font=("Segoe UI", 15, "bold"), anchor="w")
         self.voiceicc_rail_voice_name.pack(fill="x", padx=12)
-        self.voiceicc_rail_voice_role = tk.Label(profile_card, text=self.voiceicc_current_voice_role.get(), bg="#121726", fg="#9aa6c2", font=("Segoe UI", 8), anchor="w", wraplength=250, justify="left")
+        self.voiceicc_rail_voice_role = tk.Label(profile_card, text=self.voiceicc_current_voice_role.get(), bg="#121726", fg="#9aa6c2", font=("Segoe UI", 9), anchor="w", wraplength=250, justify="left")
         self.voiceicc_rail_voice_role.pack(fill="x", padx=12, pady=(2, 8))
-        tk.Button(profile_card, text="Cambiar voz", command=lambda:self.select_tab(self.tab_voice_characters), bg="#241a3d", fg="#dbc8ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=12, pady=(0, 10))
+        tk.Button(profile_card, text="Cambiar voz", command=lambda:self.select_tab(self.tab_voice_characters), bg="#241a3d", fg="#dbc8ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=12, pady=(0, 10))
 
         setup_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#2c3551", highlightthickness=1)
         setup_card.pack(fill="x", pady=(0, 10))
         tk.Label(setup_card, text="ESTADO DE CONFIGURACIÓN", bg="#121726", fg="#ffffff", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 5))
-        tk.Label(setup_card, textvariable=self.voiceicc_setup_text, bg="#121726", fg="#00dff5", font=("Segoe UI", 8, "bold"), anchor="w").pack(fill="x", padx=12)
+        tk.Label(setup_card, textvariable=self.voiceicc_setup_text, bg="#121726", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12)
         self.voiceicc_setup_bar = ttk.Progressbar(setup_card, maximum=100, style="Premium.Horizontal.TProgressbar")
         self.voiceicc_setup_bar.pack(fill="x", padx=12, pady=(5, 8))
-        tk.Label(setup_card, text="Micrófono · salida · voz · arranque", bg="#121726", fg="#7f8aa5", font=("Segoe UI", 7), anchor="w").pack(fill="x", padx=12, pady=(0, 10))
+        tk.Label(setup_card, text="Micrófono · salida · voz · arranque", bg="#121726", fg="#7f8aa5", font=("Segoe UI", 9), anchor="w").pack(fill="x", padx=12, pady=(0, 10))
 
         experience_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#2c3551", highlightthickness=1)
         experience_card.pack(fill="x", pady=(0, 10))
         tk.Label(experience_card, text="EXPERIENCIA INICIAL", bg="#121726", fg="#ffffff", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12, pady=(10, 4))
-        tk.Label(experience_card, textvariable=self.experience_checklist_text, bg="#121726", fg="#00dff5", font=("Segoe UI", 8, "bold"), anchor="w").pack(fill="x", padx=12)
+        tk.Label(experience_card, textvariable=self.experience_checklist_text, bg="#121726", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12)
         self.experience_progress_bar = ttk.Progressbar(experience_card, maximum=100, style="Premium.Horizontal.TProgressbar")
         self.experience_progress_bar.pack(fill="x", padx=12, pady=(6, 8))
         self.experience_checklist_frame = tk.Frame(experience_card, bg="#121726")
         self.experience_checklist_frame.pack(fill="x", padx=10)
-        tk.Button(experience_card, text="Abrir recorrido guiado", command=self.experience_open_onboarding, bg="#201a35", fg="#d7c8ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=6, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=12, pady=(8, 10))
+        tk.Button(experience_card, text="Abrir recorrido guiado", command=self.experience_open_onboarding, bg="#201a35", fg="#d7c8ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=12, pady=(8, 10))
         self.experience_refresh_checklist()
 
         startup_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#2c3551", highlightthickness=1)
         startup_card.pack(fill="x", pady=(0, 10))
         tk.Label(startup_card, text="ARRANCAR CON WINDOWS", bg="#121726", fg="#ffffff", font=("Segoe UI", 10, "bold"), anchor="w").pack(fill="x", padx=14, pady=(12, 5))
-        tk.Label(startup_card, textvariable=self.startup_windows_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 8), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
-        tk.Checkbutton(startup_card, text="Iniciar VoiceICC con Windows", variable=self.start_with_windows, command=lambda: self.set_start_with_windows(self.start_with_windows.get()), indicatoron=False, bg="#1b2134", fg="#ffffff", selectcolor="#8c52ff", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 8))
-        tk.Checkbutton(startup_card, text="Iniciar minimizado", variable=self.start_minimized, command=lambda: self.save_config(silent=True), indicatoron=False, bg="#1b2134", fg="#ffffff", selectcolor="#00aebb", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
+        tk.Label(startup_card, textvariable=self.startup_windows_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 9), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
+        tk.Checkbutton(startup_card, text="Iniciar VoiceICC con Windows", variable=self.start_with_windows, command=lambda: self.set_start_with_windows(self.start_with_windows.get()), indicatoron=False, bg="#1b2134", fg="#ffffff", selectcolor="#8c52ff", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 8))
+        tk.Checkbutton(startup_card, text="Iniciar minimizado", variable=self.start_minimized, command=lambda: self.save_config(silent=True), indicatoron=False, bg="#1b2134", fg="#ffffff", selectcolor="#00aebb", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
 
         shortcuts_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#2c3551", highlightthickness=1)
         shortcuts_card.pack(fill="x", pady=(0, 10))
@@ -3320,22 +3340,22 @@ class PremiumApp:
         for _label, _key in [("Activar / desactivar voz", "F9"), ("Silenciar salida", "F10"), ("Pulsar para hablar", "F11"), ("Reproducir efecto", "F12")]:
             _row = tk.Frame(shortcuts_card, bg="#121726")
             _row.pack(fill="x", padx=14, pady=4)
-            tk.Label(_row, text=_label, bg="#121726", fg="#aeb9d4", font=("Segoe UI", 8)).pack(side="left")
-            tk.Label(_row, text=_key, bg="#20273b", fg="#a995ff", font=("Consolas", 8, "bold"), padx=6, pady=2).pack(side="right")
-        tk.Button(shortcuts_card, text="Abrir ajustes", command=lambda: self.select_tab(self.tab_ajustes), bg="#1b2134", fg="#ffffff", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(8, 12))
+            tk.Label(_row, text=_label, bg="#121726", fg="#aeb9d4", font=("Segoe UI", 9)).pack(side="left")
+            tk.Label(_row, text=_key, bg="#20273b", fg="#a995ff", font=("Consolas", 10, "bold"), padx=6, pady=2).pack(side="right")
+        tk.Button(shortcuts_card, text="Abrir ajustes", command=lambda: self.select_tab(self.tab_ajustes), bg="#1b2134", fg="#ffffff", activebackground="#29304a", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(8, 12))
 
         commercial_card = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#7c5cff", highlightthickness=1)
         commercial_card.pack(fill="x", pady=(0, 10))
         tk.Label(commercial_card, text="VOICEICC PRO", bg="#121726", fg="#c7a8ff", font=("Segoe UI", 10, "bold"), anchor="w").pack(fill="x", padx=14, pady=(12, 3))
-        tk.Label(commercial_card, textvariable=self.voiceicc_commercial_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 8), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
-        tk.Label(commercial_card, textvariable=self.voiceicc_onboarding_text, bg="#1a2133", fg="#62ffb4", font=("Segoe UI", 8, "bold"), padx=8, pady=6).pack(fill="x", padx=14, pady=(0, 7))
-        tk.Button(commercial_card, text="Preparar versión comercial", command=lambda: self.select_tab(self.tab_publicacion_pro), bg="#7c3cff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
+        tk.Label(commercial_card, textvariable=self.voiceicc_commercial_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 9), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
+        tk.Label(commercial_card, textvariable=self.voiceicc_onboarding_text, bg="#1a2133", fg="#62ffb4", font=("Segoe UI", 9, "bold"), padx=8, pady=6).pack(fill="x", padx=14, pady=(0, 7))
+        tk.Button(commercial_card, text="Preparar versión comercial", command=lambda: self.select_tab(self.tab_publicacion_pro), bg="#7c3cff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
 
         brand_tools = tk.Frame(self.voiceicc_right_rail, bg="#121726", highlightbackground="#2c3551", highlightthickness=1)
         brand_tools.pack(fill="x")
         tk.Label(brand_tools, text="IDENTIDAD VOICEICC", bg="#121726", fg="#ffffff", font=("Segoe UI", 10, "bold"), anchor="w").pack(fill="x", padx=14, pady=(12, 5))
-        tk.Label(brand_tools, textvariable=self.voiceicc_brand_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 8), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
-        tk.Button(brand_tools, text="Ver portadas e imágenes", command=self.open_voiceicc_brand_folder, bg="#8c52ff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
+        tk.Label(brand_tools, textvariable=self.voiceicc_brand_status, bg="#121726", fg="#8793b5", font=("Segoe UI", 9), wraplength=230, justify="left").pack(fill="x", padx=14, pady=(0, 8))
+        tk.Button(brand_tools, text="Ver portadas e imágenes", command=self.open_voiceicc_brand_folder, bg="#8c52ff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=9, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(fill="x", padx=14, pady=(0, 12))
 
         self.notebook = ttk.Notebook(content_wrap, style="VM.Main.TNotebook")
         self.notebook.pack(fill="both", expand=True)
@@ -3357,15 +3377,15 @@ class PremiumApp:
         bottom_dock = tk.Frame(workspace, bg="#0f0f15", height=68, highlightbackground="#24242e", highlightthickness=1)
         bottom_dock.pack(side="bottom", fill="x", padx=8, pady=(0, 8))
         bottom_dock.pack_propagate(False)
-        tk.Label(bottom_dock, text="MIC", bg="#0f0f15", fg="#777786", font=("Segoe UI", 8, "bold")).pack(side="left", padx=(14, 6))
+        tk.Label(bottom_dock, text="MIC", bg="#0f0f15", fg="#777786", font=("Segoe UI", 9, "bold")).pack(side="left", padx=(14, 6))
         tk.Label(bottom_dock, text="●", bg="#0f0f15", fg="#62ffb4", font=("Segoe UI", 12, "bold")).pack(side="left")
         tk.Checkbutton(bottom_dock, text="VOICE CHANGER", variable=self.vm_voice_changer_enabled, command=self.vm_toggle_voice_engine, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#8c52ff", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=12)
-        tk.Checkbutton(bottom_dock, text="BACKGROUND FX", variable=self.vm_background_fx_enabled, command=self.vm_toggle_background_fx, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#00aebb", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="left", padx=2)
+        tk.Checkbutton(bottom_dock, text="BACKGROUND FX", variable=self.vm_background_fx_enabled, command=self.vm_toggle_background_fx, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#00aebb", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=2)
         self.voiceicc_wave_canvas = tk.Canvas(bottom_dock, bg="#0f0f15", highlightthickness=0, height=38, width=210)
         self.voiceicc_wave_canvas.pack(side="left", fill="x", expand=True, padx=12, pady=7)
         tk.Checkbutton(bottom_dock, text="MUTE", variable=self.mute, command=self.update_engine, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#ff4f7b", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=12)
-        tk.Button(bottom_dock, text="STOP ALL", command=self.vm_stop_all, bg="#2a1720", fg="#ff7b9d", activebackground="#43202e", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="right", padx=12)
-        tk.Button(bottom_dock, text="VOICE TEST", command=lambda: self.select_tab(self.tab_test_voz), bg="#181821", fg="#d7d7e2", activebackground="#272733", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="right")
+        tk.Button(bottom_dock, text="STOP ALL", command=self.vm_stop_all, bg="#2a1720", fg="#ff7b9d", activebackground="#43202e", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=12)
+        tk.Button(bottom_dock, text="VOICE TEST", command=lambda: self.select_tab(self.tab_test_voz), bg="#181821", fg="#d7d7e2", activebackground="#272733", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right")
 
         # Los módulos históricos se construyen fuera de la navegación pública para mantener compatibilidad.
         self.root.after_idle(lambda: self.apply_workspace_mode(self.workspace_density.get()))
@@ -4900,7 +4920,7 @@ class PremiumApp:
                 style="Card.TLabel",
                 wraplength=180,
                 justify="center",
-                font=("Segoe UI", 8)
+                font=("Segoe UI", 9)
             ).pack(anchor="center", pady=(2, 4))
 
             ttk.Button(
@@ -5662,7 +5682,7 @@ class PremiumApp:
         for i, (asset, es, en) in enumerate(self.icon_system_items()):
             box = ttk.Frame(grid, style="Card.TFrame", padding=4); box.grid(row=i//8, column=i%8, sticky="nsew", padx=3, pady=3)
             if asset in self.icon_system_images: ttk.Label(box, image=self.icon_system_images[asset], style="Card.TLabel").pack()
-            ttk.Label(box, text=es if self.app_language.get() == "Español" else en, style="Card.TLabel", font=("Segoe UI", 8, "bold")).pack()
+            ttk.Label(box, text=es if self.app_language.get() == "Español" else en, style="Card.TLabel", font=("Segoe UI", 9, "bold")).pack()
             grid.columnconfigure(i%8, weight=1)
         preview = self.make_card(left, "Icon preview"); preview.pack(fill="both", expand=True)
         if "mockup_icon_system" in self.icon_system_images:
@@ -8704,7 +8724,7 @@ class PremiumApp:
         bench.pack(fill="x", pady=(0, 10))
         self.benchmark_button = ttk.Button(bench, text="🧪 Medir este PC", style="Accent.TButton", command=self.run_performance_benchmark)
         self.benchmark_button.pack(fill="x", pady=3)
-        ttk.Label(bench, textvariable=self.benchmark_result, style="Card.TLabel", wraplength=310, justify="left", font=("Consolas", 9)).pack(anchor="w", pady=(4, 0))
+        ttk.Label(bench, textvariable=self.benchmark_result, style="Card.TLabel", wraplength=310, justify="left", font=("Consolas", 10)).pack(anchor="w", pady=(4, 0))
 
         acciones = self.make_card(right, "Acciones")
         acciones.pack(fill="x", pady=(0, 10))
@@ -15732,13 +15752,13 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             tk.Button(flowbar, text=profile_name, command=lambda n=profile_name: self.apply_session_profile(n), bg="#1d2540", fg="#ffffff", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=3, pady=7)
         tk.Button(flowbar, text="Guardar sesión", command=self.save_current_session_snapshot, bg="#241b38", fg="#ff8dcc", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=(3, 10), pady=7)
         tk.Button(flowbar, text="Reanudar", command=self.resume_last_session, bg="#172d2d", fg="#62ffb4", activebackground="#225050", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=3, pady=7)
-        tk.Label(flowbar, textvariable=self.broadcast_ready, bg="#111827", fg="#ffd166", font=("Consolas", 9, "bold")).pack(side="right", padx=12)
+        tk.Label(flowbar, textvariable=self.broadcast_ready, bg="#111827", fg="#ffd166", font=("Consolas", 10, "bold")).pack(side="right", padx=12)
         title_wrap = tk.Frame(hero, bg="#090d16")
         title_wrap.pack(side="left", fill="x", expand=True)
         tk.Label(title_wrap, text="¡Bienvenido a VoiceICC!", bg="#090d16", fg="#ffffff", font=("Segoe UI", 28, "bold"), anchor="w").pack(anchor="w")
         tk.Label(title_wrap, text="Tu estudio de voz profesional todo en uno.", bg="#090d16", fg="#919bb8", font=("Segoe UI", 10), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
-        tk.Button(hero, text="✦  ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 8, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
+        tk.Button(hero, text="✦  ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
 
         top = tk.Frame(main, bg="#090d16")
         top.pack(fill="x", padx=8, pady=(0, 8))
@@ -15855,7 +15875,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         estado_sys = tk.Frame(panels, bg="#111725", highlightbackground="#242d45", highlightthickness=1)
         estado_sys.grid(row=0, column=2, sticky="nsew", padx=(4, 0), ipadx=8, ipady=8)
-        tk.Label(estado_sys, text="ESTADO DEL SISTEMA", bg="#111725", fg="#777b91", font=("Segoe UI", 8, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
+        tk.Label(estado_sys, text="ESTADO DEL SISTEMA", bg="#111725", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
         self.sys_cpu_text = tk.StringVar(value="CPU  ·  –")
         self.sys_ram_text = tk.StringVar(value="RAM  ·  –")
         self.sys_lat_text = tk.StringVar(value="Latencia  ·  –")
@@ -15865,7 +15885,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         for clave, var, color in (("cpu", self.sys_cpu_text, "#00dff5"), ("ram", self.sys_ram_text, "#a65cff"), ("lat", self.sys_lat_text, "#ffd166"), ("calidad", self.sys_quality_text, "#62ffb4")):
             fila = tk.Frame(estado_sys, bg="#111725")
             fila.pack(fill="x", padx=10, pady=2)
-            tk.Label(fila, textvariable=var, bg="#111725", fg=color, font=("Consolas", 9, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
+            tk.Label(fila, textvariable=var, bg="#111725", fg=color, font=("Consolas", 10, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
             lienzo = tk.Canvas(fila, width=70, height=16, bg="#0d1220", highlightthickness=0)
             lienzo.pack(side="right")
             self._spark_canvas[clave] = (lienzo, color)
@@ -19154,7 +19174,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(title_wrap, text="¡Bienvenido a VoiceICC!", bg="#090d16", fg="#ffffff", font=("Segoe UI", 26, "bold"), anchor="w").pack(anchor="w")
         tk.Label(title_wrap, text="Tu estudio de voz profesional todo en uno.", bg="#090d16", fg="#919bb8", font=("Segoe UI", 10), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
-        tk.Label(hero, text="REFERENCE MATCH · ULTRA PREMIUM", bg="#1b1530", fg="#caa9ff", font=("Segoe UI", 8, "bold"), padx=12, pady=6).pack(side="right", padx=8)
+        tk.Label(hero, text="REFERENCE MATCH · ULTRA PREMIUM", bg="#1b1530", fg="#caa9ff", font=("Segoe UI", 9, "bold"), padx=12, pady=6).pack(side="right", padx=8)
 
         top = tk.Frame(main, bg="#090d16")
         top.pack(fill="x", padx=8, pady=(0, 8))
@@ -20637,6 +20657,17 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
 
 def main():
+    # En Windows, declarar conciencia de DPI antes de crear la ventana:
+    # sin esto, en pantallas de alta densidad la app se ve borrosa o
+    # con letra diminuta y los paneles se cortan.
+    try:
+        import ctypes
+        try:
+            ctypes.windll.shcore.SetProcessDpiAwareness(1)
+        except Exception:
+            ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
     root = tk.Tk()
     root.withdraw()
     splash = tk.Toplevel(root)
