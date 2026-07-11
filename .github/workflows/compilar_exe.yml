@@ -40,7 +40,7 @@ jobs:
         run: choco install innosetup --no-progress -y
 
       - name: Crear instalador de Windows
-        run: iscc instalador\ModuladorVoz.iss
+        run: iscc instalador\VoiceICC.iss
 
       - name: Publicar EXE
         uses: actions/upload-artifact@v4
