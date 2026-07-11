@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.4.0 Flotante Pro"
+VERSION = "3.5.0 App Limpia"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1517,7 +1517,7 @@ class AudioEngine:
 
 class PremiumApp:
     RELEASE_SECTIONS = [
-        "🏠 Inicio", "🎙 Voces", "🎛 Efectos", "🎵 Studio", "🚀 Publicar", "⚙ Ajustes"
+        "🏠 Inicio", "🎙 Voces", "🎛 Efectos", "🎵 Studio", "⚙ Ajustes"
     ]
 
     RELEASE_TABS = [
@@ -1547,17 +1547,9 @@ class PremiumApp:
         ("tab_master_final", "💿 Master"),
         ("tab_biblioteca_premium", "📚 Biblioteca"),
         # Publicar
-        ("tab_portadas_premium", "🖼 Portadas"),
-        ("tab_brand_kit", "🏷 Marca"),
-        ("tab_publicacion_pro", "🚀 Publicación"),
-        ("tab_export_pack", "📦 Exportar"),
-        ("tab_landing_page", "🌐 Landing"),
-        ("tab_deploy_pro", "🚢 Publicar web"),
         # Ajustes
         ("tab_ajustes", "🎚 Audio"),
         ("tab_cable_virtual", "🔌 Cable virtual"),
-        ("tab_visual_overhaul", "✨ Aspecto"),
-        ("tab_bilingual_visual", "🌐 Idioma"),
         ("tab_atajos", "⌨ Atajos"),
         ("tab_guia", "📘 Ayuda"),
     ]
@@ -1574,11 +1566,7 @@ class PremiumApp:
         "tab_grabadora": "🎵 Studio", "tab_cadena_vocal": "🎵 Studio",
         "tab_autotune": "🎵 Studio", "tab_mezclador_musical": "🎵 Studio",
         "tab_master_final": "🎵 Studio", "tab_biblioteca_premium": "🎵 Studio",
-        "tab_portadas_premium": "🚀 Publicar", "tab_brand_kit": "🚀 Publicar",
-        "tab_publicacion_pro": "🚀 Publicar", "tab_export_pack": "🚀 Publicar",
-        "tab_landing_page": "🚀 Publicar", "tab_deploy_pro": "🚀 Publicar",
         "tab_ajustes": "⚙ Ajustes", "tab_cable_virtual": "⚙ Ajustes",
-        "tab_visual_overhaul": "⚙ Ajustes", "tab_bilingual_visual": "⚙ Ajustes",
         "tab_atajos": "⚙ Ajustes", "tab_guia": "⚙ Ajustes",
     }
 

@@ -1,0 +1,17 @@
+VOICEICC 3.5 · APP LIMPIA
+
+Revisión y limpieza: se queda solo lo que sirve para cambiar la voz.
+
+- Retiradas 8 pestañas que no hacían nada con el audio (eran de
+  "marketing"): Portadas, Marca, Publicación, Exportar, Landing,
+  Publicar web, Aspecto e Idioma. Quedan 25 pestañas útiles en 5
+  secciones (Inicio, Voces, Efectos, Studio, Ajustes).
+- Los accesos antiguos a esas pestañas redirigen a Inicio sin error.
+- Eliminados 12 archivos de basura del proyecto: manifiestos JSON de
+  publicación, checksums SHA/ZIP, informes de release, changelogs de
+  otras versiones, guías de desarrollo antiguas, un lanzador
+  duplicado y las herramientas de auditoría.
+- Un solo lanzador: ejecutar_voiceicc.bat.
+- El núcleo intacto y verificado: voces, formantes, autotune real,
+  reducción de ruido, EQ, de-esser, clips, escucharme, flotante Pro,
+  push-to-talk, soundboard, grabadora, dispositivos y cable virtual.
