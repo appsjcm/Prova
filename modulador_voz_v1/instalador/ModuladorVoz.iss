@@ -1,5 +1,5 @@
 #define MyAppName "Modulador de Voz"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1"
 #define MyAppPublisher "Atenea"
 #define MyAppExeName "ModuladorVoz.exe"
 
@@ -11,7 +11,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\{#MyAppName}
 DefaultGroupName={#MyAppName}
 OutputDir=..\salida_instalador
-OutputBaseFilename=ModuladorVoz_Setup_1.0
+OutputBaseFilename=ModuladorVoz_Setup_1.1
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

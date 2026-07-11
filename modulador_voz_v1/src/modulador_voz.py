@@ -49,7 +49,7 @@ except Exception:
 
 
 APP_NAME = "Modulador de Voz en Directo"
-VERSION = "1.0"
+VERSION = "1.1"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "modulador_voz_config.json")
 
 
@@ -104,14 +104,14 @@ class VoiceBank:
             "Narrador épico":       ("Épicas", dict(pitch=-4, bass=45, robot=0,  echo=12, radio=8,  megaphone=0,  gate=6,  comp=55, vol=92)),
             "Cine tráiler":         ("Épicas", dict(pitch=-7, bass=60, robot=3,  echo=18, radio=6,  megaphone=0,  gate=7,  comp=60, vol=90)),
             "Héroe final":          ("Épicas", dict(pitch=-3, bass=45, robot=0,  echo=14, radio=4,  megaphone=0,  gate=6,  comp=52, vol=90)),
-            "Titán":                ("Épicas", dict(pitch=-12,bass=90, robot=10, echo=20, radio=0,  megaphone=0,  gate=7,  comp=50, vol=88)),
+            "Titán":                ("Épicas", dict(pitch=-12,bass=90, robot=10, echo=20, radio=0,  megaphone=0,  gate=7,  comp=50, vol=88, formant=-4)),
             "Jefe final":           ("Épicas", dict(pitch=-10,bass=70, robot=28, echo=30, radio=0,  megaphone=0,  gate=8,  comp=45, vol=88)),
 
             # OSCURAS
             "Voz grave":            ("Oscuras", dict(pitch=-6, bass=45, robot=0,  echo=5,  radio=0,  megaphone=0,  gate=5,  comp=30, vol=90)),
-            "Villano":              ("Oscuras", dict(pitch=-8, bass=50, robot=32, echo=22, radio=0,  megaphone=0,  gate=7,  comp=35, vol=86)),
+            "Villano":              ("Oscuras", dict(pitch=-8, bass=50, robot=32, echo=22, radio=0,  megaphone=0,  gate=7,  comp=35, vol=86, formant=-2)),
             "Demonio suave":        ("Oscuras", dict(pitch=-9, bass=62, robot=38, echo=18, radio=0,  megaphone=0,  gate=7,  comp=40, vol=84)),
-            "Monstruo cueva":       ("Oscuras", dict(pitch=-11,bass=80, robot=18, echo=45, radio=0,  megaphone=0,  gate=6,  comp=35, vol=82)),
+            "Monstruo cueva":       ("Oscuras", dict(pitch=-11,bass=80, robot=18, echo=45, radio=0,  megaphone=0,  gate=6,  comp=35, vol=82, formant=-5)),
             "Sombra":               ("Oscuras", dict(pitch=-7, bass=58, robot=12, echo=34, radio=0,  megaphone=0,  gate=7,  comp=35, vol=80)),
             "Guardián oscuro":      ("Oscuras", dict(pitch=-8, bass=68, robot=10, echo=16, radio=0,  megaphone=0,  gate=7,  comp=45, vol=86)),
 
@@ -136,37 +136,37 @@ class VoiceBank:
 
             # DIVERTIDAS
             "Voz aguda":            ("Divertidas", dict(pitch=6,  bass=0,  robot=0,  echo=0,  radio=0,  megaphone=0,  gate=5,  comp=20, vol=78)),
-            "Ardilla":              ("Divertidas", dict(pitch=10, bass=0,  robot=0,  echo=0,  radio=0,  megaphone=0,  gate=4,  comp=20, vol=70)),
+            "Ardilla":              ("Divertidas", dict(pitch=10, bass=0,  robot=0,  echo=0,  radio=0,  megaphone=0,  gate=4,  comp=20, vol=70, formant=6)),
             "Duende":               ("Divertidas", dict(pitch=7,  bass=0,  robot=10, echo=8,  radio=0,  megaphone=0,  gate=5,  comp=25, vol=78)),
             "Payaso gamer":         ("Divertidas", dict(pitch=5,  bass=0,  robot=8,  echo=5,  radio=10, megaphone=0,  gate=6,  comp=30, vol=82)),
             "Mini robot":           ("Divertidas", dict(pitch=8,  bass=0,  robot=70, echo=4,  radio=15, megaphone=0,  gate=8,  comp=25, vol=76)),
-            "Caricatura":           ("Divertidas", dict(pitch=9,  bass=0,  robot=3,  echo=2,  radio=0,  megaphone=0,  gate=5,  comp=25, vol=74)),
+            "Caricatura":           ("Divertidas", dict(pitch=9,  bass=0,  robot=3,  echo=2,  radio=0,  megaphone=0,  gate=5,  comp=25, vol=74, formant=5)),
             "Gnomo rápido":         ("Divertidas", dict(pitch=8,  bass=0,  robot=6,  echo=5,  radio=0,  megaphone=0,  gate=5,  comp=25, vol=74)),
 
             # FANTASÍA
-            "Alien":                ("Fantasía", dict(pitch=8,  bass=0,  robot=60, echo=15, radio=5,  megaphone=0,  gate=8,  comp=25, vol=78)),
+            "Alien":                ("Fantasía", dict(pitch=8,  bass=0,  robot=60, echo=15, radio=5,  megaphone=0,  gate=8,  comp=25, vol=78, formant=4)),
             "Fantasma":             ("Fantasía", dict(pitch=-2, bass=20, robot=10, echo=58, radio=0,  megaphone=0,  gate=6,  comp=20, vol=76)),
             "Eco mágico":           ("Fantasía", dict(pitch=2,  bass=0,  robot=8,  echo=55, radio=0,  megaphone=0,  gate=5,  comp=20, vol=76)),
             "Hechicero":            ("Fantasía", dict(pitch=-3, bass=35, robot=12, echo=40, radio=0,  megaphone=0,  gate=6,  comp=35, vol=84)),
             "Criatura mágica":      ("Fantasía", dict(pitch=4,  bass=15, robot=25, echo=38, radio=0,  megaphone=0,  gate=6,  comp=25, vol=78)),
             "Portal dimensional":   ("Fantasía", dict(pitch=1,  bass=25, robot=40, echo=60, radio=8,  megaphone=0,  gate=8,  comp=30, vol=80)),
-            "Dragón suave":         ("Fantasía", dict(pitch=-9, bass=85, robot=15, echo=24, radio=0,  megaphone=0,  gate=7,  comp=42, vol=86)),
+            "Dragón suave":         ("Fantasía", dict(pitch=-9, bass=85, robot=15, echo=24, radio=0,  megaphone=0,  gate=7,  comp=42, vol=86, formant=-4)),
             "Mago neón":            ("Fantasía", dict(pitch=2,  bass=18, robot=18, echo=45, radio=6,  megaphone=0,  gate=6,  comp=28, vol=82)),
 
 
             # PERSONAS
-            "Mujer Lucía":         ("Personas", dict(pitch=3,  bass=8,  robot=0,  echo=4,  radio=0,  megaphone=0,  gate=10, comp=48, vol=90)),
-            "Mujer Sofía":         ("Personas", dict(pitch=2,  bass=10, robot=0,  echo=3,  radio=4,  megaphone=0,  gate=10, comp=50, vol=90)),
-            "Hombre Diego":        ("Personas", dict(pitch=-1, bass=22, robot=0,  echo=1,  radio=3,  megaphone=0,  gate=8,  comp=52, vol=92)),
-            "Hombre Marcos":       ("Personas", dict(pitch=-4, bass=36, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=50, vol=90)),
-            "Niño Leo":            ("Personas", dict(pitch=7,  bass=0,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=28, vol=82)),
-            "Niño Nico":           ("Personas", dict(pitch=6,  bass=0,  robot=4,  echo=3,  radio=3,  megaphone=0,  gate=6,  comp=28, vol=82)),
-            "Niña Luna":           ("Personas", dict(pitch=7,  bass=0,  robot=0,  echo=5,  radio=1,  megaphone=0,  gate=6,  comp=28, vol=82)),
-            "Niña Emma":           ("Personas", dict(pitch=6,  bass=2,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=30, vol=84)),
-            "Abuelo Paco":         ("Personas", dict(pitch=-5, bass=28, robot=0,  echo=3,  radio=8,  megaphone=2,  gate=8,  comp=55, vol=88)),
-            "Abuelo José":         ("Personas", dict(pitch=-4, bass=24, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=52, vol=88)),
-            "Abuela Carmen":       ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=3,  radio=2,  megaphone=0,  gate=10, comp=50, vol=88)),
-            "Abuela Lola":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=4,  radio=3,  megaphone=0,  gate=10, comp=50, vol=88)),
+            "Mujer Lucía":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=4,  radio=0,  megaphone=0,  gate=10, comp=48, vol=90, formant=3)),
+            "Mujer Sofía":         ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=3,  radio=4,  megaphone=0,  gate=10, comp=50, vol=90, formant=2)),
+            "Hombre Diego":        ("Personas", dict(pitch=-1, bass=22, robot=0,  echo=1,  radio=3,  megaphone=0,  gate=8,  comp=52, vol=92, formant=-1)),
+            "Hombre Marcos":       ("Personas", dict(pitch=-3, bass=36, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=50, vol=90, formant=-2)),
+            "Niño Leo":            ("Personas", dict(pitch=5,  bass=0,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=28, vol=82, formant=5)),
+            "Niño Nico":           ("Personas", dict(pitch=4,  bass=0,  robot=4,  echo=3,  radio=3,  megaphone=0,  gate=6,  comp=28, vol=82, formant=4)),
+            "Niña Luna":           ("Personas", dict(pitch=6,  bass=0,  robot=0,  echo=5,  radio=1,  megaphone=0,  gate=6,  comp=28, vol=82, formant=5)),
+            "Niña Emma":           ("Personas", dict(pitch=5,  bass=2,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=30, vol=84, formant=5)),
+            "Abuelo Paco":         ("Personas", dict(pitch=-2, bass=28, robot=0,  echo=3,  radio=8,  megaphone=2,  gate=8,  comp=55, vol=88, formant=-1, vibrato=10)),
+            "Abuelo José":         ("Personas", dict(pitch=-2, bass=24, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=52, vol=88, formant=-1, vibrato=8)),
+            "Abuela Carmen":       ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=3,  radio=2,  megaphone=0,  gate=10, comp=50, vol=88, formant=2, vibrato=10)),
+            "Abuela Lola":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=4,  radio=3,  megaphone=0,  gate=10, comp=50, vol=88, formant=2, vibrato=12)),
 
             # CANTADAS / AUTOTUNE
             "AutoTune Suave":       ("Cantadas", dict(pitch=1,  bass=10, robot=0,  echo=12, radio=0,  megaphone=0,  gate=7,  comp=58, vol=88, autotune=35, autotune_shift=0, vibrato=12, chorus=10)),
@@ -297,6 +297,16 @@ class AudioEngine:
         self._nr_learn_acc = None
         self._nr_learn_count = 0
 
+        # Cambiador de formantes (voces "reales"): desplaza la envolvente
+        # espectral sin tocar el tono, con la misma maquinaria STFT+OLA
+        # que la reducción de ruido.
+        self.formant = 1.0
+        self._fm_kernel = (np.ones(9) / 9.0).astype(np.float32)
+        self._fm_in = np.zeros(0, dtype=np.float32)
+        self._fm_ola = np.zeros(self._nr_frame, dtype=np.float32)
+        self._fm_outq = np.zeros(0, dtype=np.float32)
+        self._fm_primed = False
+
         # Mesa de sonidos: efectos de sonido mezclados con la voz.
         self.sfx_buffer = np.zeros(0, dtype=np.float32)
         self.sfx_volume = 0.65
@@ -338,6 +348,10 @@ class AudioEngine:
         self._nr_primed = False
         self._nr_learn_left = 0
         self._eq_tail[:] = 0
+        self._fm_in = np.zeros(0, dtype=np.float32)
+        self._fm_ola = np.zeros(self._nr_frame, dtype=np.float32)
+        self._fm_outq = np.zeros(0, dtype=np.float32)
+        self._fm_primed = False
 
     def pitch_shift(self, x, semitones, state="voz"):
         """Pitch shifter granular con fase continua entre bloques.
@@ -562,6 +576,60 @@ class AudioEngine:
             y = np.concatenate([np.zeros(need - len(self._nr_outq), dtype=np.float32), self._nr_outq])
             self._nr_outq = np.zeros(0, dtype=np.float32)
         return y.astype(np.float32)
+
+    def formant_fx(self, x, ratio):
+        """Desplaza los formantes (envolvente espectral) sin cambiar el tono.
+
+        ratio > 1 sube los formantes (voz femenina/infantil natural);
+        ratio < 1 los baja (voz masculina/gigante creíble). Mantiene los
+        armónicos del tono en su sitio: mueve solo la resonancia.
+        """
+        frame = self._nr_frame
+        hop = self._nr_hop
+        if not self._fm_primed:
+            self._fm_outq = np.zeros(frame, dtype=np.float32)
+            self._fm_primed = True
+        self._fm_in = np.concatenate([self._fm_in, x])
+        n_bins = frame // 2 + 1
+        bins = np.arange(n_bins, dtype=np.float64)
+        while len(self._fm_in) >= frame:
+            seg = self._fm_in[:frame] * self._nr_window
+            spec = np.fft.rfft(seg)
+            mag = np.abs(spec)
+            # Envolvente espectral: máximo local (puentea los huecos entre
+            # armónicos del tono) suavizado con media móvil. Más estable que
+            # el cepstrum ante los valles casi nulos entre armónicos.
+            env = mag
+            for shift in range(1, 6):
+                env = np.maximum(env, np.concatenate([mag[shift:], mag[-shift:]]))
+                env = np.maximum(env, np.concatenate([mag[:shift], mag[:-shift]]))
+            env = np.convolve(env, self._fm_kernel)[4:4 + n_bins] + 1e-9
+            # Envolvente desplazada: env_w[k] = env[k / ratio].
+            env_w = np.interp(bins / ratio, bins, env)
+            gain = np.clip(env_w / env, 0.1, 10.0)
+            out = np.fft.irfft(spec * gain, frame).astype(np.float32)
+            self._fm_ola = self._fm_ola + out
+            self._fm_outq = np.concatenate([self._fm_outq, self._fm_ola[:hop]])
+            self._fm_ola = np.concatenate([self._fm_ola[hop:], np.zeros(hop, dtype=np.float32)])
+            self._fm_in = self._fm_in[hop:]
+        need = len(x)
+        if len(self._fm_outq) >= need:
+            y = self._fm_outq[:need]
+            self._fm_outq = self._fm_outq[need:]
+        else:
+            y = np.concatenate([np.zeros(need - len(self._fm_outq), dtype=np.float32), self._fm_outq])
+            self._fm_outq = np.zeros(0, dtype=np.float32)
+        return y.astype(np.float32)
+
+    def formant_stream(self, x, ratio):
+        if abs(ratio - 1.0) > 0.02:
+            return self.formant_fx(x, ratio)
+        if len(self._fm_in) or len(self._fm_outq):
+            self._fm_in = np.zeros(0, dtype=np.float32)
+            self._fm_ola = np.zeros(self._nr_frame, dtype=np.float32)
+            self._fm_outq = np.zeros(0, dtype=np.float32)
+            self._fm_primed = False
+        return x
 
     def noise_reduce_stream(self, x):
         """Aplica la reducción si está activa o si se está aprendiendo."""
@@ -799,6 +867,7 @@ class AudioEngine:
             eq_low = self.eq_low
             eq_mid = self.eq_mid
             eq_high = self.eq_high
+            formant = self.formant
             recording = self.recording
 
         if mute:
@@ -811,6 +880,7 @@ class AudioEngine:
             y = self.noise_reduce_stream(x)
             y = self.gate(y, noise_gate)
             y = self.pitch_shift(y, pitch)
+            y = self.formant_stream(y, formant)
             y = self.autotune_fx(y, autotune, autotune_shift)
             y = self.vibrato_fx(y, vibrato)
             y = self.chorus_fx(y, chorus)
@@ -1086,6 +1156,7 @@ class PremiumApp:
             "eq_low": tk.DoubleVar(value=0),
             "eq_mid": tk.DoubleVar(value=0),
             "eq_high": tk.DoubleVar(value=0),
+            "formant": tk.DoubleVar(value=0),
         }
 
         self.voice_list = None
@@ -16234,6 +16305,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.slider(card, "Quitar ruido", "gate", 0, 30, 6, "%")
         self.slider(card, "Compresor directo", "comp", 0, 100, 7, "%")
         self.slider(card, "Volumen salida", "vol", 0, 120, 8, "%")
+        self.slider(card, "Formantes (voz real)", "formant", -12, 12, 9, "semitonos")
 
     def build_live_tab(self):
         card = self.make_card(self.tab_directo, "Control en directo")
@@ -16824,7 +16896,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.preset.set(name)
 
         _, values = presets[name]
-        for reset_key in ['autotune', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high']:
+        for reset_key in ['autotune', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant']:
             if reset_key in self.vars and reset_key not in values:
                 self.vars[reset_key].set(0)
         for key, value in values.items():
@@ -16906,6 +16978,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.engine.eq_low = 10 ** (clamp(vals.get("eq_low", 0), -12, 12) / 20)
             self.engine.eq_mid = 10 ** (clamp(vals.get("eq_mid", 0), -12, 12) / 20)
             self.engine.eq_high = 10 ** (clamp(vals.get("eq_high", 0), -12, 12) / 20)
+            self.engine.formant = 2 ** (clamp(vals.get("formant", 0), -12, 12) / 12)
             self.engine.mute = bool(self.mute.get())
             self.engine.effects_enabled = bool(self.effects_enabled.get())
             if bool(self.nr_enabled.get()):

@@ -45,13 +45,13 @@ jobs:
       - name: Publicar EXE
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVoz-1.0-EXE
+          name: ModuladorVoz-1.1-EXE
           path: modulador_voz_v1/dist/ModuladorVoz.exe
           retention-days: 30
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVoz-1.0-Instalador
-          path: modulador_voz_v1/salida_instalador/ModuladorVoz_Setup_1.0.exe
+          name: ModuladorVoz-1.1-Instalador
+          path: modulador_voz_v1/salida_instalador/ModuladorVoz_Setup_1.1.exe
           retention-days: 30

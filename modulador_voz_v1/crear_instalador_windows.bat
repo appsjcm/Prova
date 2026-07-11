@@ -1,5 +1,5 @@
 @echo off
-title Crear instalador Windows - Modulador de Voz 1.0
+title Crear instalador Windows - Modulador de Voz 1.1
 if not exist "dist\ModuladorVoz.exe" (
     echo Primero ejecuta crear_exe.bat
     pause

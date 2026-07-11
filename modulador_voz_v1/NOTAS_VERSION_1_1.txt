@@ -1,0 +1,19 @@
+MODULADOR DE VOZ - VERSIÓN 1.1 · VOCES REALES
+
+- Nuevo cambiador de FORMANTES en el motor: mueve la resonancia de la
+  voz (el "tamaño de la cabeza") sin tocar el tono. Es la pieza que
+  separa el efecto ardilla/gigante de una voz que suena a persona.
+- Slider "Formantes (voz real)" en Ajustes (-12..+12): súbelo para
+  voz femenina/infantil natural, bájalo para voz masculina/corpulenta.
+- Las 12 voces de Personas reajustadas: menos tono y más formantes
+  (Mujer, Hombre, Niño, Niña) y vibrato suave en Abuelos/Abuelas.
+- Voces de efecto mejoradas con formantes: Ardilla, Caricatura, Alien
+  (más agudas de verdad) y Titán, Monstruo, Villano, Dragón (más
+  corpulentas sin sonar a cámara lenta).
+- El formante se guarda en Mis Voces, perfiles y configuración, y se
+  resetea al aplicar voces que no lo definen.
+- Añade ~12 ms de retardo solo cuando está activo.
+- Verificado acústicamente: con una voz sintética (armónicos de 50 Hz
+  y resonancia en 150 Hz), subir formantes x1.33 mueve la resonancia
+  a 200 Hz y bajarlos x0.75 la lleva a 100 Hz, con el tono intacto y
+  el mismo resultado con cualquier tamaño de bloque.

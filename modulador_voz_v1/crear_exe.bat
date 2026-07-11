@@ -1,5 +1,5 @@
 @echo off
-title Crear EXE - Modulador de Voz 1.0
+title Crear EXE - Modulador de Voz 1.1
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install pyinstaller
