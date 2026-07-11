@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.7.0 Pulido Visual"
+VERSION = "2.8.0 Escucharme"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -426,6 +426,12 @@ class AudioEngine:
         # Mesa de sonidos: efectos de sonido mezclados con la voz.
         self.sfx_buffer = np.zeros(0, dtype=np.float32)
         self.sfx_volume = 0.65
+
+        # Monitor "escucharme": segunda salida (auriculares) que reproduce
+        # la misma voz procesada que va al cable virtual.
+        self.monitor_enabled = False
+        self.monitor_stream = None
+        self.monitor_buf = np.zeros(0, dtype=np.float32)
 
         # Clip instantáneo: buffer circular con los últimos segundos de la
         # salida ya procesada (voz + karaoke + soundboard).
@@ -1203,6 +1209,12 @@ class AudioEngine:
             self.recorded.append(y.copy())
         if self.replay_enabled:
             self.write_replay(y)
+        if self.monitor_enabled:
+            with self.lock:
+                self.monitor_buf = np.concatenate([self.monitor_buf, y])
+                # si el monitor se retrasa, recorta para no acumular eco.
+                if len(self.monitor_buf) > self.rate:
+                    self.monitor_buf = self.monitor_buf[-self.rate // 5:]
         return y.reshape(-1, 1).astype(np.float32)
 
     def callback(self, indata, outdata, frames, time_info, status):
@@ -1335,6 +1347,7 @@ class AudioEngine:
         )
 
     def stop(self):
+        self.stop_monitor()
         if self.stream:
             try:
                 self.stream.stop()
@@ -1343,6 +1356,60 @@ class AudioEngine:
                 pass
         self.stream = None
         self.running = False
+
+    def _monitor_callback(self, outdata, frames, time_info, status):
+        with self.lock:
+            n = min(frames, len(self.monitor_buf))
+            chunk = self.monitor_buf[:n]
+            self.monitor_buf = self.monitor_buf[n:]
+        salida = np.zeros(frames, dtype=np.float32)
+        if n:
+            salida[:n] = chunk
+        if outdata.shape[1] > 1:
+            outdata[:] = np.repeat(salida.reshape(-1, 1), outdata.shape[1], axis=1)
+        else:
+            outdata[:] = salida.reshape(-1, 1)
+
+    def start_monitor(self, device_id):
+        """Abre la segunda salida para escucharte (auriculares)."""
+        if self.monitor_stream is not None:
+            self.monitor_enabled = True
+            return True
+        ultimo = None
+        for ch in (2, 1):
+            try:
+                stream = sd.OutputStream(
+                    samplerate=self.rate,
+                    channels=ch,
+                    dtype="float32",
+                    device=device_id,
+                    callback=self._monitor_callback,
+                )
+                stream.start()
+            except Exception as e:
+                ultimo = e
+                continue
+            with self.lock:
+                self.monitor_buf = np.zeros(0, dtype=np.float32)
+            self.monitor_stream = stream
+            self.monitor_enabled = True
+            return True
+        print("No se pudo abrir el monitor:", ultimo)
+        self.monitor_enabled = False
+        return False
+
+    def stop_monitor(self):
+        self.monitor_enabled = False
+        stream = self.monitor_stream
+        self.monitor_stream = None
+        if stream is not None:
+            try:
+                stream.stop()
+                stream.close()
+            except Exception:
+                pass
+        with self.lock:
+            self.monitor_buf = np.zeros(0, dtype=np.float32)
 
     def start_recording(self):
         with self.lock:
@@ -1493,6 +1560,7 @@ class PremiumApp:
         self.creator_hub_status = tk.StringVar(value="VoiceICC Creator Hub listo. Usa favoritos, recientes y búsqueda rápida.")
         self.voiceicc_brand_images = {}
         self.start_with_windows = tk.BooleanVar(value=False)
+        self.monitor_var = tk.BooleanVar(value=False)
         self.voiceicc_setup_progress = tk.DoubleVar(value=0)
         self.voiceicc_setup_text = tk.StringVar(value="Configuración VoiceICC · 0%")
         self.voiceicc_featured_cards = {}
@@ -2987,6 +3055,31 @@ class PremiumApp:
         tk.Label(bar, textvariable=self.workspace_notifications, bg="#12131b", fg="#00e5ff", font=("Segoe UI", 8), anchor="e").pack(side="right", fill="x", expand=True, padx=8)
         return bar
 
+    def _monitor_device(self):
+        """Salida para escucharte: la predeterminada de Windows."""
+        try:
+            dev = sd.default.device[1]
+            if dev is not None and int(dev) >= 0:
+                return int(dev)
+        except Exception:
+            pass
+        return None
+
+    def toggle_monitor(self):
+        if not self.monitor_var.get():
+            self.engine.stop_monitor()
+            self.state.set("Estado: monitor apagado")
+            return
+        if not self.engine.running:
+            self.monitor_var.set(False)
+            self._device_test_report("Para escucharte, primero enciende el directo con ⏻.")
+            return
+        if self.engine.start_monitor(self._monitor_device()):
+            self.state.set("Estado: 🎧 te escuchas por la salida predeterminada de Windows")
+        else:
+            self.monitor_var.set(False)
+            self._device_test_report("No se pudo abrir el monitor en la salida predeterminada. ¿Auriculares conectados?")
+
     def vm_toggle_power(self):
         if self.engine.running:
             self.stop()
@@ -3102,6 +3195,7 @@ class PremiumApp:
         _vm_toggle("VOICE CHANGER", self.effects_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
+        _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
 
         vm_meters = tk.Frame(bottombar, bg="#101016")
         vm_meters.pack(side="left", fill="x", expand=True, padx=10)
@@ -20307,6 +20401,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.update_engine()
             self.engine.start(input_id, output_id, self.latency.get())
             self.state.set("Estado: voz en directo activa")
+            if self.monitor_var.get():
+                self.engine.start_monitor(self._monitor_device())
             if hasattr(self, "vm_voice_changer_enabled"):
                 self.vm_voice_changer_enabled.set(True)
                 self.vm_ui_status.set("VOICE ON")
