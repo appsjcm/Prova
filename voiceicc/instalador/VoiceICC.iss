@@ -1,5 +1,5 @@
 #define MyAppName "VoiceICC"
-#define MyAppVersion "2.4"
+#define MyAppVersion "2.5"
 #define MyAppPublisher "Modulador de Voz Premium"
 #define MyAppExeName "VoiceICC.exe"
 
@@ -11,7 +11,7 @@ AppPublisher={#MyAppPublisher}
 DefaultDirName={autopf}\Modulador de Voz Premium
 DefaultGroupName=Modulador de Voz Premium
 OutputDir=salida
-OutputBaseFilename=VoiceICC_Setup_2.4
+OutputBaseFilename=VoiceICC_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern

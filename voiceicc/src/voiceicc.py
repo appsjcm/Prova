@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.4.0 Voces Reales"
+VERSION = "2.5.0 Barra de Control"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2686,11 +2686,24 @@ class PremiumApp:
         except Exception:
             pass
         try:
+            self.karaoke_stop()
+        except Exception:
+            pass
+        try:
+            with self.engine.lock:
+                self.engine.sfx_buffer = np.zeros(0, dtype=np.float32)
+        except Exception:
+            pass
+        try:
             self.stop()
         except Exception:
             pass
         self.vm_voice_changer_enabled.set(False)
+        self.mute.set(False)
+        self.update_engine()
+        self.vm_refresh_power()
         self.vm_ui_status.set("ALL STOPPED")
+        self.state.set("Estado: todo detenido")
 
     def toggle_voiceicc_right_rail(self):
         try:
@@ -2972,6 +2985,22 @@ class PremiumApp:
         tk.Label(bar, textvariable=self.workspace_notifications, bg="#12131b", fg="#00e5ff", font=("Segoe UI", 8), anchor="e").pack(side="right", fill="x", expand=True, padx=8)
         return bar
 
+    def vm_toggle_power(self):
+        if self.engine.running:
+            self.stop()
+        else:
+            self.start()
+        self.vm_refresh_power()
+
+    def vm_refresh_power(self):
+        try:
+            if self.engine.running:
+                self.vm_power_button.configure(bg="#123524", fg="#62ffb4")
+            else:
+                self.vm_power_button.configure(bg="#241a3d", fg="#a78bfa")
+        except Exception:
+            pass
+
     def build_ui(self):
         # V1.4: shell lateral oscuro/neón, inspirado en interfaces modernas de voice changer.
         main = self._setup_pc_scroll_shell(self.root)
@@ -3044,6 +3073,48 @@ class PremiumApp:
 
         workspace = tk.Frame(shell, bg="#0a0a0f")
         workspace.pack(side="left", fill="both", expand=True)
+
+        # Barra inferior de control (como el diseño): power, Voice Changer,
+        # FX de fondo, silenciar, medidores en vivo y Stop All.
+        bottombar = tk.Frame(workspace, bg="#101016", height=62)
+        bottombar.pack(side="bottom", fill="x", padx=8, pady=(4, 8))
+        bottombar.pack_propagate(False)
+
+        self.vm_power_button = tk.Button(
+            bottombar, text="⏻", command=self.vm_toggle_power,
+            bg="#241a3d", fg="#a78bfa", activebackground="#7c3cff",
+            activeforeground="#ffffff", relief="flat", bd=0,
+            font=("Segoe UI", 15, "bold"), width=4, cursor="hand2"
+        )
+        self.vm_power_button.pack(side="left", padx=(12, 10), pady=9)
+
+        def _vm_toggle(texto, var, cmd):
+            return tk.Checkbutton(
+                bottombar, text=texto, variable=var, command=cmd,
+                indicatoron=False, bg="#1c1c25", fg="#dfe2ff",
+                selectcolor="#1f7a4d", activebackground="#2a3150",
+                activeforeground="#ffffff", relief="flat", bd=0,
+                padx=12, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2"
+            )
+
+        _vm_toggle("VOICE CHANGER", self.effects_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
+        _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
+        _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
+
+        vm_meters = tk.Frame(bottombar, bg="#101016")
+        vm_meters.pack(side="left", fill="x", expand=True, padx=10)
+        self.vm_bottom_mic_bar = ttk.Progressbar(vm_meters, maximum=100)
+        self.vm_bottom_mic_bar.pack(fill="x", pady=(14, 3))
+        self.vm_bottom_out_bar = ttk.Progressbar(vm_meters, maximum=100)
+        self.vm_bottom_out_bar.pack(fill="x")
+
+        tk.Label(bottombar, textvariable=self.state, bg="#101016", fg="#8e96b1", font=("Segoe UI", 8), anchor="e").pack(side="left", padx=6)
+        tk.Button(
+            bottombar, text="⛔ STOP ALL", command=self.vm_stop_all,
+            bg="#3d1a2b", fg="#ff5c8a", activebackground="#7a2140",
+            activeforeground="#ffffff", relief="flat", bd=0,
+            padx=14, pady=8, font=("Segoe UI", 8, "bold"), cursor="hand2"
+        ).pack(side="right", padx=12, pady=12)
 
         self.voiceicc_topbar = tk.Frame(workspace, bg="#101016", height=70)
         topbar = self.voiceicc_topbar
@@ -20157,14 +20228,17 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         mic = min(100, int(self.engine.mic_level * 900))
         out = min(100, int(self.engine.out_level * 900))
 
-        for bar_name in ["home_mic_bar", "live_mic_bar", "pro_mic_bar", "directo_pro_mic_bar"]:
+        for bar_name in ["home_mic_bar", "live_mic_bar", "pro_mic_bar", "directo_pro_mic_bar", "vm_bottom_mic_bar"]:
             if hasattr(self, bar_name):
                 getattr(self, bar_name)["value"] = mic
 
-        for bar_name in ["home_out_bar", "live_out_bar", "pro_out_bar", "directo_pro_out_bar"]:
+        for bar_name in ["home_out_bar", "live_out_bar", "pro_out_bar", "directo_pro_out_bar", "vm_bottom_out_bar"]:
             if hasattr(self, bar_name):
                 getattr(self, bar_name)["value"] = out
 
+        if getattr(self, "_vm_power_last", None) != self.engine.running:
+            self._vm_power_last = self.engine.running
+            self.vm_refresh_power()
         disponible = min(self.engine.replay_filled / self.engine.rate, self.engine.replay_seconds)
         self.clips_available.set(f"Buffer: {disponible:.0f} s de {self.engine.replay_seconds} s")
 

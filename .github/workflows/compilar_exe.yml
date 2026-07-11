@@ -4,7 +4,7 @@ on:
   push:
     branches: ["claude/new-session-94jxsw"]
     paths:
-      - "voiceicc_v2_4/**"
+      - "voiceicc/**"
       - ".github/workflows/compilar_exe.yml"
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: voiceicc_v2_4
+        working-directory: voiceicc
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -45,13 +45,13 @@ jobs:
       - name: Publicar EXE
         uses: actions/upload-artifact@v4
         with:
-          name: VoiceICC-2.4-EXE
-          path: voiceicc_v2_4/dist/VoiceICC.exe
+          name: VoiceICC-EXE
+          path: voiceicc/dist/VoiceICC.exe
           retention-days: 30
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4
         with:
-          name: VoiceICC-2.4-Instalador
-          path: voiceicc_v2_4/salida_instalador/VoiceICC_Setup_2.4.exe
+          name: VoiceICC-Instalador
+          path: voiceicc/salida_instalador/VoiceICC_Setup.exe
           retention-days: 30
