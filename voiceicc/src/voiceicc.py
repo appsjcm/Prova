@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.2.0 Autotune Real"
+VERSION = "3.3.0 Autotune Optimizado"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -315,6 +315,7 @@ class AudioEngine:
         self.at_scale_semitones = list(range(12))  # cromática por defecto
         self._at_buf = np.zeros(0, dtype=np.float32)
         self._at_correction = 0.0
+        self._at_skip = 0
         self.vibrato = 0.0
         self.chorus = 0.0
         self.human_realism = 0.0
@@ -595,20 +596,24 @@ class AudioEngine:
         min_lag = int(rate / max_hz)
         max_lag = min(int(rate / min_hz), n - 1)
         x = buf - float(np.mean(buf))
-        energia = float(np.dot(x, x)) + 1e-9
-        mejor_lag, mejor_val = 0, 0.0
-        for lag in range(min_lag, max_lag):
-            corr = float(np.dot(x[:n - lag], x[lag:]))
-            norm = corr / energia
-            if norm > mejor_val:
-                mejor_val, mejor_lag = norm, lag
-        if mejor_lag == 0 or mejor_val < 0.35:
+        # Autocorrelación completa vía FFT (mucho más rápida que el bucle
+        # de retardos): r = IFFT(|FFT(x)|^2), tomando la mitad positiva.
+        m = 1
+        while m < 2 * n:
+            m *= 2
+        spec = np.fft.rfft(x, m)
+        r = np.fft.irfft(spec * np.conj(spec), m)[:n]
+        energia = float(r[0]) + 1e-9
+        tramo = r[min_lag:max_lag]
+        if len(tramo) == 0:
+            return 0.0
+        mejor_lag = int(np.argmax(tramo)) + min_lag
+        mejor_val = float(r[mejor_lag]) / energia
+        if mejor_val < 0.35:
             return 0.0
         # Interpolación parabólica alrededor del pico para más precisión.
-        if 0 < mejor_lag < max_lag - 1:
-            a = float(np.dot(x[:n - (mejor_lag - 1)], x[mejor_lag - 1:]))
-            b = mejor_val * energia
-            c = float(np.dot(x[:n - (mejor_lag + 1)], x[mejor_lag + 1:]))
+        if min_lag < mejor_lag < max_lag - 1:
+            a, b, c = float(r[mejor_lag - 1]), float(r[mejor_lag]), float(r[mejor_lag + 1])
             denom = (a - 2 * b + c)
             if abs(denom) > 1e-9:
                 mejor_lag = mejor_lag + 0.5 * (a - c) / denom
@@ -635,9 +640,17 @@ class AudioEngine:
             self._at_buf = np.zeros(0, dtype=np.float32)
             return x
         self._at_buf = np.concatenate([self._at_buf, x])[-2048:]
-        freq = self.detect_pitch_hz(self._at_buf)
-        objetivo = self._snap_semitones(freq) if freq > 0 else 0.0
-        objetivo = max(-4.0, min(4.0, objetivo)) * amount
+        # La detección es lo más caro: se hace 1 de cada 4 bloques y entre
+        # medias se mantiene la última corrección (la voz no salta de nota
+        # tan rápido, así que el resultado es idéntico al oído).
+        if self._at_skip <= 0:
+            freq = self.detect_pitch_hz(self._at_buf)
+            objetivo = self._snap_semitones(freq) if freq > 0 else 0.0
+            self._at_target = max(-4.0, min(4.0, objetivo)) * amount
+            self._at_skip = 3
+        else:
+            self._at_skip -= 1
+        objetivo = getattr(self, "_at_target", 0.0)
         # Suavizado temporal: evita saltos bruscos entre bloques.
         self._at_correction = 0.7 * self._at_correction + 0.3 * objetivo
         if abs(self._at_correction) < 0.05:

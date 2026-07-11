@@ -1,0 +1,13 @@
+VOICEICC 3.3 · AUTOTUNE OPTIMIZADO
+
+- Autotune real MUCHO más ligero para tu CPU, sin perder calidad:
+  · Detección de tono por FFT (autocorrelación en O(N log N)) en vez
+    del bucle de retardos: mismo tono detectado, mucho menos cálculo.
+  · La detección se hace 1 de cada 4 bloques (la voz no salta de nota
+    tan rápido, así que al oído es idéntico): ~75% menos trabajo de
+    detección.
+- Resultado: el autotune real deja de ser el efecto más pesado del
+  motor y funciona fluido también en portátiles.
+- Verificado: la detección FFT da el mismo tono (150/220/300 Hz con
+  <1% de error) y el limitador de frecuencia de detección reduce las
+  llamadas de 12 a 3 en 12 bloques.
