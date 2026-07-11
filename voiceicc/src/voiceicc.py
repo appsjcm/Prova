@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.1.0 Botón Flotante"
+VERSION = "3.2.0 Autotune Real"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -310,6 +310,11 @@ class AudioEngine:
         self.effects_enabled = True
         self.autotune = 0.0
         self.autotune_shift = 0.0
+        # Autotune REAL: detecta el tono y lo corrige a una escala.
+        self.autotune_real = 0.0
+        self.at_scale_semitones = list(range(12))  # cromática por defecto
+        self._at_buf = np.zeros(0, dtype=np.float32)
+        self._at_correction = 0.0
         self.vibrato = 0.0
         self.chorus = 0.0
         self.human_realism = 0.0
@@ -576,6 +581,68 @@ class AudioEngine:
         y = np.tanh(x * 4.8) * trem
         return (x * (1 - amount) + y * amount).astype(np.float32)
 
+
+    def detect_pitch_hz(self, buf):
+        """Frecuencia fundamental por autocorrelación (voz monofónica).
+        Devuelve 0 si no hay tono claro (silencio o ruido)."""
+        n = len(buf)
+        if n < 512:
+            return 0.0
+        if float(np.sqrt(np.mean(buf * buf))) < 0.01:
+            return 0.0
+        rate = self.rate
+        min_hz, max_hz = 70.0, 500.0
+        min_lag = int(rate / max_hz)
+        max_lag = min(int(rate / min_hz), n - 1)
+        x = buf - float(np.mean(buf))
+        energia = float(np.dot(x, x)) + 1e-9
+        mejor_lag, mejor_val = 0, 0.0
+        for lag in range(min_lag, max_lag):
+            corr = float(np.dot(x[:n - lag], x[lag:]))
+            norm = corr / energia
+            if norm > mejor_val:
+                mejor_val, mejor_lag = norm, lag
+        if mejor_lag == 0 or mejor_val < 0.35:
+            return 0.0
+        # Interpolación parabólica alrededor del pico para más precisión.
+        if 0 < mejor_lag < max_lag - 1:
+            a = float(np.dot(x[:n - (mejor_lag - 1)], x[mejor_lag - 1:]))
+            b = mejor_val * energia
+            c = float(np.dot(x[:n - (mejor_lag + 1)], x[mejor_lag + 1:]))
+            denom = (a - 2 * b + c)
+            if abs(denom) > 1e-9:
+                mejor_lag = mejor_lag + 0.5 * (a - c) / denom
+        return rate / mejor_lag if mejor_lag > 0 else 0.0
+
+    def _snap_semitones(self, freq_hz):
+        """Semitonos que hay que subir/bajar para caer en la nota más
+        cercana de la escala activa (referencia A4 = 440 Hz)."""
+        if freq_hz <= 0:
+            return 0.0
+        midi = 69.0 + 12.0 * math.log2(freq_hz / 440.0)
+        octava = math.floor(midi / 12.0)
+        candidatos = []
+        for oct_off in (octava - 1, octava, octava + 1):
+            for st in self.at_scale_semitones:
+                candidatos.append(oct_off * 12 + st)
+        objetivo = min(candidatos, key=lambda m: abs(m - midi))
+        return float(objetivo - midi)
+
+    def real_autotune_fx(self, x, amount):
+        """Autotune real: detecta el tono del bloque, calcula la corrección
+        hacia la escala y desplaza el tono suavemente (sin clics)."""
+        if amount <= 0.01 or len(x) == 0:
+            self._at_buf = np.zeros(0, dtype=np.float32)
+            return x
+        self._at_buf = np.concatenate([self._at_buf, x])[-2048:]
+        freq = self.detect_pitch_hz(self._at_buf)
+        objetivo = self._snap_semitones(freq) if freq > 0 else 0.0
+        objetivo = max(-4.0, min(4.0, objetivo)) * amount
+        # Suavizado temporal: evita saltos bruscos entre bloques.
+        self._at_correction = 0.7 * self._at_correction + 0.3 * objetivo
+        if abs(self._at_correction) < 0.05:
+            return x
+        return self.pitch_shift(x, self._at_correction, state="autotune_real")
 
     def autotune_fx(self, x, amount, note_shift=0.0):
         """Efecto tipo autotune: no clona ni detecta notas reales; crea un color musical/cantado."""
@@ -1147,6 +1214,7 @@ class AudioEngine:
             effects_enabled = self.effects_enabled
             autotune = self.autotune
             autotune_shift = self.autotune_shift
+            autotune_real = self.autotune_real
             vibrato = self.vibrato
             chorus = self.chorus
             human_realism = self.human_realism
@@ -1177,6 +1245,7 @@ class AudioEngine:
             y = self.gate(y, noise_gate)
             y = self.pitch_shift(y, pitch)
             y = self.formant_stream(y, formant)
+            y = self.real_autotune_fx(y, autotune_real)
             y = self.autotune_fx(y, autotune, autotune_shift)
             y = self.vibrato_fx(y, vibrato)
             y = self.chorus_fx(y, chorus)
@@ -1708,6 +1777,7 @@ class PremiumApp:
             "comp": tk.DoubleVar(value=38),
             "vol": tk.DoubleVar(value=90),
             "autotune": tk.DoubleVar(value=0),
+            "autotune_real": tk.DoubleVar(value=0),
             "autotune_shift": tk.DoubleVar(value=0),
             "vibrato": tk.DoubleVar(value=0),
             "chorus": tk.DoubleVar(value=0),
@@ -8112,10 +8182,13 @@ class PremiumApp:
         ttk.Label(top, text="Tonalidad:", style="Card.TLabel").pack(side="left", padx=(0, 5))
         ttk.Combobox(top, textvariable=self.autotune_key, state="readonly", width=10, values=["Do", "Re", "Mi", "Fa", "Sol", "La", "Si"]).pack(side="left", padx=(0, 10))
         ttk.Label(top, text="Escala:", style="Card.TLabel").pack(side="left", padx=(0, 5))
-        ttk.Combobox(top, textvariable=self.autotune_scale, state="readonly", width=10, values=["Mayor", "Menor"]).pack(side="left", padx=(0, 10))
+        ttk.Combobox(top, textvariable=self.autotune_scale, state="readonly", width=10, values=["Mayor", "Menor", "Cromática"]).pack(side="left", padx=(0, 10))
         ttk.Button(top, text="Aplicar tonalidad", command=self.apply_autotune_key).pack(side="left", padx=4)
 
-        self.autotune_slider(mixer, "Intensidad autotune", "autotune", 0, 100, "%")
+        ttk.Label(mixer, text="🎯 AUTOTUNE REAL (afina tu voz a la escala)", style="Card.TLabel", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(6, 0))
+        self.autotune_slider(mixer, "Autotune real", "autotune_real", 0, 100, "%")
+        ttk.Label(mixer, text="Detecta el tono de tu voz y lo corrige a la tonalidad y escala elegidas. Sube al 100% para efecto trap; medio para un afinado natural.", style="Card.TLabel", wraplength=420, justify="left").pack(anchor="w", pady=(0, 6))
+        self.autotune_slider(mixer, "Intensidad autotune (color)", "autotune", 0, 100, "%")
         self.autotune_slider(mixer, "Nota/base", "autotune_shift", -7, 7, "semitonos")
         self.autotune_slider(mixer, "Vibrato", "vibrato", 0, 100, "%")
         self.autotune_slider(mixer, "Coro doble", "chorus", 0, 100, "%")
@@ -8222,6 +8295,19 @@ class PremiumApp:
         self.autotune_status.set(f"Preset aplicado: {name}")
         self.state.set(f"Estado: Autotune Pro · {name}")
 
+    def _escala_semitonos(self):
+        raices = {"Do": 0, "Do#": 1, "Re": 2, "Re#": 3, "Mi": 4, "Fa": 5,
+                  "Fa#": 6, "Sol": 7, "Sol#": 8, "La": 9, "La#": 10, "Si": 11}
+        raiz = raices.get(self.autotune_key.get(), 0)
+        escala = self.autotune_scale.get()
+        if escala == "Mayor":
+            grados = [0, 2, 4, 5, 7, 9, 11]
+        elif escala == "Menor":
+            grados = [0, 2, 3, 5, 7, 8, 10]
+        else:
+            grados = list(range(12))
+        return [(raiz + g) % 12 for g in grados]
+
     def apply_autotune_key(self):
         note_map = {"Do": 0, "Re": 2, "Mi": 4, "Fa": 5, "Sol": 7, "La": 9, "Si": 11}
         shift = note_map.get(self.autotune_key.get(), 0)
@@ -8231,6 +8317,7 @@ class PremiumApp:
             shift -= 1
         self.vars["autotune_shift"].set(float(shift))
         self.update_engine()
+        self.engine.at_scale_semitones = self._escala_semitonos()
         self.autotune_status.set(f"Tonalidad aplicada: {self.autotune_key.get()} {self.autotune_scale.get()}")
 
     def autotune_show_lyrics(self):
@@ -20350,7 +20437,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self._voz_actual = name
 
         _, values = presets[name]
-        for reset_key in ['autotune', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant', 'human_realism', 'human_warmth', 'human_breath', 'de_ess', 'clarity', 'transient', 'modern_space']:
+        for reset_key in ['autotune', 'autotune_real', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant', 'human_realism', 'human_warmth', 'human_breath', 'de_ess', 'clarity', 'transient', 'modern_space']:
             if reset_key in self.vars and reset_key not in values:
                 self.vars[reset_key].set(0)
         for key, value in values.items():
@@ -20427,6 +20514,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.engine.volume = clamp(vals["vol"] / 100, 0, 1.5)
             self.engine.autotune = clamp(vals.get("autotune", 0) / 100, 0, 1)
             self.engine.autotune_shift = vals.get("autotune_shift", 0)
+            self.engine.autotune_real = clamp(vals.get("autotune_real", 0) / 100, 0, 1)
+            self.engine.at_scale_semitones = self._escala_semitonos()
             self.engine.vibrato = clamp(vals.get("vibrato", 0) / 100, 0, 1)
             self.engine.chorus = clamp(vals.get("chorus", 0) / 100, 0, 1)
             self.engine.human_realism = clamp(vals.get("human_realism", 0) / 100, 0, 1)
