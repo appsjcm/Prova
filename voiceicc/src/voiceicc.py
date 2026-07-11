@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "2.8.0 Escucharme"
+VERSION = "2.9.0 Memoria Pro"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1929,6 +1929,7 @@ class PremiumApp:
         self.refresh_voice_list()
         self.apply_preset()
         self.load_config(silent=True)
+        self.nr_load_profile()
         self.refresh_language_ui()
         self.update_meters()
         self.setup_tray()
@@ -3065,6 +3066,15 @@ class PremiumApp:
             pass
         return None
 
+    def toggle_previous_voice(self):
+        """Alterna entre la voz actual y la anterior (Ctrl+Shift+X)."""
+        anterior = getattr(self, "_voz_anterior", None)
+        if not anterior or anterior not in VoiceBank.all_presets():
+            self.state.set("Estado: aún no hay voz anterior a la que volver")
+            return
+        self.apply_pro_voice(anterior)
+        self.state.set(f"Estado: ↔ voz anterior · {anterior}")
+
     def toggle_monitor(self):
         if not self.monitor_var.get():
             self.engine.stop_monitor()
@@ -3196,6 +3206,12 @@ class PremiumApp:
         _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
+        tk.Button(
+            bottombar, text="↔ VOZ ANTERIOR", command=self.toggle_previous_voice,
+            bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
+            activeforeground="#ffffff", relief="flat", bd=0,
+            padx=12, pady=7, font=("Segoe UI", 8, "bold"), cursor="hand2"
+        ).pack(side="left", padx=4, pady=13)
 
         vm_meters = tk.Frame(bottombar, bg="#101016")
         vm_meters.pack(side="left", fill="x", expand=True, padx=10)
@@ -8859,6 +8875,38 @@ class PremiumApp:
             pass
         self.update_engine()
 
+    def nr_profile_path(self):
+        return os.path.join(os.path.expanduser("~"), "voiceicc_perfil_ruido.json")
+
+    def nr_save_profile(self):
+        try:
+            perfil = self.engine.noise_profile
+            if perfil is None:
+                return
+            data = {
+                "rate": int(self.engine.rate),
+                "frame": int(self.engine._nr_frame),
+                "perfil": [float(v) for v in perfil],
+            }
+            with open(self.nr_profile_path(), "w", encoding="utf-8") as f:
+                json.dump(data, f)
+        except Exception as e:
+            print("No se pudo guardar el perfil de ruido:", e)
+
+    def nr_load_profile(self):
+        try:
+            path = self.nr_profile_path()
+            if not os.path.exists(path):
+                return
+            with open(path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            perfil = data.get("perfil") or []
+            if len(perfil) == self.engine._nr_frame // 2 + 1:
+                self.engine.noise_profile = np.array(perfil, dtype=np.float32)
+                self.nr_status.set("Perfil de ruido cargado de la sesión anterior ✓ Activa FX FONDO para usarlo.")
+        except Exception as e:
+            print("No se pudo cargar el perfil de ruido:", e)
+
     def nr_learn(self):
         if not self.engine.running:
             self.nr_status.set("Primero pulsa ▶ Empezar directo: hace falta el micrófono para aprender el ruido.")
@@ -8876,11 +8924,17 @@ class PremiumApp:
             self.nr_enabled.set(True)
             self.update_engine()
             self.nr_status.set("Perfil de ruido aprendido ✓ Reducción activada. Habla para probar y ajusta la intensidad.")
+            self.nr_save_profile()
             self.state.set("Estado: reducción de ruido activa")
         else:
             self.nr_status.set("No se pudo aprender el ruido. ¿Se paró el directo a mitad?")
 
     def nr_forget(self):
+        try:
+            if os.path.exists(self.nr_profile_path()):
+                os.remove(self.nr_profile_path())
+        except Exception:
+            pass
         self.engine.noise_profile = None
         self.nr_enabled.set(False)
         self.update_engine()
@@ -9780,6 +9834,7 @@ class PremiumApp:
             ("Ctrl + Shift + G", "Grabar prueba WAV"),
             ("Ctrl + Shift + C", "Guardar clip instantáneo (30 s)"),
             ("Ctrl + K", "Buscar pestañas y voces"),
+            ("Ctrl + Shift + X", "Volver a la voz anterior"),
         ]
 
         text.insert("1.0", "ATAJOS PRO\n\n")
@@ -9845,6 +9900,8 @@ class PremiumApp:
                 "<Control-Shift-c>": lambda e: self.hotkey_save_clip(),
                 "<Control-k>": lambda e: self.open_search_palette(),
                 "<Control-K>": lambda e: self.open_search_palette(),
+                "<Control-Shift-X>": lambda e: self.toggle_previous_voice(),
+                "<Control-Shift-x>": lambda e: self.toggle_previous_voice(),
             }
             for key, callback in bindings.items():
                 self.root.bind_all(key, callback)
@@ -9889,6 +9946,7 @@ class PremiumApp:
             "ctrl+shift+p": en_ui(self.open_mini_panel),
             "ctrl+shift+g": en_ui(self.record),
             "ctrl+shift+c": en_ui(self.hotkey_save_clip),
+            "ctrl+shift+x": en_ui(self.toggle_previous_voice),
         }
         try:
             for key, action in mapping.items():
@@ -20175,6 +20233,11 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         if name not in presets:
             name = "Gaming limpio"
             self.preset.set(name)
+
+        anterior = getattr(self, "_voz_actual", None)
+        if anterior and anterior != name:
+            self._voz_anterior = anterior
+        self._voz_actual = name
 
         _, values = presets[name]
         for reset_key in ['autotune', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant', 'human_realism', 'human_warmth', 'human_breath', 'de_ess', 'clarity', 'transient', 'modern_space']:
