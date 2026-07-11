@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.0.0 Pantalla Perfecta"
+VERSION = "3.1.0 Botón Flotante"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -3110,6 +3110,86 @@ class PremiumApp:
             self.monitor_var.set(False)
             self._device_test_report("No se pudo abrir el monitor en la salida predeterminada. ¿Auriculares conectados?")
 
+    def toggle_float_panel(self):
+        """Botón flotante siempre visible: enciende/para el modulador
+        sin buscar la ventana (ideal encima del juego)."""
+        if getattr(self, "_float_win", None) is not None:
+            try:
+                self._float_win.destroy()
+            except Exception:
+                pass
+            self._float_win = None
+            return
+        win = tk.Toplevel(self.root)
+        self._float_win = win
+        win.overrideredirect(True)
+        try:
+            win.attributes("-topmost", True)
+        except Exception:
+            pass
+        win.configure(bg="#111117")
+        pos = getattr(self, "_float_pos", None)
+        if not pos:
+            try:
+                pos = (win.winfo_screenwidth() - 260, 60)
+            except Exception:
+                pos = (60, 60)
+        win.geometry(f"+{int(pos[0])}+{int(pos[1])}")
+
+        marco = tk.Frame(win, bg="#111117", highlightbackground="#7c5cff", highlightthickness=2)
+        marco.pack()
+        fila = tk.Frame(marco, bg="#111117")
+        fila.pack(padx=6, pady=(6, 2))
+
+        def boton(texto, cmd, fg="#dfe2ff"):
+            return tk.Button(fila, text=texto, command=cmd, bg="#1c1c25", fg=fg,
+                             activebackground="#2a3150", activeforeground="#ffffff",
+                             relief="flat", bd=0, font=("Segoe UI", 12, "bold"),
+                             width=3, cursor="hand2")
+
+        self._float_power = tk.Button(fila, text="⏻", command=self.vm_toggle_power,
+                                      bg="#241a3d", fg="#a78bfa", activebackground="#7c3cff",
+                                      activeforeground="#ffffff", relief="flat", bd=0,
+                                      font=("Segoe UI", 14, "bold"), width=3, cursor="hand2")
+        self._float_power.pack(side="left", padx=2)
+        boton("🔇", lambda: (self.mute.set(not bool(self.mute.get())), self.update_engine())).pack(side="left", padx=2)
+        boton("↔", self.toggle_previous_voice).pack(side="left", padx=2)
+        boton("▢", self.show_window).pack(side="left", padx=2)
+        boton("✕", self.toggle_float_panel, fg="#ff5c8a").pack(side="left", padx=2)
+
+        etiqueta = tk.Label(marco, textvariable=self.preset, bg="#111117", fg="#8e96b1",
+                            font=("Segoe UI", 9), anchor="center")
+        etiqueta.pack(fill="x", padx=6, pady=(0, 5))
+
+        def empezar(evento):
+            win._arrastre = (evento.x, evento.y)
+
+        def mover(evento):
+            inicio = getattr(win, "_arrastre", None)
+            if not inicio:
+                return
+            x = win.winfo_x() + evento.x - inicio[0]
+            y = win.winfo_y() + evento.y - inicio[1]
+            win.geometry(f"+{x}+{y}")
+            self._float_pos = (x, y)
+
+        for widget in (marco, fila, etiqueta):
+            widget.bind("<Button-1>", empezar)
+            widget.bind("<B1-Motion>", mover)
+
+        self._float_refresh()
+
+    def _float_refresh(self):
+        try:
+            if getattr(self, "_float_win", None) is None:
+                return
+            if self.engine.running:
+                self._float_power.configure(bg="#123524", fg="#62ffb4")
+            else:
+                self._float_power.configure(bg="#241a3d", fg="#a78bfa")
+        except Exception:
+            pass
+
     def vm_toggle_power(self):
         if self.engine.running:
             self.stop()
@@ -3226,6 +3306,12 @@ class PremiumApp:
         _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
+        tk.Button(
+            bottombar, text="🪟 FLOTANTE", command=self.toggle_float_panel,
+            bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
+            activeforeground="#ffffff", relief="flat", bd=0,
+            padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
+        ).pack(side="left", padx=4, pady=13)
         tk.Button(
             bottombar, text="↔ VOZ ANTERIOR", command=self.toggle_previous_voice,
             bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
@@ -9855,6 +9941,7 @@ class PremiumApp:
             ("Ctrl + Shift + C", "Guardar clip instantáneo (30 s)"),
             ("Ctrl + K", "Buscar pestañas y voces"),
             ("Ctrl + Shift + X", "Volver a la voz anterior"),
+            ("Ctrl + Shift + F", "Mostrar/ocultar el botón flotante"),
         ]
 
         text.insert("1.0", "ATAJOS PRO\n\n")
@@ -9922,6 +10009,8 @@ class PremiumApp:
                 "<Control-K>": lambda e: self.open_search_palette(),
                 "<Control-Shift-X>": lambda e: self.toggle_previous_voice(),
                 "<Control-Shift-x>": lambda e: self.toggle_previous_voice(),
+                "<Control-Shift-F>": lambda e: self.toggle_float_panel(),
+                "<Control-Shift-f>": lambda e: self.toggle_float_panel(),
             }
             for key, callback in bindings.items():
                 self.root.bind_all(key, callback)
@@ -9967,6 +10056,7 @@ class PremiumApp:
             "ctrl+shift+g": en_ui(self.record),
             "ctrl+shift+c": en_ui(self.hotkey_save_clip),
             "ctrl+shift+x": en_ui(self.toggle_previous_voice),
+            "ctrl+shift+f": en_ui(self.toggle_float_panel),
         }
         try:
             for key, action in mapping.items():
@@ -20380,6 +20470,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "workspace_focus_mode": bool(self.workspace_focus_mode.get()) if hasattr(self, "workspace_focus_mode") else False,
             "voiceicc_right_rail_visible": bool(self.voiceicc_right_rail_visible.get()) if hasattr(self, "voiceicc_right_rail_visible") else True,
             "start_minimized": bool(self.start_minimized.get()) if hasattr(self, "start_minimized") else False,
+            "flotante_pos": list(getattr(self, "_float_pos", ()) or ()),
+            "flotante_abierto": bool(getattr(self, "_float_win", None) is not None),
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -20413,6 +20505,11 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            pos = data.get("flotante_pos") or []
+            if len(pos) == 2:
+                self._float_pos = (int(pos[0]), int(pos[1]))
+            if data.get("flotante_abierto") and getattr(self, "_float_win", None) is None:
+                self.root.after(900, self.toggle_float_panel)
 
             self.preset.set(data.get("preset", "Gaming limpio"))
             self.category.set(data.get("category", "Todas"))
@@ -20549,6 +20646,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         if getattr(self, "_vm_power_last", None) != self.engine.running:
             self._vm_power_last = self.engine.running
             self.vm_refresh_power()
+            self._float_refresh()
         disponible = min(self.engine.replay_filled / self.engine.rate, self.engine.replay_seconds)
         self.clips_available.set(f"Buffer: {disponible:.0f} s de {self.engine.replay_seconds} s")
 
@@ -20580,6 +20678,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         menu = pystray.Menu(
             pystray.MenuItem("Mostrar modulador", lambda icon, item: self.root.after(0, self.show_window)),
+            pystray.MenuItem("Botón flotante", lambda icon, item: self.root.after(0, self.toggle_float_panel)),
             pystray.MenuItem("Ocultar a la bandeja", lambda icon, item: self.root.after(0, self.hide_to_tray)),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Empezar directo", lambda icon, item: self.root.after(0, self.start)),

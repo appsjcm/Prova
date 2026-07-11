@@ -1,0 +1,17 @@
+VOICEICC 3.1 · BOTÓN FLOTANTE
+
+- Nuevo botón FLOTANTE siempre encima (idea del usuario): una mini
+  barra que se queda por encima del juego para encender/parar el
+  modulador sin buscar la ventana.
+  · ⏻ encender/parar (verde en directo, morado parado).
+  · 🔇 silenciar · ↔ voz anterior · ▢ abrir ventana · ✕ cerrar.
+  · Se arrastra con el ratón a donde quieras.
+  · Muestra la voz actual debajo.
+- Formas de abrirlo: botón 🪟 FLOTANTE de la barra inferior,
+  atajo GLOBAL Ctrl+Shift+F (funciona dentro del juego) y el menú
+  de la bandeja de Windows.
+- Recuerda su posición y si estaba abierto: al reabrir VoiceICC
+  vuelve donde lo dejaste.
+- Su color se sincroniza solo con el estado del directo (aunque
+  arranques/pares desde otra parte).
+- Añadido Ctrl+Shift+F al Mapa de teclas de Atajos.
