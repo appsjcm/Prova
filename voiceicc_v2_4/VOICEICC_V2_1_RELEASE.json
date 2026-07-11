@@ -1,0 +1,13 @@
+{
+  "product": "VoiceICC",
+  "version": "2.1.0 Pro Workspace",
+  "build": "release",
+  "features": [
+    "Compact workspace",
+    "Balanced workspace",
+    "Showroom workspace",
+    "Focus mode",
+    "Workspace notifications"
+  ],
+  "compiled_exe_included": false
+}

@@ -1,0 +1,10 @@
+VOICEICC V1.6
+
+- Renombrado completo a VoiceICC.
+- Panel derecho de identidad, inicio con Windows y atajos.
+- Inicio minimizado opcional.
+- Nuevo Brand Kit VoiceICC.
+- Nuevas imágenes comerciales.
+- Interfaz principal más parecida al diseño aprobado.
+- Atajos F9, F10 y F12.
+- Validado con py_compile.

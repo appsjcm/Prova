@@ -1,0 +1,229 @@
+{
+  "version": "85.0 FX Mixer Soundboard Pro",
+  "items": [
+    {
+      "category": "Cine",
+      "name": "whoosh_cine_suave",
+      "wav": "whoosh_cine_suave.wav",
+      "mp3": "whoosh_cine_suave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "boom_trailer_grave",
+      "wav": "boom_trailer_grave.wav",
+      "mp3": "boom_trailer_grave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "tension_cinematica",
+      "wav": "tension_cinematica.wav",
+      "mp3": "tension_cinematica.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "rise_cine_limpio",
+      "wav": "rise_cine_limpio.wav",
+      "mp3": "rise_cine_limpio.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "impacto_subgrave",
+      "wav": "impacto_subgrave.wav",
+      "mp3": "impacto_subgrave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "golpe_logo",
+      "wav": "golpe_logo.wav",
+      "mp3": "golpe_logo.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "transicion_epica",
+      "wav": "transicion_epica.wav",
+      "mp3": "transicion_epica.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Cine",
+      "name": "cola_reverb_cine",
+      "wav": "cola_reverb_cine.wav",
+      "mp3": "cola_reverb_cine.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "click_ui_suave",
+      "wav": "click_ui_suave.wav",
+      "mp3": "click_ui_suave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "confirmacion_ui",
+      "wav": "confirmacion_ui.wav",
+      "mp3": "confirmacion_ui.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "error_suave",
+      "wav": "error_suave.wav",
+      "mp3": "error_suave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "notificacion_stream",
+      "wav": "notificacion_stream.wav",
+      "mp3": "notificacion_stream.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "subida_streamer",
+      "wav": "subida_streamer.wav",
+      "mp3": "subida_streamer.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "cuenta_atras_suave",
+      "wav": "cuenta_atras_suave.wav",
+      "mp3": "cuenta_atras_suave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "pop_menu",
+      "wav": "pop_menu.wav",
+      "mp3": "pop_menu.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "UI / Stream",
+      "name": "unlock_premium",
+      "wav": "unlock_premium.wav",
+      "mp3": "unlock_premium.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "lluvia_ventana",
+      "wav": "lluvia_ventana.wav",
+      "mp3": "lluvia_ventana.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "ciudad_noche",
+      "wav": "ciudad_noche.wav",
+      "mp3": "ciudad_noche.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "aire_estudio",
+      "wav": "aire_estudio.wav",
+      "mp3": "aire_estudio.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "habitacion_pequena",
+      "wav": "habitacion_pequena.wav",
+      "mp3": "habitacion_pequena.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "sala_estudio",
+      "wav": "sala_estudio.wav",
+      "mp3": "sala_estudio.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "ambiente_radio",
+      "wav": "ambiente_radio.wav",
+      "mp3": "ambiente_radio.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "cinta_start",
+      "wav": "cinta_start.wav",
+      "mp3": "cinta_start.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Ambientes",
+      "name": "ruido_vinilo",
+      "wav": "ruido_vinilo.wav",
+      "mp3": "ruido_vinilo.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "telefono_antiguo",
+      "wav": "telefono_antiguo.wav",
+      "mp3": "telefono_antiguo.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "radio_fm_real",
+      "wav": "radio_fm_real.wav",
+      "mp3": "radio_fm_real.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "intercom_real",
+      "wav": "intercom_real.wav",
+      "mp3": "intercom_real.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "megafono_exterior",
+      "wav": "megafono_exterior.wav",
+      "mp3": "megafono_exterior.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "puerta_sala",
+      "wav": "puerta_sala.wav",
+      "mp3": "puerta_sala.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "paso_suave",
+      "wav": "paso_suave.wav",
+      "mp3": "paso_suave.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "tecla_mecanica",
+      "wav": "tecla_mecanica.wav",
+      "mp3": "tecla_mecanica.mp3",
+      "mp3_created": true
+    },
+    {
+      "category": "Realistas",
+      "name": "respiracion_ambiente",
+      "wav": "respiracion_ambiente.wav",
+      "mp3": "respiracion_ambiente.mp3",
+      "mp3_created": true
+    }
+  ]
+}

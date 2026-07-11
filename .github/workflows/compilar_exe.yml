@@ -4,7 +4,7 @@ on:
   push:
     branches: ["claude/new-session-94jxsw"]
     paths:
-      - "modulador_voz_v1/**"
+      - "voiceicc_v2_4/**"
       - ".github/workflows/compilar_exe.yml"
   workflow_dispatch:
 
@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     defaults:
       run:
-        working-directory: modulador_voz_v1
+        working-directory: voiceicc_v2_4
     steps:
       - name: Descargar código
         uses: actions/checkout@v4
@@ -31,10 +31,10 @@ jobs:
       - name: Compilar EXE
         run: >
           python -m PyInstaller --noconsole --onefile
-          --name ModuladorVoz
+          --name VoiceICC
           --icon assets/app_icon.ico
           --add-data "assets;assets"
-          src/modulador_voz.py
+          src/voiceicc.py
 
       - name: Instalar Inno Setup
         run: choco install innosetup --no-progress -y
@@ -45,13 +45,13 @@ jobs:
       - name: Publicar EXE
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVoz-1.1-EXE
-          path: modulador_voz_v1/dist/ModuladorVoz.exe
+          name: VoiceICC-2.4-EXE
+          path: voiceicc_v2_4/dist/VoiceICC.exe
           retention-days: 30
 
       - name: Publicar instalador
         uses: actions/upload-artifact@v4
         with:
-          name: ModuladorVoz-1.1-Instalador
-          path: modulador_voz_v1/salida_instalador/ModuladorVoz_Setup_1.1.exe
+          name: VoiceICC-2.4-Instalador
+          path: voiceicc_v2_4/salida_instalador/VoiceICC_Setup_2.4.exe
           retention-days: 30

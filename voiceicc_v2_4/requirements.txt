@@ -1,0 +1,6 @@
+numpy
+sounddevice
+pystray
+pillow
+keyboard
+pydub

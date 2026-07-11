@@ -1,0 +1,256 @@
+{
+  "product": "VoiceICC",
+  "version": "2.3.1 Lite Optimized",
+  "source_zip_bytes": 36528549,
+  "removed_files_or_folders": 15,
+  "removed_uncompressed_bytes": 8826037,
+  "removed": [
+    {
+      "path": "src/__pycache__",
+      "bytes": 8821551
+    },
+    {
+      "path": "GUIA_NEON_VOICEBOX_UI_V1_4.md",
+      "bytes": 589
+    },
+    {
+      "path": "GUIA_VISUAL_OVERHAUL.md",
+      "bytes": 417
+    },
+    {
+      "path": "GUIA_PRO_WORKSPACE_V2_1.md",
+      "bytes": 379
+    },
+    {
+      "path": "GUIA_ULTRA_MATCH_V2_0.md",
+      "bytes": 372
+    },
+    {
+      "path": "RUNTIME_SMOKE_TEST.json",
+      "bytes": 361
+    },
+    {
+      "path": "GUIA_COMMERCIAL_UI_V1_8.md",
+      "bytes": 330
+    },
+    {
+      "path": "GUIA_DASHBOARD_PRO_V1_7.md",
+      "bytes": 315
+    },
+    {
+      "path": "GUIA_EXPERIENCE_PRO_V2_2.md",
+      "bytes": 315
+    },
+    {
+      "path": "GUIA_REFERENCE_MATCH_V1_9.md",
+      "bytes": 307
+    },
+    {
+      "path": "GUIA_MODERN_FX_V1_2.md",
+      "bytes": 294
+    },
+    {
+      "path": "MANIFEST_RELEASE.json",
+      "bytes": 266
+    },
+    {
+      "path": "RELEASE_AUDIT.json",
+      "bytes": 262
+    },
+    {
+      "path": "GUIA_CREATOR_HUB_V1_5.md",
+      "bytes": 165
+    },
+    {
+      "path": "SHA256.txt",
+      "bytes": 114
+    }
+  ],
+  "kept_audio_formats": [
+    "WAV",
+    "MP3"
+  ],
+  "notes": [
+    "Se conservaron los 33 módulos publicados, voces, efectos WAV/MP3, Voicebox, Soundboard, branding VoiceICC y scripts de Windows.",
+    "Se eliminaron recursos de módulos históricos/ocultos que la función load_visual_assets no carga en la release pública."
+  ],
+  "unused_asset_folders_removed": 34,
+  "unused_assets_removed_bytes": 8150029,
+  "unused_assets_removed": [
+    {
+      "path": "assets/analizador_vocal",
+      "bytes": 184547
+    },
+    {
+      "path": "assets/asistente",
+      "bytes": 180880
+    },
+    {
+      "path": "assets/cambiador_personas",
+      "bytes": 228080
+    },
+    {
+      "path": "assets/cancion_pro",
+      "bytes": 239837
+    },
+    {
+      "path": "assets/command_center",
+      "bytes": 412030
+    },
+    {
+      "path": "assets/design_system",
+      "bytes": 224972
+    },
+    {
+      "path": "assets/diagnostico",
+      "bytes": 184849
+    },
+    {
+      "path": "assets/ecualizador",
+      "bytes": 199925
+    },
+    {
+      "path": "assets/escenas_pro",
+      "bytes": 269211
+    },
+    {
+      "path": "assets/full_translation",
+      "bytes": 219715
+    },
+    {
+      "path": "assets/grid",
+      "bytes": 88577
+    },
+    {
+      "path": "assets/icon_system",
+      "bytes": 268221
+    },
+    {
+      "path": "assets/interface_consistency",
+      "bytes": 223270
+    },
+    {
+      "path": "assets/karaoke",
+      "bytes": 236103
+    },
+    {
+      "path": "assets/karaoke_studio",
+      "bytes": 229263
+    },
+    {
+      "path": "assets/language_pack",
+      "bytes": 237280
+    },
+    {
+      "path": "assets/mesa_sonidos",
+      "bytes": 206314
+    },
+    {
+      "path": "assets/mini_panel",
+      "bytes": 181595
+    },
+    {
+      "path": "assets/multipista",
+      "bytes": 229699
+    },
+    {
+      "path": "assets/personas",
+      "bytes": 230007
+    },
+    {
+      "path": "assets/premium_experience",
+      "bytes": 410236
+    },
+    {
+      "path": "assets/pro",
+      "bytes": 170810
+    },
+    {
+      "path": "assets/professional_polish",
+      "bytes": 391511
+    },
+    {
+      "path": "assets/rapido",
+      "bytes": 232277
+    },
+    {
+      "path": "assets/rendimiento",
+      "bytes": 224470
+    },
+    {
+      "path": "assets/revision_tecnica",
+      "bytes": 181878
+    },
+    {
+      "path": "assets/streamer_hub",
+      "bytes": 230727
+    },
+    {
+      "path": "assets/studio",
+      "bytes": 256471
+    },
+    {
+      "path": "assets/studio_dashboard",
+      "bytes": 185727
+    },
+    {
+      "path": "assets/timeline_pro",
+      "bytes": 168483
+    },
+    {
+      "path": "assets/ultra",
+      "bytes": 168369
+    },
+    {
+      "path": "assets/ultra_premium_ui",
+      "bytes": 389541
+    },
+    {
+      "path": "assets/visual_pro",
+      "bytes": 352745
+    },
+    {
+      "path": "assets/web_pack",
+      "bytes": 312409
+    }
+  ],
+  "kept_public_asset_folders": [
+    "asistente_inicial",
+    "atajos",
+    "autotune",
+    "biblioteca_premium",
+    "bilingual_visual",
+    "brand_kit",
+    "cable_virtual",
+    "cadena_vocal",
+    "creador_voces",
+    "deploy_pro",
+    "export_pack",
+    "favoritos_pro",
+    "fx_designer",
+    "fx_designer_audio",
+    "fx_mixer",
+    "fx_mixer_audio",
+    "grabadora",
+    "inicio_premium",
+    "landing_page",
+    "master_final",
+    "mezclador_musical",
+    "neon_voicebox_ui",
+    "packs",
+    "perfiles",
+    "portadas_premium",
+    "publicacion_pro",
+    "real_voice_fx",
+    "real_voice_fx_audio",
+    "realistic_effects",
+    "realistic_effects_audio",
+    "release_v1",
+    "streamer",
+    "test_voz",
+    "visual_overhaul",
+    "voice_characters",
+    "voiceicc_brand",
+    "voices"
+  ]
+}

@@ -1,9 +1,0 @@
-CAMBIOS V76
-
-- Añadida pestaña Language Pack.
-- Añadida exportación de paquete de idioma JSON/TXT.
-- Añadida exportación de glosario ES/EN.
-- Añadidas más traducciones internas.
-- Añadidos nuevos assets premium language_pack.
-- Actualizado README, scripts e instalador.
-- Validado con py_compile.

@@ -1,0 +1,186 @@
+{
+  "version": "84.0 FX Designer Pro",
+  "created_at": "2026-07-10T19:16:15",
+  "items": [
+    {
+      "name": "Cine whoosh real",
+      "variant": "natural",
+      "wav": "cine_whoosh_real_natural.wav",
+      "mp3": "cine_whoosh_real_natural.mp3"
+    },
+    {
+      "name": "Cine whoosh real",
+      "variant": "wide",
+      "wav": "cine_whoosh_real_wide.wav",
+      "mp3": "cine_whoosh_real_wide.mp3"
+    },
+    {
+      "name": "Boom trailer suave",
+      "variant": "natural",
+      "wav": "boom_trailer_suave_natural.wav",
+      "mp3": "boom_trailer_suave_natural.mp3"
+    },
+    {
+      "name": "Boom trailer suave",
+      "variant": "wide",
+      "wav": "boom_trailer_suave_wide.wav",
+      "mp3": "boom_trailer_suave_wide.mp3"
+    },
+    {
+      "name": "Lluvia ventana",
+      "variant": "natural",
+      "wav": "lluvia_ventana_natural.wav",
+      "mp3": "lluvia_ventana_natural.mp3"
+    },
+    {
+      "name": "Lluvia ventana",
+      "variant": "wide",
+      "wav": "lluvia_ventana_wide.wav",
+      "mp3": "lluvia_ventana_wide.mp3"
+    },
+    {
+      "name": "Ruido vinilo",
+      "variant": "natural",
+      "wav": "ruido_vinilo_natural.wav",
+      "mp3": "ruido_vinilo_natural.mp3"
+    },
+    {
+      "name": "Ruido vinilo",
+      "variant": "wide",
+      "wav": "ruido_vinilo_wide.wav",
+      "mp3": "ruido_vinilo_wide.mp3"
+    },
+    {
+      "name": "Ciudad nocturna",
+      "variant": "natural",
+      "wav": "ciudad_nocturna_natural.wav",
+      "mp3": "ciudad_nocturna_natural.mp3"
+    },
+    {
+      "name": "Ciudad nocturna",
+      "variant": "wide",
+      "wav": "ciudad_nocturna_wide.wav",
+      "mp3": "ciudad_nocturna_wide.mp3"
+    },
+    {
+      "name": "Click interfaz",
+      "variant": "natural",
+      "wav": "click_interfaz_natural.wav",
+      "mp3": "click_interfaz_natural.mp3"
+    },
+    {
+      "name": "Click interfaz",
+      "variant": "wide",
+      "wav": "click_interfaz_wide.wav",
+      "mp3": "click_interfaz_wide.mp3"
+    },
+    {
+      "name": "Radio transición",
+      "variant": "natural",
+      "wav": "radio_transici_n_natural.wav",
+      "mp3": "radio_transici_n_natural.mp3"
+    },
+    {
+      "name": "Radio transición",
+      "variant": "wide",
+      "wav": "radio_transici_n_wide.wav",
+      "mp3": "radio_transici_n_wide.mp3"
+    },
+    {
+      "name": "Cinta arranque",
+      "variant": "natural",
+      "wav": "cinta_arranque_natural.wav",
+      "mp3": "cinta_arranque_natural.mp3"
+    },
+    {
+      "name": "Cinta arranque",
+      "variant": "wide",
+      "wav": "cinta_arranque_wide.wav",
+      "mp3": "cinta_arranque_wide.mp3"
+    },
+    {
+      "name": "Pulso sci-fi",
+      "variant": "natural",
+      "wav": "pulso_sci_fi_natural.wav",
+      "mp3": "pulso_sci_fi_natural.mp3"
+    },
+    {
+      "name": "Pulso sci-fi",
+      "variant": "wide",
+      "wav": "pulso_sci_fi_wide.wav",
+      "mp3": "pulso_sci_fi_wide.mp3"
+    },
+    {
+      "name": "Ambiente estudio",
+      "variant": "natural",
+      "wav": "ambiente_estudio_natural.wav",
+      "mp3": "ambiente_estudio_natural.mp3"
+    },
+    {
+      "name": "Ambiente estudio",
+      "variant": "wide",
+      "wav": "ambiente_estudio_wide.wav",
+      "mp3": "ambiente_estudio_wide.mp3"
+    },
+    {
+      "name": "Subida streamer",
+      "variant": "natural",
+      "wav": "subida_streamer_natural.wav",
+      "mp3": "subida_streamer_natural.mp3"
+    },
+    {
+      "name": "Subida streamer",
+      "variant": "wide",
+      "wav": "subida_streamer_wide.wav",
+      "mp3": "subida_streamer_wide.mp3"
+    },
+    {
+      "name": "Confirmación UI",
+      "variant": "natural",
+      "wav": "confirmaci_n_ui_natural.wav",
+      "mp3": "confirmaci_n_ui_natural.mp3"
+    },
+    {
+      "name": "Confirmación UI",
+      "variant": "wide",
+      "wav": "confirmaci_n_ui_wide.wav",
+      "mp3": "confirmaci_n_ui_wide.mp3"
+    },
+    {
+      "name": "Cuenta atrás suave",
+      "variant": "natural",
+      "wav": "cuenta_atr_s_suave_natural.wav",
+      "mp3": "cuenta_atr_s_suave_natural.mp3"
+    },
+    {
+      "name": "Cuenta atrás suave",
+      "variant": "wide",
+      "wav": "cuenta_atr_s_suave_wide.wav",
+      "mp3": "cuenta_atr_s_suave_wide.mp3"
+    },
+    {
+      "name": "Aire de sala",
+      "variant": "natural",
+      "wav": "aire_de_sala_natural.wav",
+      "mp3": "aire_de_sala_natural.mp3"
+    },
+    {
+      "name": "Aire de sala",
+      "variant": "wide",
+      "wav": "aire_de_sala_wide.wav",
+      "mp3": "aire_de_sala_wide.mp3"
+    },
+    {
+      "name": "Tensión suave",
+      "variant": "natural",
+      "wav": "tensi_n_suave_natural.wav",
+      "mp3": "tensi_n_suave_natural.mp3"
+    },
+    {
+      "name": "Tensión suave",
+      "variant": "wide",
+      "wav": "tensi_n_suave_wide.wav",
+      "mp3": "tensi_n_suave_wide.mp3"
+    }
+  ]
+}

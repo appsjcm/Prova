@@ -1,0 +1,8 @@
+VOICEICC 2.3.1 LITE OPTIMIZED
+
+- Eliminadas cachés Python y bytecode de versiones antiguas.
+- Eliminada documentación histórica duplicada.
+- Eliminados informes internos obsoletos.
+- Se conservan voces, WAV, MP3, imágenes, branding y módulos publicados.
+- Objetivo: ZIP final inferior a 30 MB.
+- Eliminadas 34 carpetas de assets históricos no cargadas por la release pública.

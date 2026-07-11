@@ -1,9 +1,0 @@
-CAMBIOS V69
-
-- Añadida pestaña Deploy Pro.
-- Añadido banner Deploy Pro.
-- Añadido checklist visual de publicación.
-- Añadido ZIP publicable con index.html, assets, .nojekyll, README_DEPLOY.txt y deploy_manifest.json.
-- Añadidas guías de GitHub Pages, Netlify, Firebase Hosting y hosting estático.
-- Corregido fallback de pystray para no perder PIL si pystray no está instalado.
-- Actualizados scripts, README e instalador.

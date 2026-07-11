@@ -1,9 +1,0 @@
-CAMBIOS V14
-
-- Añadida pestaña Packs.
-- Añadidas imágenes visuales de packs.
-- Añadidos packs: Gaming, Épicas, Oscuras, Robots, Radio, Divertidas, Fantasía y Limpias.
-- Añadido sistema de favoritos.
-- Añadido filtro Favoritos en la pestaña Voces.
-- Añadidos botones para aplicar voz top de cada pack.
-- Actualizados README, guía, EXE e instalador.
