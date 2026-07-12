@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.5.0 App Limpia"
+VERSION = "3.6.0 Esencial"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1531,21 +1531,13 @@ class PremiumApp:
         ("tab_voces", "🎙 Voces"),
         ("tab_creador_voces", "🧪 Creador"),
         ("tab_favoritos_pro", "⭐ Favoritos"),
-        ("tab_perfiles_pro", "👤 Perfiles"),
         # Efectos
         ("tab_real_voice_fx", "🎙 Voz real"),
-        ("tab_human_realism", "🧬 Naturalidad"),
         ("tab_realistic_effects", "🔊 Efectos"),
-        ("tab_fx_mixer", "🎛 Mezclador FX"),
-        ("tab_fx_designer", "🧪 Diseñador FX"),
         ("tab_sonidos", "🔊 Soundboard"),
         # Studio
         ("tab_grabadora", "⏺ Grabadora"),
-        ("tab_cadena_vocal", "🎙 Cadena vocal"),
         ("tab_autotune", "🎵 Autotune"),
-        ("tab_mezclador_musical", "🎚 Mezclador"),
-        ("tab_master_final", "💿 Master"),
-        ("tab_biblioteca_premium", "📚 Biblioteca"),
         # Publicar
         # Ajustes
         ("tab_ajustes", "🎚 Audio"),
