@@ -1,0 +1,6 @@
+# Motor de Voces IA (RVC) para VoiceICC — conversion de voz LOCAL.
+# Se instala aparte del programa principal porque pesa varios GB.
+# CPU por defecto; si tienes GPU NVIDIA, instala el torch con CUDA de su web.
+rvc-python
+torch
+torchaudio

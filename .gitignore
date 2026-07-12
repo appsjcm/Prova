@@ -1,2 +1,9 @@
 __pycache__/
 *.pyc
+
+# Datos de Voces IA (se generan en CI, pesan varios GB; no versionar)
+voiceicc/datos_ia/
+VoiceICC-DatosIA.zip
+voiceicc/salida_instalador/
+voiceicc/dist/
+voiceicc/build/

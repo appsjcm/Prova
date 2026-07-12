@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.3.0 Voces IA Local"
+VERSION = "4.4.0 Datos IA en el Instalador"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -109,11 +109,15 @@ class RVCBackend:
     Ventajas de hacerlo local: funciona sin Internet, más privacidad, sin
     costes por uso, y los usuarios pueden descargar nuevas voces."""
 
-    def __init__(self, models_dir=None):
+    BASE_FILES = ("hubert_base.pt", "rmvpe.pt")
+
+    def __init__(self, models_dir=None, base_dir=None):
         base = models_dir or os.path.join(os.path.expanduser("~"), "VoiceICC", "voces_ia")
         self.models_dir = base
+        self.base_dir = base_dir or os.path.join(os.path.expanduser("~"), "VoiceICC", "base_ia")
         try:
             os.makedirs(self.models_dir, exist_ok=True)
+            os.makedirs(self.base_dir, exist_ok=True)
         except Exception:
             pass
         self.enabled = False
@@ -156,6 +160,28 @@ class RVCBackend:
     @property
     def ready(self):
         return bool(self.enabled and self._impl is not None)
+
+    def base_models_present(self):
+        """Devuelve la lista de modelos base de RVC que faltan por descargar."""
+        faltan = []
+        for nombre in self.BASE_FILES:
+            ruta = Path(self.base_dir) / nombre
+            if not (ruta.exists() and ruta.stat().st_size > 0):
+                faltan.append(nombre)
+        return faltan
+
+    def data_report(self):
+        """Resumen legible del estado de los datos de IA (para la interfaz)."""
+        ok, motivo = self.detect()
+        modelos = len(self.list_models())
+        faltan = self.base_models_present()
+        partes = [motivo]
+        partes.append(f"Modelos de voz: {modelos}.")
+        if faltan:
+            partes.append("Faltan modelos base: " + ", ".join(faltan) + ".")
+        else:
+            partes.append("Modelos base listos.")
+        return " ".join(partes)
 
     # -- biblioteca de modelos de voz --
     def list_models(self):
@@ -10747,6 +10773,7 @@ class PremiumApp:
         botones = ttk.Frame(estado, style="Card.TFrame")
         botones.pack(anchor="w")
         ttk.Button(botones, text="🔎 Comprobar motor", command=self._rvc_refresh_status).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="⚙ Instalar datos IA…", command=self._rvc_install_data).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
         ttk.Label(estado, text="Para activarlas: pip install rvc-python torch  ·  luego copia un modelo .pth "
@@ -10789,11 +10816,9 @@ class PremiumApp:
         self._rvc_refresh_models()
 
     def _rvc_refresh_status(self):
-        ok, motivo = self.rvc.detect(force=True)
-        if ok:
-            self.rvc_status.set("✅ " + motivo)
-        else:
-            self.rvc_status.set("⚠ " + motivo)
+        ok, _motivo = self.rvc.detect(force=True)
+        informe = self.rvc.data_report()
+        self.rvc_status.set(("✅ " if ok else "⚠ ") + informe)
 
     def _rvc_refresh_models(self):
         modelos = [m["name"] for m in self.rvc.list_models()]
@@ -10807,6 +10832,32 @@ class PremiumApp:
             self.rvc_model.set("")
             if self.rvc.detect()[0]:
                 self.rvc_status.set("✅ Motor listo. Aún no hay modelos: importa un .pth para empezar.")
+
+    def _rvc_install_data(self):
+        """Lanza el instalador de datos de IA (instalar_datos_ia.bat) si está,
+        o abre la carpeta de datos para que el usuario copie el .zip."""
+        candidatos = [
+            Path(resource_path("instalar_datos_ia.bat")),
+            Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / "instalar_datos_ia.bat",
+            Path(__file__).resolve().parent.parent / "instalar_datos_ia.bat",
+        ]
+        bat = next((c for c in candidatos if c.exists()), None)
+        if bat is None:
+            messagebox.showinfo(
+                "Datos de IA",
+                "No encuentro 'instalar_datos_ia.bat'. Descarga el .zip de datos de "
+                "Voces IA, descomprímelo junto al programa y vuelve a intentarlo. "
+                "También puedes instalar el motor con: pip install rvc-python torch")
+            open_folder(str(Path(self.rvc.models_dir).parent))
+            return
+        try:
+            if platform.system() == "Windows":
+                os.startfile(str(bat))  # noqa: P204
+            else:
+                subprocess.Popen(["bash", str(bat)])
+            self.rvc_status.set("Instalando datos de Voces IA en una ventana aparte…")
+        except Exception as exc:
+            messagebox.showerror("No se pudo iniciar", str(exc))
 
     def _rvc_import_model(self):
         try:

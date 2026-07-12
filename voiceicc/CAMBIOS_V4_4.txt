@@ -1,0 +1,33 @@
+CAMBIOS V4.4 - Datos IA en el Instalador
+
+Ahora se puede tener TODO lo de las Voces IA desde el propio instalador,
+con un .zip de datos aparte y una pregunta durante la instalacion.
+
+- El instalador de Windows pregunta si quieres "Anadir datos de Voces IA"
+  (tarea opcional, desmarcada por defecto). Si la marcas, al terminar
+  ejecuta el instalador de datos.
+- Nuevo script instalar_datos_ia.py + instalar_datos_ia.bat que deja todo
+  listo en la carpeta personal:
+    ~/VoiceICC/voces_ia  -> modelos de voz .pth (+ .index)
+    ~/VoiceICC/base_ia   -> modelos base de RVC (hubert_base.pt, rmvpe.pt)
+  Funciona OFFLINE (copiando de la carpeta datos_ia del .zip, incluidos
+  wheels del motor) u ONLINE (descargando modelos base y, con --pip,
+  instalando rvc-python + torch).
+- Nuevo requirements_ia.txt con el motor de IA (rvc-python, torch,
+  torchaudio), usado por el instalador y por el empaquetado.
+- Nuevo workflow de GitHub "Empaquetar Datos IA (RVC)" (manual): descarga
+  los modelos base y los wheels del motor y publica VoiceICC-DatosIA.zip
+  como artefacto aparte. Es el .zip de datos que acompana al .exe.
+- La pestana Voces IA muestra un informe del estado (motor, numero de
+  modelos de voz y si faltan modelos base) y trae un boton
+  "Instalar datos IA..." que lanza el instalador de datos.
+- RVCBackend ahora conoce la carpeta de modelos base y avisa de los que
+  falten.
+- Arreglado el instalador: OutputDir apuntaba a "salida" pero el workflow
+  publicaba desde "salida_instalador"; ahora coinciden y el instalador se
+  sube de verdad como artefacto.
+
+Verificado: py_compile del programa y del instalador de datos, analisis
+AST sin duplicados ni llamadas indefinidas, simulacion de arranque sin
+errores, pruebas de la capa RVC en verde y prueba del copiado offline de
+modelos (voces + base) correcta. YAML de los dos workflows validado.
