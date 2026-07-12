@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.1.0 Avatar en el Flotante"
+VERSION = "5.2.0 Voces de Persona Reales"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -465,19 +465,22 @@ class VoiceBank:
             "Mago neón":            ("Fantasía", dict(pitch=2,  bass=18, robot=18, echo=45, radio=6,  megaphone=0,  gate=6,  comp=28, vol=82)),
 
 
-            # PERSONAS
-            "Mujer Lucía":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=4,  radio=0,  megaphone=0,  gate=10, comp=48, vol=90, formant=3)),
-            "Mujer Sofía":         ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=3,  radio=4,  megaphone=0,  gate=10, comp=50, vol=90, formant=2)),
-            "Hombre Diego":        ("Personas", dict(pitch=-1, bass=22, robot=0,  echo=1,  radio=3,  megaphone=0,  gate=8,  comp=52, vol=92, formant=-1)),
-            "Hombre Marcos":       ("Personas", dict(pitch=-3, bass=36, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=50, vol=90, formant=-2)),
-            "Niño Leo":            ("Personas", dict(pitch=5,  bass=0,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=28, vol=82, formant=5)),
-            "Niño Nico":           ("Personas", dict(pitch=4,  bass=0,  robot=4,  echo=3,  radio=3,  megaphone=0,  gate=6,  comp=28, vol=82, formant=4)),
-            "Niña Luna":           ("Personas", dict(pitch=6,  bass=0,  robot=0,  echo=5,  radio=1,  megaphone=0,  gate=6,  comp=28, vol=82, formant=5)),
-            "Niña Emma":           ("Personas", dict(pitch=5,  bass=2,  robot=0,  echo=4,  radio=2,  megaphone=0,  gate=6,  comp=30, vol=84, formant=5)),
-            "Abuelo Paco":         ("Personas", dict(pitch=-2, bass=28, robot=0,  echo=3,  radio=8,  megaphone=2,  gate=8,  comp=55, vol=88, formant=-1, vibrato=10)),
-            "Abuelo José":         ("Personas", dict(pitch=-2, bass=24, robot=0,  echo=2,  radio=5,  megaphone=0,  gate=8,  comp=52, vol=88, formant=-1, vibrato=8)),
-            "Abuela Carmen":       ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=3,  radio=2,  megaphone=0,  gate=10, comp=50, vol=88, formant=2, vibrato=10)),
-            "Abuela Lola":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=4,  radio=3,  megaphone=0,  gate=10, comp=50, vol=88, formant=2, vibrato=12)),
+            # PERSONAS — voces humanas con cadena de naturalidad para que suenen
+            # a persona real (aliento, calidez, de-esser, claridad y presencia),
+            # no a simple cambio de tono. Eco casi a cero (una voz real no
+            # reverbera) y de-esser alto cuando el tono sube (evita el "seseo").
+            "Mujer Lucía":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=9,  comp=40, vol=91, formant=3,  human_realism=64, human_warmth=44, human_breath=16, de_ess=30, clarity=22, transient=10, vocal_focus=30, proximity=16, smart_level=42)),
+            "Mujer Sofía":         ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=9,  comp=42, vol=91, formant=2,  human_realism=68, human_warmth=46, human_breath=20, de_ess=28, clarity=20, transient=9,  vocal_focus=28, proximity=18, smart_level=44)),
+            "Hombre Diego":        ("Personas", dict(pitch=-1, bass=20, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=8,  comp=44, vol=92, formant=-1, human_realism=62, human_warmth=50, human_breath=10, de_ess=16, clarity=26, transient=12, vocal_focus=34, proximity=22, smart_level=46)),
+            "Hombre Marcos":       ("Personas", dict(pitch=-3, bass=30, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=8,  comp=44, vol=91, formant=-2, human_realism=60, human_warmth=54, human_breath=8,  de_ess=14, clarity=28, transient=14, vocal_focus=36, proximity=24, smart_level=48)),
+            "Niño Leo":            ("Personas", dict(pitch=5,  bass=0,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=6,  comp=26, vol=84, formant=5,  human_realism=66, human_warmth=34, human_breath=20, de_ess=34, clarity=24, transient=8,  vocal_focus=26, proximity=12, smart_level=40)),
+            "Niño Nico":           ("Personas", dict(pitch=4,  bass=0,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=6,  comp=26, vol=84, formant=4,  human_realism=66, human_warmth=36, human_breath=18, de_ess=32, clarity=24, transient=8,  vocal_focus=26, proximity=12, smart_level=40)),
+            "Niña Luna":           ("Personas", dict(pitch=6,  bass=0,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=6,  comp=26, vol=84, formant=5,  human_realism=68, human_warmth=34, human_breath=22, de_ess=36, clarity=24, transient=7,  vocal_focus=24, proximity=12, smart_level=40)),
+            "Niña Emma":           ("Personas", dict(pitch=5,  bass=2,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=6,  comp=28, vol=85, formant=5,  human_realism=66, human_warmth=36, human_breath=20, de_ess=34, clarity=24, transient=8,  vocal_focus=24, proximity=12, smart_level=40)),
+            "Abuelo Paco":         ("Personas", dict(pitch=-2, bass=24, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=8,  comp=46, vol=89, formant=-1, vibrato=9,  human_realism=64, human_warmth=52, human_breath=24, de_ess=18, clarity=16, transient=6,  vocal_focus=24, proximity=20, smart_level=42)),
+            "Abuelo José":         ("Personas", dict(pitch=-2, bass=22, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=8,  comp=44, vol=89, formant=-1, vibrato=7,  human_realism=64, human_warmth=50, human_breath=22, de_ess=18, clarity=18, transient=6,  vocal_focus=26, proximity=20, smart_level=42)),
+            "Abuela Carmen":       ("Personas", dict(pitch=1,  bass=10, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=9,  comp=44, vol=89, formant=2,  vibrato=9,  human_realism=64, human_warmth=48, human_breath=24, de_ess=26, clarity=16, transient=6,  vocal_focus=24, proximity=18, smart_level=42)),
+            "Abuela Lola":         ("Personas", dict(pitch=2,  bass=8,  robot=0,  echo=1,  radio=0,  megaphone=0,  gate=9,  comp=44, vol=89, formant=2,  vibrato=11, human_realism=64, human_warmth=48, human_breath=26, de_ess=26, clarity=16, transient=6,  vocal_focus=24, proximity=18, smart_level=42)),
 
             # CANTADAS / AUTOTUNE
             "AutoTune Suave":       ("Cantadas", dict(pitch=1,  bass=10, robot=0,  echo=12, radio=0,  megaphone=0,  gate=7,  comp=58, vol=88, autotune=35, autotune_shift=0, vibrato=12, chorus=10)),
@@ -21215,7 +21218,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self._voz_actual = name
 
         _, values = presets[name]
-        for reset_key in ['autotune', 'autotune_real', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant', 'human_realism', 'human_warmth', 'human_breath', 'de_ess', 'clarity', 'transient', 'modern_space']:
+        for reset_key in ['autotune', 'autotune_real', 'autotune_shift', 'vibrato', 'chorus', 'eq_low', 'eq_mid', 'eq_high', 'formant', 'human_realism', 'human_warmth', 'human_breath', 'de_ess', 'clarity', 'transient', 'modern_space', 'vocal_focus', 'proximity', 'smart_level']:
             if reset_key in self.vars and reset_key not in values:
                 self.vars[reset_key].set(0)
         for key, value in values.items():
