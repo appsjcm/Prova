@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.9.0 Aspecto Completo"
+VERSION = "4.0.0 Controles Reales"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2133,6 +2133,9 @@ class PremiumApp:
         self.platform_icons = {}
         self.device_icons = {}
         self.card_images = {}
+        self.ui_toggle_images = {}
+        self.ui_floating_images = {}
+        self.ui_dock_images = {}
 
         def _cargar_pack(carpeta, destino, prefijo, tam):
             d = Path(resource_path(f"assets/{carpeta}"))
@@ -2156,6 +2159,10 @@ class PremiumApp:
         _cargar_pack("pack_platform", self.platform_icons, "platform_", (28, 28))
         _cargar_pack("pack_device", self.device_icons, "device_", (24, 24))
         _cargar_pack("pack_cards", self.card_images, "card_", (150, 90))
+        # Pack de UI funcional (toggles, flotante, dock) tipo VoiceMod.
+        _cargar_pack("ui_toggles", self.ui_toggle_images, "toggle_", (155, 29))
+        _cargar_pack("ui_floating", self.ui_floating_images, "floating_", (64, 64))
+        _cargar_pack("ui_dock", self.ui_dock_images, "dock_", (44, 44))
 
         # Avatares del pack premium (para la voz actual y personajes).
         self.avatar_images = {}
@@ -3332,10 +3339,18 @@ class PremiumApp:
                              relief="flat", bd=0, font=("Segoe UI", 12, "bold"),
                              width=3, cursor="hand2")
 
-        self._float_power = tk.Button(fila, text="⏻", command=self.vm_toggle_power,
-                                      bg="#241a3d", fg="#a78bfa", activebackground="#7c3cff",
-                                      activeforeground="#ffffff", relief="flat", bd=0,
-                                      font=("Segoe UI", 14, "bold"), width=3, cursor="hand2")
+        self._float_power_img = ("voiceicc_on" in self.ui_floating_images
+                                 and "voiceicc_off" in self.ui_floating_images)
+        if self._float_power_img:
+            self._float_power = tk.Button(fila, command=self.vm_toggle_power,
+                                          image=self.ui_floating_images["voiceicc_off"],
+                                          bg="#111117", activebackground="#111117",
+                                          relief="flat", bd=0, cursor="hand2")
+        else:
+            self._float_power = tk.Button(fila, text="⏻", command=self.vm_toggle_power,
+                                          bg="#241a3d", fg="#a78bfa", activebackground="#7c3cff",
+                                          activeforeground="#ffffff", relief="flat", bd=0,
+                                          font=("Segoe UI", 14, "bold"), width=3, cursor="hand2")
         self._float_power.pack(side="left", padx=2)
         self._float_voice_btn = tk.Button(fila, text="🎭", command=self.toggle_voice_normal,
                                           bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
@@ -3388,7 +3403,14 @@ class PremiumApp:
         try:
             if getattr(self, "_float_win", None) is None:
                 return
-            if self.engine.running:
+            if getattr(self, "_float_power_img", False):
+                if self.engine.running and bool(self.mute.get()):
+                    self._float_power.configure(image=self.ui_floating_images["voiceicc_muted"])
+                elif self.engine.running:
+                    self._float_power.configure(image=self.ui_floating_images["voiceicc_on"])
+                else:
+                    self._float_power.configure(image=self.ui_floating_images["voiceicc_off"])
+            elif self.engine.running:
                 self._float_power.configure(bg="#123524", fg="#62ffb4")
             else:
                 self._float_power.configure(bg="#241a3d", fg="#a78bfa")
@@ -3415,6 +3437,43 @@ class PremiumApp:
                 self.vm_power_button.configure(bg="#241a3d", fg="#a78bfa")
         except Exception:
             pass
+
+    def _img_toggle(self, parent, base, var, command):
+        """Crea un interruptor con imagen (pack de UI funcional) enlazado a un
+        BooleanVar. La imagen ON/OFF se intercambia al pulsar y también si la
+        variable cambia desde otro sitio. Devuelve el widget Label, o None si
+        no hay imágenes para ese interruptor (el llamador usa texto entonces)."""
+        on_img = self.ui_toggle_images.get(f"{base}_on_wide")
+        off_img = self.ui_toggle_images.get(f"{base}_off_wide")
+        if on_img is None or off_img is None:
+            return None
+        lbl = tk.Label(parent, bg="#101016", bd=0, cursor="hand2")
+
+        def _refrescar(*_):
+            try:
+                lbl.configure(image=on_img if bool(var.get()) else off_img)
+            except Exception:
+                pass
+
+        def _pulsar(_evento):
+            var.set(not bool(var.get()))
+            _refrescar()
+            if command is not None:
+                try:
+                    command()
+                except Exception:
+                    pass
+
+        lbl.bind("<Button-1>", _pulsar)
+        try:
+            var.trace_add("write", _refrescar)
+        except Exception:
+            try:
+                var.trace("w", _refrescar)
+            except Exception:
+                pass
+        _refrescar()
+        return lbl
 
     def build_ui(self):
         # V1.4: shell lateral oscuro/neón, inspirado en interfaces modernas de voice changer.
@@ -3512,8 +3571,16 @@ class PremiumApp:
                 padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
             )
 
-        _vm_toggle("VOICE CHANGER", self.effects_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
-        _vm_toggle("FX FONDO", self.nr_enabled, self.update_engine).pack(side="left", padx=4, pady=13)
+        def _bar_toggle(base, texto, var, cmd):
+            """Usa el interruptor con imagen del pack si existe; si no, texto."""
+            img = self._img_toggle(bottombar, base, var, cmd)
+            if img is not None:
+                img.pack(side="left", padx=4, pady=16)
+            else:
+                _vm_toggle(texto, var, cmd).pack(side="left", padx=4, pady=13)
+
+        _bar_toggle("voice_changer", "VOICE CHANGER", self.effects_enabled, self.update_engine)
+        _bar_toggle("background_fx", "FX FONDO", self.nr_enabled, self.update_engine)
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎙 PUSH-TO-TALK (V)", self.ptt_mode, self.toggle_ptt_mode).pack(side="left", padx=4, pady=13)
