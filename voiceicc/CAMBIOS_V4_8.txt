@@ -1,0 +1,11 @@
+CAMBIOS V4.8 - Avatares HQ (lote 3)
+
+- Integrados los avatares de alta calidad del lote 3 (256 px como avatar):
+  IA Masculina, Narrador, Locutor y Demonio.
+- Ya son 12 de 18 personajes en alta calidad. Mismos nombres de archivo,
+  el mapeo voz->avatar sigue igual.
+- Pendientes de los 2 lotes restantes (siguen con el pack anterior):
+  Alien, Angel, Fantasma, Hacker, Monstruo y Ninja.
+
+Verificado: PNGs 256x256 validos, py_compile OK y simulacion de arranque
+sin errores.
