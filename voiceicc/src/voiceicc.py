@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.1.0 Arranque Rapido"
+VERSION = "6.2.0 Arranque Rapido Plus"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2519,19 +2519,26 @@ class PremiumApp:
             ("assets/deploy_pro", self.deploy_pro_images, "publicar web"),
         ]
 
-        # Miniaturas de voces usadas en la biblioteca pública. (Antes se
-        # cargaba además una copia a tamaño completo en voice_card_images que
-        # no usaba nadie: 73 imágenes de más en el arranque, ya eliminadas.)
+        # Las miniaturas de voces (73) se cargan en la fase diferida
+        # (_run_deferred_startup): son el mayor coste y solo las usan la
+        # rejilla de favoritos y la vista previa, que se refrescan luego.
+
+    def _load_voice_thumbnails(self):
+        """Carga las miniaturas de voces (240x135) usadas en favoritos y en la
+        vista previa. Se llama en segundo plano para no frenar el arranque."""
         voices_dir = Path(resource_path("assets/voices"))
-        if voices_dir.exists() and ImageTk is not None:
-            for file in voices_dir.glob("*.png"):
-                try:
-                    with Image.open(str(file)) as img:
-                        thumb = img.resize((240, 135))
-                        self.grid_voice_images[file.stem] = ImageTk.PhotoImage(thumb)
-                        self.release_asset_count += 1
-                except Exception as exc:
-                    print(f"No se pudo cargar miniatura de voz {file}: {exc}")
+        if not (voices_dir.exists() and ImageTk is not None):
+            return
+        for file in voices_dir.glob("*.png"):
+            if file.stem in self.grid_voice_images:
+                continue
+            try:
+                with Image.open(str(file)) as img:
+                    thumb = img.resize((240, 135))
+                    self.grid_voice_images[file.stem] = ImageTk.PhotoImage(thumb)
+                    self.release_asset_count += 1
+            except Exception as exc:
+                print(f"No se pudo cargar miniatura de voz {file}: {exc}")
 
     def voice_image_key(self, name):
         text = name.lower()
@@ -3829,6 +3836,15 @@ class PremiumApp:
                 build()
             except Exception as exc:
                 print(f"No se pudo construir módulo diferido {getattr(build, '__name__', build)}: {exc}")
+        # Miniaturas de voces + refresco de las rejillas que las usan.
+        try:
+            self._load_voice_thumbnails()
+            if hasattr(self, "refresh_favoritos_pro"):
+                self.refresh_favoritos_pro()
+            if hasattr(self, "update_voice_preview"):
+                self.update_voice_preview()
+        except Exception as exc:
+            print(f"No se pudieron cargar/refrescar miniaturas de voz: {exc}")
 
     def build_ui(self):
         # V1.4: shell lateral oscuro/neón, inspirado en interfaces modernas de voice changer.
