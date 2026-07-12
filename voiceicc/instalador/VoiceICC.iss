@@ -1,5 +1,5 @@
 #define MyAppName "VoiceICC"
-#define MyAppVersion "3.8"
+#define MyAppVersion "3.9"
 #define MyAppPublisher "Modulador de Voz Premium"
 #define MyAppExeName "VoiceICC.exe"
 
@@ -15,6 +15,8 @@ OutputBaseFilename=VoiceICC_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+WizardImageFile=..\assets\installer_side.png
+WizardSmallImageFile=..\assets\app_icon.png
 SetupIconFile=..\assets\app_icon.ico
 UninstallDisplayIcon={app}\{#MyAppExeName}
 ArchitecturesInstallIn64BitMode=x64compatible

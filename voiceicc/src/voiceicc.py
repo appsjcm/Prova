@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.8.0 Nuevo Aspecto"
+VERSION = "3.9.0 Aspecto Completo"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2126,6 +2126,37 @@ class PremiumApp:
         except Exception:
             pass
 
+        # Grupos de imágenes del pack premium.
+        self.nav_icons = {}
+        self.soundboard_icons = {}
+        self.background_images = {}
+        self.platform_icons = {}
+        self.device_icons = {}
+        self.card_images = {}
+
+        def _cargar_pack(carpeta, destino, prefijo, tam):
+            d = Path(resource_path(f"assets/{carpeta}"))
+            if not d.exists():
+                return
+            for file in d.glob("*.png"):
+                clave = file.stem.replace(prefijo, "")
+                try:
+                    if ImageTk is not None and Image is not None and tam:
+                        with Image.open(str(file)) as img:
+                            destino[clave] = ImageTk.PhotoImage(img.resize(tam))
+                    else:
+                        destino[clave] = tk.PhotoImage(file=str(file))
+                    self.release_asset_count += 1
+                except Exception as exc:
+                    print(f"No se pudo cargar {file}: {exc}")
+
+        _cargar_pack("pack_nav", self.nav_icons, "nav_", (22, 22))
+        _cargar_pack("pack_soundboard", self.soundboard_icons, "soundboard_", (40, 40))
+        _cargar_pack("pack_backgrounds", self.background_images, "background_", None)
+        _cargar_pack("pack_platform", self.platform_icons, "platform_", (28, 28))
+        _cargar_pack("pack_device", self.device_icons, "device_", (24, 24))
+        _cargar_pack("pack_cards", self.card_images, "card_", (150, 90))
+
         # Avatares del pack premium (para la voz actual y personajes).
         self.avatar_images = {}
         avatars_dir = Path(resource_path("assets/avatars"))
@@ -2725,12 +2756,11 @@ class PremiumApp:
 
     def vm_sidebar_items(self):
         return [
-            ("🏠", "Inicio", "Home", "🏠 Inicio"),
-            ("◈", "VOICEBOX", "VOICEBOX", "🎙 Voces"),
-            ("▦", "SOUNDBOARD", "SOUNDBOARD", "🎛 Efectos"),
-            ("◉", "VOICELAB", "VOICELAB", "🎵 Studio"),
-            ("✦", "CREATOR", "CREATOR", "🚀 Publicar"),
-            ("⚙", "Ajustes", "Settings", "⚙ Ajustes"),
+            ("🏠", "Inicio", "Home", "🏠 Inicio", "home"),
+            ("◈", "VOICEBOX", "VOICEBOX", "🎙 Voces", "voicebox"),
+            ("▦", "SOUNDBOARD", "SOUNDBOARD", "🎛 Efectos", "soundboard"),
+            ("◉", "VOICELAB", "VOICELAB", "🎵 Studio", "lab"),
+            ("⚙", "Ajustes", "Settings", "⚙ Ajustes", "settings"),
         ]
 
     def vm_build_sidebar_buttons(self):
@@ -2741,12 +2771,16 @@ class PremiumApp:
         self.vm_sidebar_buttons.clear()
         lang = self.app_language.get() if hasattr(self, "app_language") else "Español"
         collapsed = bool(self.vm_sidebar_collapsed.get()) if hasattr(self, "vm_sidebar_collapsed") else False
-        for icon, es, en, section in self.vm_sidebar_items():
+        for item in self.vm_sidebar_items():
+            icon, es, en, section = item[0], item[1], item[2], item[3]
+            navkey = item[4] if len(item) > 4 else None
             label = es if lang == "Español" else en
-            button_text = f"  {icon}" if collapsed else f"  {icon}   {label}"
+            img = self.nav_icons.get(navkey) if navkey else None
             btn = tk.Button(
                 self.vm_sidebar_nav,
-                text=button_text,
+                text=("" if collapsed else f"   {label}") if img else (f"  {icon}" if collapsed else f"  {icon}   {label}"),
+                image=img if img else "",
+                compound="left" if (img and not collapsed) else "center",
                 anchor="w" if not collapsed else "center",
                 bg="#111117",
                 fg="#a9a9b7",
@@ -2755,11 +2789,13 @@ class PremiumApp:
                 relief="flat",
                 bd=0,
                 padx=12 if not collapsed else 6,
-                pady=12,
+                pady=10,
                 font=("Segoe UI", 10, "bold"),
                 cursor="hand2",
                 command=lambda name=section: self.vm_select_section(name),
             )
+            if img:
+                btn.image = img
             btn.pack(fill="x", padx=9, pady=2)
             self.vm_sidebar_buttons[section] = btn
         self.vm_refresh_sidebar()
@@ -16078,6 +16114,17 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         main = tk.Frame(self.tab_inicio_premium, bg="#090d16")
         main.pack(fill="both", expand=True)
 
+        # Fondo premium del pack (si está disponible), detrás de todo.
+        try:
+            bg = self.background_images.get("purple_particles") or self.background_images.get("purple_cloud")
+            if bg is not None:
+                fondo = tk.Label(main, image=bg, bd=0)
+                fondo.image = bg
+                fondo.place(x=0, y=0, relwidth=1, relheight=1)
+                fondo.lower()
+        except Exception:
+            pass
+
         hero = tk.Frame(main, bg="#090d16")
         hero.pack(fill="x", padx=8, pady=(8, 8))
 
@@ -21039,23 +21086,37 @@ def main():
     splash = tk.Toplevel(root)
     splash.overrideredirect(True)
     splash.configure(bg="#0a0a0f")
-    ancho, alto = 420, 240
-    sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
-    splash.geometry(f"{ancho}x{alto}+{(sw - ancho) // 2}+{(sh - alto) // 2}")
-    tk.Frame(splash, bg="#a65cff", height=3).pack(fill="x")
-    _logo_ok = False
+    _assets = os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "assets")
+    _splash_img = None
     try:
-        _logo_img = tk.PhotoImage(file=os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "assets", "voiceicc_logo.png"))
-        _lbl = tk.Label(splash, image=_logo_img, bg="#0a0a0f")
-        _lbl.image = _logo_img
-        _lbl.pack(pady=(30, 2))
-        _logo_ok = True
+        _splash_img = tk.PhotoImage(file=os.path.join(_assets, "pack_splash", "splash.png"))
     except Exception:
-        pass
-    if not _logo_ok:
-        tk.Label(splash, text="VoiceICC", bg="#0a0a0f", fg="#a65cff", font=("Segoe UI", 34, "bold")).pack(pady=(52, 2))
-    tk.Label(splash, text="YOUR VOICE. YOUR IDENTITY.", bg="#0a0a0f", fg="#00dff5", font=("Segoe UI", 10, "bold")).pack()
-    tk.Label(splash, text="Cargando estudio de voz…", bg="#0a0a0f", fg="#777b91", font=("Segoe UI", 9)).pack(pady=(26, 0))
+        _splash_img = None
+    if _splash_img is not None:
+        # Pantalla de carga con la imagen premium lista del pack.
+        iw, ih = _splash_img.width(), _splash_img.height()
+        sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
+        splash.geometry(f"{iw}x{ih}+{(sw - iw) // 2}+{(sh - ih) // 2}")
+        _lbl = tk.Label(splash, image=_splash_img, bd=0)
+        _lbl.image = _splash_img
+        _lbl.pack()
+        tk.Label(splash, text="Cargando estudio de voz…", bg="#0a0a0f", fg="#cfd3ff", font=("Segoe UI", 9)).place(relx=0.5, rely=0.94, anchor="center")
+    else:
+        ancho, alto = 420, 240
+        sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
+        splash.geometry(f"{ancho}x{alto}+{(sw - ancho) // 2}+{(sh - alto) // 2}")
+        tk.Frame(splash, bg="#a65cff", height=3).pack(fill="x")
+        _logo_ok = False
+        try:
+            _logo_img = tk.PhotoImage(file=os.path.join(_assets, "voiceicc_logo.png"))
+            _l = tk.Label(splash, image=_logo_img, bg="#0a0a0f"); _l.image = _logo_img; _l.pack(pady=(30, 2))
+            _logo_ok = True
+        except Exception:
+            pass
+        if not _logo_ok:
+            tk.Label(splash, text="VoiceICC", bg="#0a0a0f", fg="#a65cff", font=("Segoe UI", 34, "bold")).pack(pady=(52, 2))
+        tk.Label(splash, text="YOUR VOICE. YOUR IDENTITY.", bg="#0a0a0f", fg="#00dff5", font=("Segoe UI", 10, "bold")).pack()
+        tk.Label(splash, text="Cargando estudio de voz…", bg="#0a0a0f", fg="#777b91", font=("Segoe UI", 9)).pack(pady=(26, 0))
     splash.update()
     try:
         PremiumApp(root)
