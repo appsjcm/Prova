@@ -1,0 +1,16 @@
+CAMBIOS V4.7 - Avatares HQ (lotes 1 y 2)
+
+- Integrados los avatares de alta calidad de los lotes 1 y 2 (ilustraciones
+  cuadradas RGBA con transparencia circular, sin textos, en 64/128/256/512/
+  1024 px). Se instala la version de 256 px como avatar (bajada limpia al
+  marco de 128 px).
+- Personajes actualizados (8): Hombre Joven, Mujer Joven, Nino, Nina,
+  IA Femenina, Abuelo, Abuela y Robot. Sustituyen a los recortes de
+  demostracion anteriores manteniendo los mismos nombres de archivo, asi
+  que el mapeo voz->avatar sigue igual.
+- Pendientes de los 3 lotes restantes (siguen con el pack anterior por
+  ahora): Alien, Angel, Demonio, Fantasma, Hacker, IA Masculina, Locutor,
+  Monstruo, Narrador y Ninja.
+
+Verificado: PNGs validos 256x256, py_compile OK y simulacion de arranque
+sin errores.
