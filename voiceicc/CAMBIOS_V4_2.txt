@@ -1,0 +1,14 @@
+CAMBIOS V4.2 - Avatares Premium
+
+- Integrado el pack "VoiceICC Premium Avatars" (18 avatares): Abuela,
+  Abuelo, Alienigena, Angel, Demonio, Fantasma, Hacker, Hombre Joven,
+  IA Femenina, IA Masculina, Locutor, Monstruo, Mujer Joven, Narrador,
+  Nina, Ninja, Nino y Robot.
+- Los nuevos avatares sustituyen a los anteriores manteniendo los mismos
+  nombres de archivo, asi que el mapeo voz->avatar (avatar_for_voice)
+  sigue funcionando sin cambios.
+- Mejorado el cargador de avatares: recorte cuadrado centrado en la cara
+  (busto) antes de escalar a 128x128, para que el avatar llene el marco
+  circular sin deformarse.
+- Verificado: py_compile OK y simulacion de arranque completada sin
+  errores. El .exe e instalador se generan igual en GitHub.

@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.1.0 Dock en Vivo"
+VERSION = "4.2.0 Avatares Premium"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2173,7 +2173,14 @@ class PremiumApp:
                 try:
                     if ImageTk is not None and Image is not None:
                         with Image.open(str(file)) as img:
-                            self.avatar_images[clave] = ImageTk.PhotoImage(img.resize((128, 128)))
+                            # Recorte cuadrado centrado (busto) para que el
+                            # avatar premium llene el marco sin deformarse.
+                            w, h = img.size
+                            lado = min(w, h)
+                            izq = (w - lado) // 2
+                            arr = (h - lado) // 3  # algo más arriba: cara centrada
+                            recorte = img.crop((izq, arr, izq + lado, arr + lado))
+                            self.avatar_images[clave] = ImageTk.PhotoImage(recorte.resize((128, 128)))
                     else:
                         self.avatar_images[clave] = tk.PhotoImage(file=str(file))
                     self.release_asset_count += 1
