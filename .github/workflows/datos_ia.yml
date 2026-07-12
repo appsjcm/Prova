@@ -9,6 +9,18 @@ on:
         description: "Incluir el motor (torch + rvc-python) como wheels offline"
         type: boolean
         default: true
+      voz_ejemplo_pth_url:
+        description: "URL de un modelo de voz RVC de ejemplo (.pth). Opcional."
+        type: string
+        default: ""
+      voz_ejemplo_index_url:
+        description: "URL del .index de la voz de ejemplo. Opcional."
+        type: string
+        default: ""
+      voz_ejemplo_nombre:
+        description: "Nombre de la voz de ejemplo (sin extensión)."
+        type: string
+        default: "Voz_Ejemplo"
 
 jobs:
   empaquetar:
@@ -37,6 +49,14 @@ jobs:
         run: |
           curl -L -o datos_ia\base\hubert_base.pt https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt
           curl -L -o datos_ia\base\rmvpe.pt https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt
+        shell: cmd
+        continue-on-error: true
+
+      - name: Descargar voz de ejemplo (opcional)
+        if: ${{ inputs.voz_ejemplo_pth_url != '' }}
+        run: |
+          curl -L -o "datos_ia\voces\${{ inputs.voz_ejemplo_nombre }}.pth" "${{ inputs.voz_ejemplo_pth_url }}"
+          if not "${{ inputs.voz_ejemplo_index_url }}"=="" curl -L -o "datos_ia\voces\${{ inputs.voz_ejemplo_nombre }}.index" "${{ inputs.voz_ejemplo_index_url }}"
         shell: cmd
         continue-on-error: true
 

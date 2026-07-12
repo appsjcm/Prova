@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.5.0 Realismo Maximo Global"
+VERSION = "5.6.0 RVC Turnkey"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -112,6 +112,10 @@ class RVCBackend:
     costes por uso, y los usuarios pueden descargar nuevas voces."""
 
     BASE_FILES = ("hubert_base.pt", "rmvpe.pt")
+    BASE_URLS = {
+        "hubert_base.pt": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt",
+        "rmvpe.pt": "https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt",
+    }
 
     def __init__(self, models_dir=None, base_dir=None):
         base = models_dir or os.path.join(os.path.expanduser("~"), "VoiceICC", "voces_ia")
@@ -172,6 +176,37 @@ class RVCBackend:
                 faltan.append(nombre)
         return faltan
 
+    def download_base_models(self, progress=None):
+        """Descarga (online) los modelos base de RVC que falten a base_dir.
+        Devuelve (ok_count, total_faltan). progress(str) es opcional."""
+        faltan = self.base_models_present()
+        ok = 0
+        for nombre in faltan:
+            url = self.BASE_URLS.get(nombre)
+            if not url:
+                continue
+            destino = Path(self.base_dir) / nombre
+            try:
+                if progress:
+                    progress(f"Descargando {nombre}…")
+                from urllib.request import urlopen
+                with urlopen(url) as r, open(destino, "wb") as out:
+                    shutil.copyfileobj(r, out)
+                ok += 1
+            except Exception as exc:
+                print(f"No se pudo descargar {nombre}: {exc}")
+        return ok, len(faltan)
+
+    def _apply_base_env(self):
+        """Apunta rvc-python a nuestros modelos base locales (uso offline).
+        No pasa nada si la librería no usa estas variables."""
+        try:
+            os.environ.setdefault("RVC_MODELDIR", self.base_dir)
+            os.environ.setdefault("rmvpe_root", self.base_dir)
+            os.environ.setdefault("hubert_path", str(Path(self.base_dir) / "hubert_base.pt"))
+        except Exception:
+            pass
+
     def data_report(self):
         """Resumen legible del estado de los datos de IA (para la interfaz)."""
         ok, motivo = self.detect()
@@ -229,6 +264,7 @@ class RVCBackend:
         if not model:
             return False
         try:
+            self._apply_base_env()
             from rvc_python.infer import RVCInference
             impl = RVCInference(device=self.device)
             impl.load_model(model["pth"], index_path=model.get("index"))
@@ -10815,6 +10851,7 @@ class PremiumApp:
         botones.pack(anchor="w")
         ttk.Button(botones, text="🔎 Comprobar motor", command=self._rvc_refresh_status).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="⚙ Instalar datos IA…", command=self._rvc_install_data).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="🧠 Descargar modelos base", command=self._rvc_download_base).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
         ttk.Label(estado, text="Para activarlas: pip install rvc-python torch  ·  luego copia un modelo .pth "
@@ -10873,6 +10910,30 @@ class PremiumApp:
             self.rvc_model.set("")
             if self.rvc.detect()[0]:
                 self.rvc_status.set("✅ Motor listo. Aún no hay modelos: importa un .pth para empezar.")
+
+    def _rvc_download_base(self):
+        """Descarga los modelos base de RVC (hubert, rmvpe) en segundo plano."""
+        faltan = self.rvc.base_models_present()
+        if not faltan:
+            self.rvc_status.set("✅ Los modelos base ya están descargados.")
+            return
+        self.rvc_status.set("Descargando modelos base de IA (puede tardar)…")
+
+        def _run():
+            try:
+                ok, total = self.rvc.download_base_models(
+                    progress=lambda m: self.root.after(0, self.rvc_status.set, m))
+                def _fin():
+                    if ok >= total and total > 0:
+                        self.rvc_status.set("✅ Modelos base descargados. Ya puedes usar Voces IA.")
+                    else:
+                        self.rvc_status.set(f"⚠ Descargados {ok}/{total} modelos base. Revisa tu conexión.")
+                    self._rvc_refresh_status()
+                self.root.after(0, _fin)
+            except Exception as exc:
+                self.root.after(0, self.rvc_status.set, f"⚠ Error al descargar: {exc}")
+
+        threading.Thread(target=_run, daemon=True).start()
 
     def _rvc_install_data(self):
         """Lanza el instalador de datos de IA (instalar_datos_ia.bat) si está,
