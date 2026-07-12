@@ -1,0 +1,24 @@
+CAMBIOS V5.4 - Todas las Voces al Maximo
+
+Se completa el pulido: ahora TODAS las voces de los 18 avatares estan
+optimizadas, tambien las de personaje.
+
+- Voces de personaje con "pase de presencia" (claridad, transitorios, foco
+  vocal y nivelado inteligente) para que las palabras se entiendan a
+  traves del efecto, sin perder el caracter:
+  · Robots/IA (Robot directo, Androide, IA futurista, Cyborg, Casco
+    espacial, Computadora retro): nitidos y presentes, con un toque humano
+    en los semi-humanos (Androide, IA, Cyborg).
+  · Oscuras (Voz grave, Villano, Demonio suave, Monstruo cueva, Sombra,
+    Guardian oscuro): amenaza inteligible, no embarrada.
+  · Epicas (Titan, Jefe final): grandes pero claras.
+  · Fantasia (Alien con de-esser por el tono agudo, Fantasma, Dragon
+    suave): efecto limpio y entendible.
+- El caracter se conserva (p. ej. Robot directo mantiene robot=88); solo
+  se anade inteligibilidad y presencia.
+- Con las Personas (5.2) y las voces de uso diario (5.3), ya son 42 voces
+  con cadena de naturalidad/presencia afinada por tipo.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba de que las voces
+de personaje empujan claridad/foco/nivelado al motor conservando su efecto.

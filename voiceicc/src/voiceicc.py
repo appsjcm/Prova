@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.3.0 Realismo al Maximo"
+VERSION = "5.4.0 Todas las Voces al Maximo"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -415,26 +415,26 @@ class VoiceBank:
             "Narrador épico":       ("Épicas", dict(pitch=-4, bass=45, robot=0,  echo=12, radio=8,  megaphone=0,  gate=6,  comp=55, vol=92, human_realism=50, human_warmth=44, de_ess=18, clarity=30, transient=14, vocal_focus=42, proximity=24, smart_level=50)),
             "Cine tráiler":         ("Épicas", dict(pitch=-7, bass=60, robot=3,  echo=18, radio=6,  megaphone=0,  gate=7,  comp=60, vol=90, human_realism=46, human_warmth=48, de_ess=16, clarity=28, transient=16, vocal_focus=44, proximity=26, smart_level=52)),
             "Héroe final":          ("Épicas", dict(pitch=-3, bass=45, robot=0,  echo=14, radio=4,  megaphone=0,  gate=6,  comp=52, vol=90, human_realism=50, human_warmth=44, de_ess=18, clarity=30, transient=14, vocal_focus=42, proximity=24, smart_level=50)),
-            "Titán":                ("Épicas", dict(pitch=-12,bass=90, robot=10, echo=20, radio=0,  megaphone=0,  gate=7,  comp=50, vol=88, formant=-4)),
-            "Jefe final":           ("Épicas", dict(pitch=-10,bass=70, robot=28, echo=30, radio=0,  megaphone=0,  gate=8,  comp=45, vol=88)),
+            "Titán":                ("Épicas", dict(pitch=-12,bass=90, robot=10, echo=20, radio=0,  megaphone=0,  gate=7,  comp=50, vol=88, formant=-4, clarity=22, transient=12, vocal_focus=32, smart_level=42)),
+            "Jefe final":           ("Épicas", dict(pitch=-10,bass=70, robot=28, echo=30, radio=0,  megaphone=0,  gate=8,  comp=45, vol=88, clarity=20, transient=12, vocal_focus=30, smart_level=42)),
 
             # OSCURAS
-            "Voz grave":            ("Oscuras", dict(pitch=-6, bass=45, robot=0,  echo=5,  radio=0,  megaphone=0,  gate=5,  comp=30, vol=90)),
-            "Villano":              ("Oscuras", dict(pitch=-8, bass=50, robot=32, echo=22, radio=0,  megaphone=0,  gate=7,  comp=35, vol=86, formant=-2)),
-            "Demonio suave":        ("Oscuras", dict(pitch=-9, bass=62, robot=38, echo=18, radio=0,  megaphone=0,  gate=7,  comp=40, vol=84)),
-            "Monstruo cueva":       ("Oscuras", dict(pitch=-11,bass=80, robot=18, echo=45, radio=0,  megaphone=0,  gate=6,  comp=35, vol=82, formant=-5)),
-            "Sombra":               ("Oscuras", dict(pitch=-7, bass=58, robot=12, echo=34, radio=0,  megaphone=0,  gate=7,  comp=35, vol=80)),
-            "Guardián oscuro":      ("Oscuras", dict(pitch=-8, bass=68, robot=10, echo=16, radio=0,  megaphone=0,  gate=7,  comp=45, vol=86)),
+            "Voz grave":            ("Oscuras", dict(pitch=-6, bass=45, robot=0,  echo=5,  radio=0,  megaphone=0,  gate=5,  comp=30, vol=90, clarity=24, transient=12, vocal_focus=34, smart_level=44, human_realism=30, human_warmth=30)),
+            "Villano":              ("Oscuras", dict(pitch=-8, bass=50, robot=32, echo=22, radio=0,  megaphone=0,  gate=7,  comp=35, vol=86, formant=-2, clarity=22, transient=12, vocal_focus=34, smart_level=42)),
+            "Demonio suave":        ("Oscuras", dict(pitch=-9, bass=62, robot=38, echo=18, radio=0,  megaphone=0,  gate=7,  comp=40, vol=84, clarity=22, transient=12, vocal_focus=32, smart_level=42)),
+            "Monstruo cueva":       ("Oscuras", dict(pitch=-11,bass=80, robot=18, echo=45, radio=0,  megaphone=0,  gate=6,  comp=35, vol=82, formant=-5, clarity=22, transient=12, vocal_focus=32, smart_level=42)),
+            "Sombra":               ("Oscuras", dict(pitch=-7, bass=58, robot=12, echo=34, radio=0,  megaphone=0,  gate=7,  comp=35, vol=80, clarity=24, transient=12, vocal_focus=34, smart_level=44)),
+            "Guardián oscuro":      ("Oscuras", dict(pitch=-8, bass=68, robot=10, echo=16, radio=0,  megaphone=0,  gate=7,  comp=45, vol=86, clarity=24, transient=12, vocal_focus=34, smart_level=44, human_realism=28)),
 
             # ROBOTS
-            "Robot directo":        ("Robots", dict(pitch=0,  bass=0,  robot=88, echo=4,  radio=12, megaphone=0,  gate=8,  comp=30, vol=84)),
-            "Androide":             ("Robots", dict(pitch=-1, bass=10, robot=70, echo=6,  radio=20, megaphone=0,  gate=9,  comp=40, vol=86)),
-            "IA futurista":         ("Robots", dict(pitch=2,  bass=0,  robot=55, echo=10, radio=28, megaphone=0,  gate=8,  comp=35, vol=82)),
-            "Cyborg":               ("Robots", dict(pitch=-3, bass=30, robot=65, echo=8,  radio=25, megaphone=0,  gate=8,  comp=45, vol=86)),
-            "Casco espacial":       ("Robots", dict(pitch=-2, bass=20, robot=25, echo=20, radio=38, megaphone=12, gate=9,  comp=50, vol=88)),
+            "Robot directo":        ("Robots", dict(pitch=0,  bass=0,  robot=88, echo=4,  radio=12, megaphone=0,  gate=8,  comp=30, vol=84, clarity=20, transient=12, vocal_focus=34, smart_level=42, human_realism=22)),
+            "Androide":             ("Robots", dict(pitch=-1, bass=10, robot=70, echo=6,  radio=20, megaphone=0,  gate=9,  comp=40, vol=86, clarity=22, transient=12, vocal_focus=34, smart_level=42, human_realism=26, human_warmth=20)),
+            "IA futurista":         ("Robots", dict(pitch=2,  bass=0,  robot=55, echo=10, radio=28, megaphone=0,  gate=8,  comp=35, vol=82, clarity=24, transient=10, vocal_focus=32, smart_level=42, human_realism=28, human_warmth=18)),
+            "Cyborg":               ("Robots", dict(pitch=-3, bass=30, robot=65, echo=8,  radio=25, megaphone=0,  gate=8,  comp=45, vol=86, clarity=22, transient=12, vocal_focus=34, smart_level=44, human_realism=26, human_warmth=22)),
+            "Casco espacial":       ("Robots", dict(pitch=-2, bass=20, robot=25, echo=20, radio=38, megaphone=12, gate=9,  comp=50, vol=88, clarity=20, transient=10, vocal_focus=30, smart_level=44)),
             "Robot roto":           ("Robots", dict(pitch=3,  bass=0,  robot=95, echo=12, radio=35, megaphone=0,  gate=10, comp=20, vol=78)),
             "Drone":                ("Robots", dict(pitch=4,  bass=0,  robot=78, echo=9,  radio=28, megaphone=0,  gate=8,  comp=25, vol=76)),
-            "Computadora retro":    ("Robots", dict(pitch=1,  bass=0,  robot=86, echo=3,  radio=45, megaphone=0,  gate=10, comp=35, vol=82)),
+            "Computadora retro":    ("Robots", dict(pitch=1,  bass=0,  robot=86, echo=3,  radio=45, megaphone=0,  gate=10, comp=35, vol=82, clarity=22, transient=12, vocal_focus=32, smart_level=42)),
 
             # RADIO
             "Locutor español":      ("Radio", dict(pitch=-3, bass=35, robot=0,  echo=6,  radio=15, megaphone=0,  gate=7,  comp=55, vol=92, human_realism=48, human_warmth=46, de_ess=20, clarity=32, transient=12, vocal_focus=44, proximity=24, smart_level=54)),
@@ -455,13 +455,13 @@ class VoiceBank:
             "Gnomo rápido":         ("Divertidas", dict(pitch=8,  bass=0,  robot=6,  echo=5,  radio=0,  megaphone=0,  gate=5,  comp=25, vol=74)),
 
             # FANTASÍA
-            "Alien":                ("Fantasía", dict(pitch=8,  bass=0,  robot=60, echo=15, radio=5,  megaphone=0,  gate=8,  comp=25, vol=78, formant=4)),
-            "Fantasma":             ("Fantasía", dict(pitch=-2, bass=20, robot=10, echo=58, radio=0,  megaphone=0,  gate=6,  comp=20, vol=76)),
+            "Alien":                ("Fantasía", dict(pitch=8,  bass=0,  robot=60, echo=15, radio=5,  megaphone=0,  gate=8,  comp=25, vol=78, formant=4, clarity=22, transient=10, vocal_focus=30, smart_level=42, de_ess=26)),
+            "Fantasma":             ("Fantasía", dict(pitch=-2, bass=20, robot=10, echo=58, radio=0,  megaphone=0,  gate=6,  comp=20, vol=76, clarity=22, transient=10, vocal_focus=30, smart_level=40)),
             "Eco mágico":           ("Fantasía", dict(pitch=2,  bass=0,  robot=8,  echo=55, radio=0,  megaphone=0,  gate=5,  comp=20, vol=76)),
             "Hechicero":            ("Fantasía", dict(pitch=-3, bass=35, robot=12, echo=40, radio=0,  megaphone=0,  gate=6,  comp=35, vol=84)),
             "Criatura mágica":      ("Fantasía", dict(pitch=4,  bass=15, robot=25, echo=38, radio=0,  megaphone=0,  gate=6,  comp=25, vol=78)),
             "Portal dimensional":   ("Fantasía", dict(pitch=1,  bass=25, robot=40, echo=60, radio=8,  megaphone=0,  gate=8,  comp=30, vol=80)),
-            "Dragón suave":         ("Fantasía", dict(pitch=-9, bass=85, robot=15, echo=24, radio=0,  megaphone=0,  gate=7,  comp=42, vol=86, formant=-4)),
+            "Dragón suave":         ("Fantasía", dict(pitch=-9, bass=85, robot=15, echo=24, radio=0,  megaphone=0,  gate=7,  comp=42, vol=86, formant=-4, clarity=22, transient=12, vocal_focus=32, smart_level=42)),
             "Mago neón":            ("Fantasía", dict(pitch=2,  bass=18, robot=18, echo=45, radio=6,  megaphone=0,  gate=6,  comp=28, vol=82)),
 
 
