@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.7.0 Tecla PTT"
+VERSION = "3.8.0 Nuevo Aspecto"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2125,6 +2125,22 @@ class PremiumApp:
             self.root.iconbitmap(resource_path("assets/app_icon.ico"))
         except Exception:
             pass
+
+        # Avatares del pack premium (para la voz actual y personajes).
+        self.avatar_images = {}
+        avatars_dir = Path(resource_path("assets/avatars"))
+        if avatars_dir.exists():
+            for file in avatars_dir.glob("avatar_*.png"):
+                clave = file.stem.replace("avatar_", "")
+                try:
+                    if ImageTk is not None and Image is not None:
+                        with Image.open(str(file)) as img:
+                            self.avatar_images[clave] = ImageTk.PhotoImage(img.resize((128, 128)))
+                    else:
+                        self.avatar_images[clave] = tk.PhotoImage(file=str(file))
+                    self.release_asset_count += 1
+                except Exception as exc:
+                    print(f"No se pudo cargar avatar {file}: {exc}")
 
         release_folders = [
             ("assets/neon_voicebox_ui", self.neon_ui_images, "interfaz neon"),
@@ -7016,6 +7032,48 @@ class PremiumApp:
         ttk.Button(right, text="Voz aleatoria", command=self.random_voice).pack(fill="x", pady=4)
         ttk.Button(right, text="Grabar prueba WAV", command=self.record).pack(fill="x", pady=4)
 
+    def avatar_for_voice(self, voice_name):
+        """Elige el avatar del pack que mejor representa una voz."""
+        n = self._normalizar(voice_name)
+        cat = self._normalizar(VoiceBank.all_presets().get(voice_name, ("", {}))[0]) if voice_name in VoiceBank.all_presets() else ""
+        reglas = [
+            (("abuela",), "abuela"), (("abuelo",), "abuelo"),
+            (("nina", "niña"), "nina"), (("nino", "niño"), "nino"),
+            (("mujer", "lucia", "sofia", "luna", "emma", "carmen"), "mujer"),
+            (("hombre", "diego", "marcos", "paco", "jose"), "hombre"),
+            (("robot", "androide", "cyborg", "mecha", "computadora", "drone"), "robot"),
+            (("alien", "extrater"), "alien"),
+            (("monstruo", "titan", "bestia", "dragon", "orco"), "monstruo"),
+            (("demonio", "diablo", "infernal"), "demonio"),
+            (("fantasma", "espectro", "espiritu"), "fantasma"),
+            (("angel", "celestial"), "angel"),
+            (("hacker", "gamer", "gaming", "fortnite", "discord", "tryhard"), "hacker"),
+            (("ninja", "sombra", "asesino"), "ninja"),
+            (("locutor", "radio", "podcast", "narrador", "cine", "epico", "trailer"), "narrador"),
+            (("ia", "asistente", "sintetic", "neuronal"), "ia_femenina"),
+        ]
+        for claves, avatar in reglas:
+            if any(k in n or k in cat for k in claves) and avatar in self.avatar_images:
+                return avatar
+        # por defecto según categoría de personas o robot
+        for defecto in ("ia_femenina", "robot", "hombre"):
+            if defecto in self.avatar_images:
+                return defecto
+        return None
+
+    def update_voice_avatar(self):
+        """Muestra el avatar de la voz actual en la tarjeta 'Voz actual'."""
+        etiqueta = getattr(self, "voiceicc_current_voice_image_label", None)
+        if etiqueta is None:
+            return
+        clave = self.avatar_for_voice(self.preset.get())
+        if clave and clave in self.avatar_images:
+            try:
+                etiqueta.configure(image=self.avatar_images[clave])
+                etiqueta.image = self.avatar_images[clave]
+            except Exception:
+                pass
+
     def apply_pro_voice(self, voice_name):
         if voice_name in VoiceBank.all_presets():
             self.preset.set(voice_name)
@@ -7024,6 +7082,7 @@ class PremiumApp:
             self.category.set(cat)
             self.refresh_voice_list()
             self.apply_preset()
+            self.update_voice_avatar()
             self.state.set(f"Estado: voz pro aplicada · {voice_name}")
 
     # ------------------------------------------------------------------
@@ -16068,6 +16127,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.voiceicc_current_voice_image_label.configure(image=self.voice_characters_images["luna_vega"])
             self.voiceicc_current_voice_image_label.image=self.voice_characters_images["luna_vega"]
         self.voiceicc_current_voice_image_label.pack(pady=(0,4))
+        try:
+            self.update_voice_avatar()
+        except Exception:
+            pass
         self.voiceicc_current_voice_label=tk.Label(current,textvariable=self.voiceicc_current_voice_name,bg="#111725",fg="#ffffff",font=("Segoe UI",13,"bold")); self.voiceicc_current_voice_label.pack()
         tk.Label(current,textvariable=self.voiceicc_current_voice_role,bg="#111725",fg="#9da6c0",font=("Segoe UI",8),wraplength=160,justify="center").pack(pady=(2,7))
         tk.Button(current,text="Editar voz",command=lambda:self.select_tab(self.tab_cadena_vocal),bg="#241a3d",fg="#d9c6ff",activebackground="#7c3cff",activeforeground="#ffffff",relief="flat",bd=0,pady=7,font=("Segoe UI",8,"bold"),cursor="hand2").pack(fill="x",padx=12,pady=(0,12))
@@ -20980,7 +21043,17 @@ def main():
     sw, sh = splash.winfo_screenwidth(), splash.winfo_screenheight()
     splash.geometry(f"{ancho}x{alto}+{(sw - ancho) // 2}+{(sh - alto) // 2}")
     tk.Frame(splash, bg="#a65cff", height=3).pack(fill="x")
-    tk.Label(splash, text="VoiceICC", bg="#0a0a0f", fg="#a65cff", font=("Segoe UI", 34, "bold")).pack(pady=(52, 2))
+    _logo_ok = False
+    try:
+        _logo_img = tk.PhotoImage(file=os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")), "assets", "voiceicc_logo.png"))
+        _lbl = tk.Label(splash, image=_logo_img, bg="#0a0a0f")
+        _lbl.image = _logo_img
+        _lbl.pack(pady=(30, 2))
+        _logo_ok = True
+    except Exception:
+        pass
+    if not _logo_ok:
+        tk.Label(splash, text="VoiceICC", bg="#0a0a0f", fg="#a65cff", font=("Segoe UI", 34, "bold")).pack(pady=(52, 2))
     tk.Label(splash, text="YOUR VOICE. YOUR IDENTITY.", bg="#0a0a0f", fg="#00dff5", font=("Segoe UI", 10, "bold")).pack()
     tk.Label(splash, text="Cargando estudio de voz…", bg="#0a0a0f", fg="#777b91", font=("Segoe UI", 9)).pack(pady=(26, 0))
     splash.update()
