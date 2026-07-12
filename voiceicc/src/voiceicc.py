@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "3.6.0 Esencial"
+VERSION = "3.7.0 Tecla PTT"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -1634,6 +1634,8 @@ class PremiumApp:
         self.start_with_windows = tk.BooleanVar(value=False)
         self.monitor_var = tk.BooleanVar(value=False)
         self.ptt_mode = tk.BooleanVar(value=False)
+        self.ptt_key = tk.StringVar(value="v")
+        self._ptt_hooks = []
         self.voiceicc_setup_progress = tk.DoubleVar(value=0)
         self.voiceicc_setup_text = tk.StringVar(value="Configuración VoiceICC · 0%")
         self.voiceicc_featured_cards = {}
@@ -3175,6 +3177,28 @@ class PremiumApp:
             pass
         self.update_engine()
         self.state.set("Estado: 🆘 pánico · voz limpia restaurada")
+
+    def _bind_ptt_key(self):
+        """Engancha la tecla push-to-talk global (configurable)."""
+        if not GLOBAL_HOTKEYS_AVAILABLE:
+            return
+        for h in getattr(self, "_ptt_hooks", []):
+            try:
+                global_keyboard.unhook_key(h)
+            except Exception:
+                pass
+        self._ptt_hooks = []
+        tecla = (self.ptt_key.get() or "v").strip().lower()
+        try:
+            self._ptt_hooks.append(global_keyboard.on_press_key(tecla, lambda e: self.root.after(0, self.push_to_talk_press)))
+            self._ptt_hooks.append(global_keyboard.on_release_key(tecla, lambda e: self.root.after(0, self.push_to_talk_release)))
+        except Exception as e:
+            print("No se pudo enganchar la tecla PTT:", e)
+
+    def rebind_ptt_key(self):
+        """Reengancha la tecla PTT cuando el usuario la cambia en Ajustes."""
+        self._bind_ptt_key()
+        self.state.set(f"Estado: push-to-talk asignado a la tecla '{self.ptt_key.get().upper()}'")
 
     def push_to_talk_press(self):
         """Mantener pulsado: hablar (quita el silencio)."""
@@ -10223,8 +10247,7 @@ class PremiumApp:
             for key, action in mapping.items():
                 global_keyboard.add_hotkey(key, action)
             # Push-to-talk global: mantener V para hablar (si el modo está ON).
-            global_keyboard.on_press_key("v", lambda e: self.root.after(0, self.push_to_talk_press))
-            global_keyboard.on_release_key("v", lambda e: self.root.after(0, self.push_to_talk_release))
+            self._bind_ptt_key()
             return True
         except Exception as e:
             print("No se pudieron activar atajos globales:", e)
@@ -19916,6 +19939,17 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.slider(card, "Compresor directo", "comp", 0, 100, 7, "%")
         self.slider(card, "Volumen salida", "vol", 0, 120, 8, "%")
 
+        ptt_card = self.make_card(self.tab_ajustes, "Tecla de Push-to-Talk")
+        ptt_card.pack(fill="x", pady=(10, 0))
+        ttk.Label(ptt_card, text="Con push-to-talk activo (barra inferior), mantén esta tecla para hablar. Elígela para que no choque con tu juego.", style="Card.TLabel", wraplength=560, justify="left").pack(anchor="w", pady=(0, 6))
+        fila_ptt = ttk.Frame(ptt_card, style="Card.TFrame")
+        fila_ptt.pack(fill="x")
+        ttk.Label(fila_ptt, text="Tecla:", style="Card.TLabel", width=8).pack(side="left")
+        ttk.Combobox(fila_ptt, textvariable=self.ptt_key, state="readonly", width=14,
+                     values=["v", "b", "n", "m", "ctrl", "alt", "shift", "caps lock",
+                             "insert", "supr", "fin", "re pág", "av pág", "`", "<"]).pack(side="left", padx=(0, 10))
+        ttk.Button(fila_ptt, text="Aplicar tecla", command=self.rebind_ptt_key).pack(side="left", padx=4)
+
     def build_live_tab(self):
         card = self.make_card(self.tab_directo, "Control en directo")
         card.pack(fill="x", pady=(0, 10))
@@ -20636,6 +20670,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "workspace_focus_mode": bool(self.workspace_focus_mode.get()) if hasattr(self, "workspace_focus_mode") else False,
             "voiceicc_right_rail_visible": bool(self.voiceicc_right_rail_visible.get()) if hasattr(self, "voiceicc_right_rail_visible") else True,
             "start_minimized": bool(self.start_minimized.get()) if hasattr(self, "start_minimized") else False,
+            "ptt_key": self.ptt_key.get() if hasattr(self, "ptt_key") else "v",
             "flotante_pos": list(getattr(self, "_float_pos", ()) or ()),
             "flotante_abierto": bool(getattr(self, "_float_win", None) is not None),
         }
@@ -20671,6 +20706,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         try:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            if data.get("ptt_key"):
+                self.ptt_key.set(data.get("ptt_key"))
+                self.root.after(1100, self._bind_ptt_key)
             pos = data.get("flotante_pos") or []
             if len(pos) == 2:
                 self._float_pos = (int(pos[0]), int(pos[1]))

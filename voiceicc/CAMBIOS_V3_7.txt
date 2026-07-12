@@ -1,0 +1,11 @@
+VOICEICC 3.7 · TECLA PTT
+
+- La tecla de Push-to-Talk ahora se ELIGE (antes era fija en V, que
+  choca con muchos juegos). Nuevo selector "Tecla de Push-to-Talk" en
+  Ajustes: V, B, N, M, Ctrl, Alt, Shift, Bloq Mayús, Insert, Supr,
+  Fin, Re Pág, Av Pág y más.
+- "Aplicar tecla" reengancha al instante el atajo global sin reiniciar.
+- La tecla elegida se guarda y se restaura en la siguiente sesión.
+- Verificado: al cambiar de tecla se sueltan los enganches anteriores
+  y se crean los nuevos, y el push-to-talk sigue silenciando/activando
+  correctamente con la tecla nueva.
