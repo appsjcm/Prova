@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.9.0 Avatares HQ (lote 4)"
+VERSION = "5.0.0 Avatares HQ Completo"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -7455,6 +7455,8 @@ class PremiumApp:
             (("ninja", "sombra", "asesino"), "ninja"),
             (("locutor", "radio", "podcast", "narrador", "cine", "epico", "trailer"), "narrador"),
             (("ia", "asistente", "sintetic", "neuronal"), "ia_femenina"),
+            # Voces del usuario (Mis voces / creador): avatar personalizable.
+            (("mis voces", "mi voz", "personaliz", "custom"), "custom_mujer"),
         ]
         for claves, avatar in reglas:
             if any(k in n or k in cat for k in claves) and avatar in self.avatar_images:
