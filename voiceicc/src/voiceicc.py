@@ -75,7 +75,9 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.4.0 Datos IA en el Instalador"
+VERSION = "4.5.0 Marca Coherente"
+VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
+VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -2650,18 +2652,25 @@ class PremiumApp:
 
         frozen_release = bool(getattr(sys, "frozen", False))
         if frozen_release:
+            # En el .exe instalado los documentos van junto al ejecutable
+            # (carpeta {app}), no dentro del bundle de PyInstaller.
             expected_files = [
-                "README.md", "GUIA_RAPIDA.md", "CHECKLIST_PUBLICACION.md",
-                "PRIVACIDAD.md", "VERSION.txt", "assets/app_icon.png",
+                "README.md", "GUIA_RAPIDA.md", "PRIVACIDAD.md", "assets/app_icon.png",
             ]
         else:
             expected_files = [
-                "README.md", "GUIA_RAPIDA.md", "CHECKLIST_PUBLICACION.md",
+                "README.md", "GUIA_RAPIDA.md",
                 "PRIVACIDAD.md", "RELEASE_NOTES.md", "VERSION.txt", "requirements.txt",
                 "crear_exe.bat", "crear_instalador_windows.bat",
             ]
-        project_root = Path(resource_path("."))
-        missing_files = [name for name in expected_files if not (project_root / name).exists()]
+        # Un archivo cuenta como presente si está en el bundle o junto al .exe.
+        roots = [Path(resource_path("."))]
+        try:
+            roots.append(Path(sys.executable).resolve().parent)
+        except Exception:
+            pass
+        missing_files = [name for name in expected_files
+                         if not any((r / name).exists() for r in roots)]
 
         critical = len(missing) + len(empty) + len(unexpected) + len(missing_files)
         warnings = len(duplicate_labels) + len(self._release_removed_tabs)
@@ -2687,10 +2696,10 @@ class PremiumApp:
         self.release_audit_last = report
         if status == "PASS":
             self.release_health.set(f"Calidad de versión: OK · {report['active_modules']} módulos")
-            self.release_status.set(f"VoiceICC V1.7 · {report['active_modules']} módulos verificados")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} · {report['active_modules']} módulos verificados")
         else:
             self.release_health.set(f"Calidad de versión: revisar {critical} punto(s)")
-            self.release_status.set(f"VoiceICC V1.7 · auditoría pendiente")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} · auditoría pendiente")
 
         if export:
             folder = Path.home() / "ModuladorVozPremium" / "Informes"
@@ -2754,9 +2763,9 @@ class PremiumApp:
             except Exception:
                 missing.append(attr)
         if missing:
-            self.release_status.set(f"VoiceICC V1.7 · {len(missing)} módulos omitidos")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} · {len(missing)} módulos omitidos")
         else:
-            self.release_status.set(f"VoiceICC V1.7 · {len(self._tab_registry)} módulos activos")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} · {len(self._tab_registry)} módulos activos")
 
     def _tab_leaf_count(self, widget):
         try:
@@ -2781,7 +2790,7 @@ class PremiumApp:
         if removed:
             self._release_removed_tabs.extend(removed)
             self._tab_registry = [(text, tab) for text, tab in self._tab_registry if self._tab_attr_name(tab) not in removed]
-            self.release_status.set(f"VoiceICC V1.7 · {len(self._tab_registry)} módulos activos · vacíos ocultos: {len(removed)}")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} · {len(self._tab_registry)} módulos activos · vacíos ocultos: {len(removed)}")
         try:
             self.select_tab(self.tab_inicio_premium)
         except Exception:
@@ -3763,13 +3772,19 @@ class PremiumApp:
         logo_wrap = tk.Frame(self.vm_sidebar, bg="#111117", height=124)
         logo_wrap.pack(fill="x", padx=10, pady=(10, 4))
         logo_wrap.pack_propagate(False)
-        if "sidebar_logo" in self.voiceicc_brand_images and not self.vm_sidebar_collapsed.get():
-            tk.Label(logo_wrap, image=self.voiceicc_brand_images["sidebar_logo"], bg="#111117", bd=0).pack(anchor="center")
-        elif "sidebar_logo" in self.neon_ui_images and not self.vm_sidebar_collapsed.get():
-            tk.Label(logo_wrap, image=self.neon_ui_images["sidebar_logo"], bg="#111117", bd=0).pack(anchor="center")
+        if "sidebar_logo_app" in self.voiceicc_brand_images and not self.vm_sidebar_collapsed.get():
+            tk.Label(logo_wrap, image=self.voiceicc_brand_images["sidebar_logo_app"], bg="#111117", bd=0).pack(anchor="center")
+        elif self.vm_sidebar_collapsed.get():
+            self.vm_logo_text = tk.Label(logo_wrap, text="V", bg="#111117", fg="#c7a6ff", font=("Segoe UI", 20, "bold"))
+            self.vm_logo_text.pack(anchor="center", pady=12)
         else:
-            self.vm_logo_text = tk.Label(logo_wrap, text="VN" if self.vm_sidebar_collapsed.get() else "VoiceICC", bg="#111117", fg="#ffffff", font=("Segoe UI", 18, "bold"), justify="left")
-            self.vm_logo_text.pack(anchor="w", padx=10, pady=12)
+            # Marca de texto VoiceICC (evita logotipos heredados con otro nombre).
+            marca = tk.Frame(logo_wrap, bg="#111117")
+            marca.pack(anchor="w", padx=10, pady=(16, 2))
+            self.vm_logo_text = tk.Label(marca, text="Voice", bg="#111117", fg="#ffffff", font=("Segoe UI", 18, "bold"))
+            self.vm_logo_text.pack(side="left")
+            tk.Label(marca, text="ICC", bg="#111117", fg="#c7a6ff", font=("Segoe UI", 18, "bold")).pack(side="left")
+            tk.Label(logo_wrap, text="PREMIUM VOICE LAB", bg="#111117", fg="#5b5b6b", font=("Segoe UI", 7, "bold")).pack(anchor="w", padx=11)
         tk.Button(logo_wrap, text="≡", command=self.vm_toggle_sidebar, bg="#1b1b24", fg="#d8d8e3", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=8, pady=2, font=("Segoe UI", 11, "bold"), cursor="hand2").pack(anchor="ne", padx=6, pady=(0, 4))
 
         tk.Label(self.vm_sidebar, text="MODES" if not self.vm_sidebar_collapsed.get() else "•", bg="#111117", fg="#626270", font=("Segoe UI", 9, "bold"), anchor="w" if not self.vm_sidebar_collapsed.get() else "center").pack(fill="x", padx=20 if not self.vm_sidebar_collapsed.get() else 0, pady=(5, 4))
@@ -3929,7 +3944,7 @@ class PremiumApp:
 
         status_area = tk.Frame(topbar, bg="#101016")
         status_area.pack(side="right", fill="y", padx=(4, 14))
-        tk.Label(status_area, text="V1.9 ULTRA", bg="#ff4fa3", fg="#ffffff", font=("Segoe UI", 9, "bold"), padx=10, pady=4).pack(anchor="e", pady=(11, 4))
+        tk.Label(status_area, text=f"{VERSION_TAG} ULTRA", bg="#ff4fa3", fg="#ffffff", font=("Segoe UI", 9, "bold"), padx=10, pady=4).pack(anchor="e", pady=(11, 4))
         tk.Button(status_area, text="★ HUB", command=lambda: self.select_tab(self.tab_inicio_premium), bg="#1d2135", fg="#ffffff", activebackground="#2b3151", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
         tk.Button(status_area, text="✨ EXPERIENCE", command=self.experience_open_onboarding, bg="#142638", fg="#7fe8ff", activebackground="#1a3850", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=4, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(anchor="e", pady=(0, 4))
         tk.Label(status_area, textvariable=self.vm_ui_status, bg="#101016", fg="#00ddeb", font=("Consolas", 10, "bold")).pack(anchor="e")
