@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.0.0 Micro Auto-Enrutado"
+VERSION = "6.1.0 Arranque Rapido"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2479,25 +2479,35 @@ class PremiumApp:
                 except Exception as exc:
                     print(f"No se pudo cargar avatar {file}: {exc}")
 
+        # Packs de las pestañas VISIBLES: se cargan ya (los necesita la UI).
         release_folders = [
             ("assets/neon_voicebox_ui", self.neon_ui_images, "interfaz neon"),
-            ("assets/visual_overhaul", self.visual_overhaul_images, "aspecto"),
             ("assets/voice_characters", self.voice_characters_images, "personajes"),
-            ("assets/fx_mixer", self.fx_mixer_images, "mezclador FX"),
-            ("assets/fx_designer", self.fx_designer_images, "diseñador FX"),
             ("assets/realistic_effects", self.realistic_fx_images, "efectos"),
             ("assets/real_voice_fx", self.real_voice_fx_images, "voz real"),
-            ("assets/bilingual_visual", self.bilingual_visual_images, "idioma"),
-            ("assets/inicio_premium", self.inicio_premium_images, "inicio"),
             ("assets/asistente_inicial", self.asistente_inicial_images, "configuración"),
             ("assets/streamer", self.streamer_images, "directo"),
             ("assets/test_voz", self.test_voice_images, "test de voz"),
             ("assets/creador_voces", self.creator_images, "creador de voces"),
             ("assets/favoritos_pro", self.favoritos_images, "favoritos"),
-            ("assets/perfiles", self.profile_images, "perfiles"),
             ("assets/grabadora", self.rec_images, "grabadora"),
-            ("assets/cadena_vocal", self.vocal_chain_images, "cadena vocal"),
             ("assets/autotune", self.autotune_images, "autotune"),
+            ("assets/cable_virtual", self.cable_images, "cable virtual"),
+            ("assets/atajos", self.hotkey_images, "atajos"),
+            ("assets/packs", self.pack_images, "packs de voces"),
+        ]
+        for relative_dir, target, label in release_folders:
+            self.release_asset_count += self._load_release_png_folder(relative_dir, target, label)
+
+        # Packs de módulos OCULTOS (no visibles en esta edición): se cargan en
+        # segundo plano tras pintar la ventana, para que el arranque sea rápido.
+        self._deferred_pack_folders = [
+            ("assets/visual_overhaul", self.visual_overhaul_images, "aspecto"),
+            ("assets/fx_mixer", self.fx_mixer_images, "mezclador FX"),
+            ("assets/fx_designer", self.fx_designer_images, "diseñador FX"),
+            ("assets/bilingual_visual", self.bilingual_visual_images, "idioma"),
+            ("assets/perfiles", self.profile_images, "perfiles"),
+            ("assets/cadena_vocal", self.vocal_chain_images, "cadena vocal"),
             ("assets/mezclador_musical", self.mix_images, "mezclador"),
             ("assets/master_final", self.master_images, "master"),
             ("assets/biblioteca_premium", self.biblioteca_premium_images, "biblioteca"),
@@ -2507,29 +2517,21 @@ class PremiumApp:
             ("assets/export_pack", self.export_pack_images, "exportación"),
             ("assets/landing_page", self.landing_page_images, "landing"),
             ("assets/deploy_pro", self.deploy_pro_images, "publicar web"),
-            ("assets/cable_virtual", self.cable_images, "cable virtual"),
-            ("assets/atajos", self.hotkey_images, "atajos"),
-            ("assets/packs", self.pack_images, "packs de voces"),
         ]
-        for relative_dir, target, label in release_folders:
-            self.release_asset_count += self._load_release_png_folder(relative_dir, target, label)
 
-        # Retratos/miniaturas de voces usadas en la biblioteca pública.
+        # Miniaturas de voces usadas en la biblioteca pública. (Antes se
+        # cargaba además una copia a tamaño completo en voice_card_images que
+        # no usaba nadie: 73 imágenes de más en el arranque, ya eliminadas.)
         voices_dir = Path(resource_path("assets/voices"))
-        if voices_dir.exists():
+        if voices_dir.exists() and ImageTk is not None:
             for file in voices_dir.glob("*.png"):
                 try:
-                    self.voice_card_images[file.stem] = tk.PhotoImage(file=str(file))
-                    self.release_asset_count += 1
+                    with Image.open(str(file)) as img:
+                        thumb = img.resize((240, 135))
+                        self.grid_voice_images[file.stem] = ImageTk.PhotoImage(thumb)
+                        self.release_asset_count += 1
                 except Exception as exc:
-                    print(f"No se pudo cargar tarjeta de voz {file}: {exc}")
-                if ImageTk is not None:
-                    try:
-                        with Image.open(str(file)) as img:
-                            thumb = img.resize((240, 135))
-                            self.grid_voice_images[file.stem] = ImageTk.PhotoImage(thumb)
-                    except Exception as exc:
-                        print(f"No se pudo cargar miniatura de voz {file}: {exc}")
+                    print(f"No se pudo cargar miniatura de voz {file}: {exc}")
 
     def voice_image_key(self, name):
         text = name.lower()
@@ -2938,6 +2940,10 @@ class PremiumApp:
 
     def select_tab(self, tab):
         """Selecciona una pestaña publicada y redirige accesos antiguos a su módulo V1 equivalente."""
+        # Si aún quedan módulos ocultos por construir en diferido, los
+        # construimos ahora (por si alguno se navega antes de tiempo).
+        if not getattr(self, "_deferred_done", True):
+            self._run_deferred_startup()
         if getattr(self, "release_mode", False):
             attr = self._tab_attr_name(tab)
             approved = {name for name, _text in self.RELEASE_TABS}
@@ -3807,6 +3813,23 @@ class PremiumApp:
         _refrescar()
         return lbl
 
+    def _run_deferred_startup(self):
+        """Carga los packs de imagen y construye los módulos ocultos en segundo
+        plano, una sola vez, tras pintar la ventana. Acelera el arranque."""
+        if getattr(self, "_deferred_done", False):
+            return
+        self._deferred_done = True
+        for relative_dir, target, label in getattr(self, "_deferred_pack_folders", []):
+            try:
+                self.release_asset_count += self._load_release_png_folder(relative_dir, target, label)
+            except Exception as exc:
+                print(f"No se pudo cargar pack diferido {relative_dir}: {exc}")
+        for build in getattr(self, "_deferred_tab_builds", []):
+            try:
+                build()
+            except Exception as exc:
+                print(f"No se pudo construir módulo diferido {getattr(build, '__name__', build)}: {exc}")
+
     def build_ui(self):
         # V1.4: shell lateral oscuro/neón, inspirado en interfaces modernas de voice changer.
         main = self._setup_pc_scroll_shell(self.root)
@@ -4265,40 +4288,51 @@ class PremiumApp:
         self.build_directo_pro_tab()
         self.build_test_voz_tab()
 
+        # Pestañas VISIBLES: se construyen ya para que la app se vea al instante.
         self.build_voice_characters_tab()
         self.build_voices_tab()
         self.build_creador_voces_tab()
         self.build_voces_ia_tab()
         self.build_favoritos_pro_tab()
-        self.build_perfiles_pro_tab()
 
         self.build_real_voice_fx_tab()
-        self.build_human_realism_tab()
         self.build_realistic_effects_tab()
-        self.build_fx_mixer_tab()
-        self.build_fx_designer_tab()
         self.build_soundboard_tab()
 
         self.build_grabadora_tab()
-        self.build_cadena_vocal_tab()
         self.build_autotune_tab()
-        self.build_mezclador_musical_tab()
-        self.build_master_final_tab()
-        self.build_biblioteca_premium_tab()
-
-        self.build_portadas_premium_tab()
-        self.build_brand_kit_tab()
-        self.build_publicacion_pro_tab()
-        self.build_export_pack_tab()
-        self.build_landing_page_tab()
-        self.build_deploy_pro_tab()
 
         self.build_settings_tab()
         self.build_cable_virtual_tab()
-        self.build_visual_overhaul_tab()
-        self.build_bilingual_visual_tab()
         self.build_atajos_tab()
         self.build_guide_tab()
+
+        # Módulos OCULTOS (no navegables en esta edición): se construyen en
+        # segundo plano tras pintar la ventana. No se ven, así que diferirlos
+        # no cambia nada visual pero acelera mucho el arranque.
+        self._deferred_tab_builds = [
+            self.build_perfiles_pro_tab,
+            self.build_human_realism_tab,
+            self.build_fx_mixer_tab,
+            self.build_fx_designer_tab,
+            self.build_cadena_vocal_tab,
+            self.build_mezclador_musical_tab,
+            self.build_master_final_tab,
+            self.build_biblioteca_premium_tab,
+            self.build_portadas_premium_tab,
+            self.build_brand_kit_tab,
+            self.build_publicacion_pro_tab,
+            self.build_export_pack_tab,
+            self.build_landing_page_tab,
+            self.build_deploy_pro_tab,
+            self.build_visual_overhaul_tab,
+            self.build_bilingual_visual_tab,
+        ]
+        self._deferred_done = False
+        try:
+            self.root.after(120, self._run_deferred_startup)
+        except Exception:
+            self._run_deferred_startup()
 
         self.tab_language_texts = {
             self.tab_visual_overhaul: ("✨ Aspecto", "✨ Appearance"),

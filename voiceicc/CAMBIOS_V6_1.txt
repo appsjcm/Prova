@@ -1,0 +1,24 @@
+CAMBIOS V6.1 - Arranque Rapido (optimizacion)
+
+La app arranca mucho mas rapido. Antes cargaba ~500 imagenes y construia
+todas las pestanas (incluidas ~16 ocultas que no se ven) antes de mostrar
+la ventana. Ahora:
+
+- Eliminadas 81 imagenes que se cargaban para nada:
+  · voice_card_images (73): copias a tamano completo de las voces que no
+    usaba ningun sitio (solo se usan las miniaturas grid_voice_images).
+  · inicio_premium (8): pack que no leia nadie.
+- Carga en dos fases:
+  · Fase 1 (inmediata): solo los packs de imagen y las pestanas VISIBLES,
+    para que la ventana aparezca al instante.
+  · Fase 2 (en segundo plano, tras pintar): 15 packs de imagen y 16 modulos
+    ocultos (mezclador, master, portadas, brand kit, publicacion, export,
+    landing, deploy, fx mixer/designer, cadena vocal, perfiles, biblioteca,
+    aspecto, idiomas). Como no se ven, diferirlos no cambia nada visual.
+- Si se navega a un modulo diferido antes de tiempo, se construye al vuelo
+  (select_tab lo garantiza). El pase diferido es idempotente.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque (fase rapida) sin errores, y prueba del
+pase diferido: construye los 16 modulos ocultos sin error, es idempotente y
+los marcos ocultos siguen presentes.
