@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.2.0 Avatares Premium"
+VERSION = "4.3.0 Voces IA Local"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -95,6 +95,194 @@ COLORS = {
 
 def clamp(value, low, high):
     return max(low, min(high, value))
+
+
+class RVCBackend:
+    """Conversión de voz neuronal LOCAL (RVC), sin enviar el audio a ningún
+    servidor. Todo el procesamiento ocurre en el PC del usuario.
+
+    El backend pesado (PyTorch + rvc-python) es OPCIONAL: si no está
+    instalado, VoiceICC sigue funcionando con su motor DSP de siempre y esta
+    capa queda inactiva. Cuando el usuario instala el backend y descarga un
+    modelo .pth en la carpeta de voces, las voces IA se activan solas.
+
+    Ventajas de hacerlo local: funciona sin Internet, más privacidad, sin
+    costes por uso, y los usuarios pueden descargar nuevas voces."""
+
+    def __init__(self, models_dir=None):
+        base = models_dir or os.path.join(os.path.expanduser("~"), "VoiceICC", "voces_ia")
+        self.models_dir = base
+        try:
+            os.makedirs(self.models_dir, exist_ok=True)
+        except Exception:
+            pass
+        self.enabled = False
+        self.active_model = None
+        self.pitch = 0           # semitonos de transposición
+        self.index_rate = 0.5    # peso del índice (timbre) 0..1
+        self.device = "cpu"
+        self._impl = None        # objeto de inferencia cargado (rvc-python)
+        self._loaded_name = None
+        self._backend_ok = None
+        self._backend_reason = ""
+        self.lock = threading.Lock()
+        # Buffer de streaming para tiempo real (ventana con contexto).
+        self._buf = np.zeros(0, dtype=np.float32)
+        self._tail = np.zeros(0, dtype=np.float32)
+
+    # -- detección del backend opcional --
+    def detect(self, force=False):
+        """Comprueba si el backend de IA está instalado. Devuelve (ok, motivo)."""
+        if self._backend_ok is not None and not force:
+            return self._backend_ok, self._backend_reason
+        try:
+            import torch  # noqa: F401
+        except Exception:
+            self._backend_ok = False
+            self._backend_reason = ("Falta el motor de IA (PyTorch). Instálalo con: "
+                                    "pip install rvc-python torch")
+            return self._backend_ok, self._backend_reason
+        try:
+            import rvc_python  # noqa: F401
+        except Exception:
+            self._backend_ok = False
+            self._backend_reason = ("Falta rvc-python. Instálalo con: "
+                                    "pip install rvc-python")
+            return self._backend_ok, self._backend_reason
+        self._backend_ok = True
+        self._backend_reason = "Motor de IA disponible (procesamiento local)."
+        return True, self._backend_reason
+
+    @property
+    def ready(self):
+        return bool(self.enabled and self._impl is not None)
+
+    # -- biblioteca de modelos de voz --
+    def list_models(self):
+        """Lista los modelos .pth (con su .index si existe) de la carpeta."""
+        out = []
+        try:
+            for f in sorted(Path(self.models_dir).glob("*.pth")):
+                idx = None
+                cand = f.with_suffix(".index")
+                if cand.exists():
+                    idx = str(cand)
+                else:
+                    otros = list(Path(self.models_dir).glob(f"{f.stem}*.index"))
+                    if otros:
+                        idx = str(otros[0])
+                out.append({"name": f.stem, "pth": str(f), "index": idx})
+        except Exception:
+            pass
+        return out
+
+    def import_model(self, src_path):
+        """Copia un .pth (y su .index si viene al lado) a la carpeta de voces."""
+        src = Path(src_path)
+        if not src.exists():
+            raise FileNotFoundError(src_path)
+        dst = Path(self.models_dir) / src.name
+        shutil.copy2(str(src), str(dst))
+        idx = src.with_suffix(".index")
+        if idx.exists():
+            shutil.copy2(str(idx), str(Path(self.models_dir) / idx.name))
+        return dst.stem
+
+    # -- carga / descarga del modelo --
+    def load(self, name):
+        """Carga un modelo por nombre. Devuelve True si quedó listo."""
+        self.active_model = name
+        ok, _ = self.detect()
+        if not ok or not name:
+            with self.lock:
+                self._impl = None
+            return False
+        model = next((m for m in self.list_models() if m["name"] == name), None)
+        if not model:
+            return False
+        try:
+            from rvc_python.infer import RVCInference
+            impl = RVCInference(device=self.device)
+            impl.load_model(model["pth"], index_path=model.get("index"))
+            try:
+                impl.set_params(f0up_key=int(self.pitch), index_rate=float(self.index_rate))
+            except Exception:
+                pass
+            with self.lock:
+                self._impl = impl
+                self._loaded_name = name
+                self._buf = np.zeros(0, dtype=np.float32)
+                self._tail = np.zeros(0, dtype=np.float32)
+            return True
+        except Exception as exc:
+            print("No se pudo cargar el modelo RVC:", exc)
+            with self.lock:
+                self._impl = None
+            return False
+
+    def unload(self):
+        with self.lock:
+            self._impl = None
+            self._loaded_name = None
+            self._buf = np.zeros(0, dtype=np.float32)
+            self._tail = np.zeros(0, dtype=np.float32)
+
+    def set_params(self, pitch=None, index_rate=None):
+        if pitch is not None:
+            self.pitch = pitch
+        if index_rate is not None:
+            self.index_rate = index_rate
+        impl = self._impl
+        if impl is not None:
+            try:
+                impl.set_params(f0up_key=int(self.pitch), index_rate=float(self.index_rate))
+            except Exception:
+                pass
+
+    def _infer_array(self, audio, sr):
+        """Ejecuta la inferencia del modelo cargado sobre un array mono."""
+        impl = self._impl
+        if impl is None:
+            return None
+        for meth in ("infer_array", "infer_data", "infer_np"):
+            fn = getattr(impl, meth, None)
+            if callable(fn):
+                try:
+                    out = fn(audio, sr)
+                    return np.asarray(out, dtype=np.float32).reshape(-1)
+                except Exception as exc:
+                    print(f"RVC {meth} falló:", exc)
+                    return None
+        return None
+
+    def process_block(self, x, sr):
+        """Conversión en tiempo real por bloques, con contexto y crossfade.
+
+        Devuelve el bloque convertido (mismo tamaño que x) o None para que el
+        motor use su cadena DSP como respaldo. Toda la conversión es local."""
+        if not self.ready:
+            return None
+        n = len(x)
+        if n == 0:
+            return x
+        # RVC necesita ventanas amplias para estimar el tono con estabilidad.
+        win = max(sr // 2, n * 4)   # ~0.5 s de contexto
+        with self.lock:
+            self._buf = np.concatenate([self._buf, x])[-win:].astype(np.float32)
+            ctx = self._buf.copy()
+            tail_prev = self._tail
+        conv = self._infer_array(ctx, sr)
+        if conv is None or len(conv) < n:
+            return None
+        y = conv[-n:].astype(np.float32)   # las muestras más recientes
+        # Crossfade corto contra la cola anterior para evitar clics de bloque.
+        f = min(64, n)
+        if len(tail_prev) >= f and f > 0:
+            ramp = np.linspace(0.0, 1.0, f, dtype=np.float32)
+            y[:f] = tail_prev[-f:] * (1 - ramp) + y[:f] * ramp
+        with self.lock:
+            self._tail = y.copy()
+        return y
 
 
 
@@ -308,6 +496,10 @@ class AudioEngine:
         self.volume = 0.90
         self.mute = False
         self.effects_enabled = True
+        # Conversión de voz neuronal LOCAL (RVC), opcional. Si hay un backend
+        # cargado, reemplaza la cadena DSP como fuente de la voz.
+        self.rvc_backend = None
+        self.rvc_enabled = False
         self.autotune = 0.0
         self.autotune_shift = 0.0
         # Autotune REAL: detecta el tono y lo corrige a una escala.
@@ -1247,8 +1439,24 @@ class AudioEngine:
             formant = self.formant
             recording = self.recording
 
+        # Conversión de voz por IA local (RVC): si hay un modelo cargado y
+        # activo, produce la voz; si no entrega bloque, cae a la cadena DSP.
+        conv = None
+        rvc = self.rvc_backend
+        if (not mute) and self.rvc_enabled and rvc is not None and rvc.ready:
+            try:
+                base = self.noise_reduce_stream(x)
+                conv = rvc.process_block(base, self.rate)
+            except Exception:
+                conv = None
+            if conv is not None and len(conv) != len(x):
+                conv = None
+
         if mute:
             y = np.zeros_like(x)
+        elif conv is not None:
+            # La voz IA ya define el timbre; solo volumen y limitador.
+            y = self.soft_limit(conv * volume)
         elif not effects_enabled:
             # Modo voz limpia: deja pasar el micro sin cambiar la voz, pero mantiene soundboard.
             y = self.noise_reduce_stream(x)
@@ -1530,6 +1738,7 @@ class PremiumApp:
         ("tab_voice_characters", "🎭 Personajes"),
         ("tab_voces", "🎙 Voces"),
         ("tab_creador_voces", "🧪 Creador"),
+        ("tab_voces_ia", "🤖 Voces IA"),
         ("tab_favoritos_pro", "⭐ Favoritos"),
         # Efectos
         ("tab_real_voice_fx", "🎙 Voz real"),
@@ -1551,6 +1760,7 @@ class PremiumApp:
         "tab_directo_pro": "🏠 Inicio", "tab_test_voz": "🏠 Inicio",
         "tab_voice_characters": "🎙 Voces", "tab_voces": "🎙 Voces",
         "tab_creador_voces": "🎙 Voces", "tab_favoritos_pro": "🎙 Voces",
+        "tab_voces_ia": "🎙 Voces",
         "tab_perfiles_pro": "🎙 Voces",
         "tab_real_voice_fx": "🎛 Efectos", "tab_human_realism": "🎛 Efectos",
         "tab_realistic_effects": "🎛 Efectos", "tab_fx_mixer": "🎛 Efectos",
@@ -1611,6 +1821,10 @@ class PremiumApp:
             pass
 
         self.engine = AudioEngine()
+        # Conversión de voz por IA LOCAL (RVC). El backend pesado es opcional;
+        # si no está, esta capa queda inactiva y el motor DSP sigue igual.
+        self.rvc = RVCBackend()
+        self.engine.rvc_backend = self.rvc
         self.input_map = {}
         self.output_map = {}
         self.input_combos = []
@@ -1833,6 +2047,12 @@ class PremiumApp:
         self.nr_status = tk.StringVar(value="Sin perfil de ruido. Empieza el directo y pulsa Aprender ruido.")
         self.nr_amount = tk.DoubleVar(value=70)
         self.nr_enabled = tk.BooleanVar(value=False)
+        # Voces IA (RVC) locales.
+        self.rvc_enabled = tk.BooleanVar(value=False)
+        self.rvc_model = tk.StringVar(value="")
+        self.rvc_pitch = tk.IntVar(value=0)
+        self.rvc_index = tk.DoubleVar(value=50)
+        self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
         self.cable_status = tk.StringVar(value="Cable Virtual listo.")
         self.test_voice_status = tk.StringVar(value="Test de Voz listo.")
         self.autotune_status = tk.StringVar(value="Autotune listo.")
@@ -3830,6 +4050,7 @@ class PremiumApp:
         self.tab_personas_pro = ttk.Frame(self._parent_for("tab_personas_pro"), padding=8)
         self.tab_cambiador_personas = ttk.Frame(self._parent_for("tab_cambiador_personas"), padding=8)
         self.tab_creador_voces = ttk.Frame(self._parent_for("tab_creador_voces"), padding=8)
+        self.tab_voces_ia = ttk.Frame(self._parent_for("tab_voces_ia"), padding=8)
         self.tab_atajos = ttk.Frame(self._parent_for("tab_atajos"), padding=8)
         self.tab_favoritos_pro = ttk.Frame(self._parent_for("tab_favoritos_pro"), padding=8)
         self.tab_escenas_pro = ttk.Frame(self._parent_for("tab_escenas_pro"), padding=8)
@@ -3904,6 +4125,7 @@ class PremiumApp:
         self._add_tab(self.tab_personas_pro, text="👥 Personas Pro")
         self._add_tab(self.tab_cambiador_personas, text="🎭 Cambiador")
         self._add_tab(self.tab_creador_voces, text="🧪 Creador")
+        self._add_tab(self.tab_voces_ia, text="🤖 Voces IA")
         self._add_tab(self.tab_atajos, text="⌨ Atajos")
         self._add_tab(self.tab_favoritos_pro, text="⭐ Favoritos")
         self._add_tab(self.tab_escenas_pro, text="🎬 Escenas")
@@ -3964,6 +4186,7 @@ class PremiumApp:
         self.build_voice_characters_tab()
         self.build_voices_tab()
         self.build_creador_voces_tab()
+        self.build_voces_ia_tab()
         self.build_favoritos_pro_tab()
         self.build_perfiles_pro_tab()
 
@@ -10502,6 +10725,141 @@ class PremiumApp:
         self.hotkey_status.set("Modulador activado." if self.effects_enabled.get() else "Modulador desactivado.")
         self.state.set("Estado: atajo modulador ON/OFF")
 
+
+    def build_voces_ia_tab(self):
+        cont = ttk.Frame(self.tab_voces_ia)
+        cont.pack(fill="both", expand=True)
+
+        header = self.make_card(cont)
+        header.pack(fill="x", pady=(0, 10))
+        ttk.Label(header, text="🤖 Voces IA (RVC) · Conversión local",
+                  style="Card.TLabel", font=("Segoe UI", 20, "bold")).pack(anchor="w")
+        ttk.Label(header, text="Convierte tu voz con modelos de IA (RVC) en tu propio PC. "
+                              "Sin Internet, sin enviar tu voz a servidores, sin costes por uso.",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(4, 0))
+
+        # Estado del motor y requisitos.
+        estado = self.make_card(cont, "Motor de IA")
+        estado.pack(fill="x", pady=(0, 10))
+        self._rvc_status_label = ttk.Label(estado, textvariable=self.rvc_status,
+                                            style="Card.TLabel", wraplength=760, justify="left")
+        self._rvc_status_label.pack(anchor="w", pady=(0, 8))
+        botones = ttk.Frame(estado, style="Card.TFrame")
+        botones.pack(anchor="w")
+        ttk.Button(botones, text="🔎 Comprobar motor", command=self._rvc_refresh_status).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
+        ttk.Label(estado, text="Para activarlas: pip install rvc-python torch  ·  luego copia un modelo .pth "
+                              "(y su .index) en la carpeta de voces.",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(8, 0))
+
+        # Biblioteca de modelos.
+        lib = self.make_card(cont, "Modelos de voz")
+        lib.pack(fill="x", pady=(0, 10))
+        fila = ttk.Frame(lib, style="Card.TFrame")
+        fila.pack(fill="x")
+        ttk.Label(fila, text="Voz IA:", style="Card.TLabel").pack(side="left", padx=(0, 8))
+        self._rvc_model_combo = ttk.Combobox(fila, textvariable=self.rvc_model, state="readonly", width=34)
+        self._rvc_model_combo.pack(side="left", padx=(0, 8))
+        self._rvc_model_combo.bind("<<ComboboxSelected>>", lambda e: self._rvc_apply_model())
+        ttk.Button(fila, text="🔄 Actualizar", command=self._rvc_refresh_models).pack(side="left", padx=(0, 8))
+
+        # Controles de la conversión.
+        ctrl = self.make_card(cont, "Conversión")
+        ctrl.pack(fill="x", pady=(0, 10))
+        ttk.Checkbutton(ctrl, text="Activar voz IA (reemplaza el modulador DSP mientras esté activa)",
+                        variable=self.rvc_enabled, command=self._rvc_toggle).pack(anchor="w", pady=(0, 8))
+        pf = ttk.Frame(ctrl, style="Card.TFrame")
+        pf.pack(fill="x", pady=2)
+        ttk.Label(pf, text="Tono (semitonos)", style="Card.TLabel", width=18).pack(side="left")
+        ttk.Scale(pf, from_=-12, to=12, variable=self.rvc_pitch, command=lambda v: self.update_engine()).pack(side="left", fill="x", expand=True, padx=8)
+        idxf = ttk.Frame(ctrl, style="Card.TFrame")
+        idxf.pack(fill="x", pady=2)
+        ttk.Label(idxf, text="Timbre (índice)", style="Card.TLabel", width=18).pack(side="left")
+        ttk.Scale(idxf, from_=0, to=100, variable=self.rvc_index, command=lambda v: self.update_engine()).pack(side="left", fill="x", expand=True, padx=8)
+
+        privacidad = self.make_card(cont, "Privacidad")
+        privacidad.pack(fill="x")
+        ttk.Label(privacidad, text="Todo el procesamiento ocurre en tu equipo. VoiceICC no sube tu voz ni "
+                                  "tus modelos a ningún servidor. Puedes descargar nuevas voces (.pth) de la "
+                                  "comunidad y colocarlas en la carpeta de voces para usarlas al instante.",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w")
+
+        self._rvc_refresh_status()
+        self._rvc_refresh_models()
+
+    def _rvc_refresh_status(self):
+        ok, motivo = self.rvc.detect(force=True)
+        if ok:
+            self.rvc_status.set("✅ " + motivo)
+        else:
+            self.rvc_status.set("⚠ " + motivo)
+
+    def _rvc_refresh_models(self):
+        modelos = [m["name"] for m in self.rvc.list_models()]
+        try:
+            self._rvc_model_combo["values"] = modelos
+        except Exception:
+            pass
+        if modelos and self.rvc_model.get() not in modelos:
+            self.rvc_model.set(modelos[0])
+        if not modelos:
+            self.rvc_model.set("")
+            if self.rvc.detect()[0]:
+                self.rvc_status.set("✅ Motor listo. Aún no hay modelos: importa un .pth para empezar.")
+
+    def _rvc_import_model(self):
+        try:
+            ruta = filedialog.askopenfilename(
+                title="Elige un modelo de voz RVC (.pth)",
+                filetypes=[("Modelo RVC", "*.pth"), ("Todos", "*.*")])
+        except Exception:
+            ruta = ""
+        if not ruta:
+            return
+        try:
+            nombre = self.rvc.import_model(ruta)
+            self._rvc_refresh_models()
+            self.rvc_model.set(nombre)
+            messagebox.showinfo("Voz IA importada", f"Modelo '{nombre}' añadido a tu biblioteca de voces IA.")
+        except Exception as exc:
+            messagebox.showerror("No se pudo importar", str(exc))
+
+    def _rvc_apply_model(self):
+        nombre = self.rvc_model.get()
+        if not nombre:
+            return
+        ok = self.rvc.load(nombre)
+        if ok:
+            self.rvc_status.set(f"✅ Voz IA cargada: {nombre} (procesamiento local).")
+        else:
+            det_ok, motivo = self.rvc.detect()
+            if det_ok:
+                self.rvc_status.set(f"⚠ No se pudo cargar '{nombre}'. Revisa que el .pth sea un modelo RVC válido.")
+            else:
+                self.rvc_status.set("⚠ " + motivo)
+
+    def _rvc_toggle(self):
+        if bool(self.rvc_enabled.get()):
+            ok, motivo = self.rvc.detect()
+            if not ok:
+                self.rvc_enabled.set(False)
+                self.rvc.enabled = False
+                self.rvc_status.set("⚠ " + motivo)
+                messagebox.showinfo("Motor de IA no disponible", motivo)
+                return
+            if not self.rvc_model.get():
+                self.rvc_enabled.set(False)
+                self.rvc.enabled = False
+                self.rvc_status.set("⚠ Elige o importa un modelo de voz IA antes de activarla.")
+                return
+            self.rvc.enabled = True
+            if self.rvc._loaded_name != self.rvc_model.get():
+                self._rvc_apply_model()
+        else:
+            self.rvc.enabled = False
+            self.rvc_status.set("Voz IA desactivada. Motor DSP en uso.")
+        self.update_engine()
 
     def build_creador_voces_tab(self):
         cont = ttk.Frame(self.tab_creador_voces)
@@ -20873,6 +21231,13 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                 self.engine.noise_reduction = clamp(float(self.nr_amount.get()) / 100, 0, 1)
             else:
                 self.engine.noise_reduction = 0.0
+            self.engine.rvc_enabled = bool(self.rvc_enabled.get())
+        # Empuja los parámetros de la voz IA al backend (fuera del lock del motor).
+        try:
+            self.rvc.set_params(pitch=int(self.rvc_pitch.get()),
+                                index_rate=clamp(float(self.rvc_index.get()) / 100, 0, 1))
+        except Exception:
+            pass
 
     def save_config(self, silent=False):
         data = {
@@ -20896,6 +21261,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "ptt_key": self.ptt_key.get() if hasattr(self, "ptt_key") else "v",
             "flotante_pos": list(getattr(self, "_float_pos", ()) or ()),
             "flotante_abierto": bool(getattr(self, "_float_win", None) is not None),
+            "rvc_enabled": bool(self.rvc_enabled.get()) if hasattr(self, "rvc_enabled") else False,
+            "rvc_model": self.rvc_model.get() if hasattr(self, "rvc_model") else "",
+            "rvc_pitch": int(self.rvc_pitch.get()) if hasattr(self, "rvc_pitch") else 0,
+            "rvc_index": float(self.rvc_index.get()) if hasattr(self, "rvc_index") else 50.0,
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -20962,6 +21331,25 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                 self.input_dev.set(data["input"])
             if data.get("output"):
                 self.output_dev.set(data["output"])
+
+            # Voces IA (RVC): recuperar preferencias sin activar el motor si
+            # el backend o el modelo no están disponibles.
+            try:
+                self.rvc_pitch.set(int(data.get("rvc_pitch", 0)))
+                self.rvc_index.set(float(data.get("rvc_index", 50.0)))
+                modelo = data.get("rvc_model", "")
+                disponibles = [m["name"] for m in self.rvc.list_models()]
+                if modelo and modelo in disponibles:
+                    self.rvc_model.set(modelo)
+                if data.get("rvc_enabled") and modelo in disponibles and self.rvc.detect()[0]:
+                    self.rvc.load(modelo)
+                    self.rvc.enabled = True
+                    self.rvc_enabled.set(True)
+                else:
+                    self.rvc_enabled.set(False)
+                    self.rvc.enabled = False
+            except Exception:
+                pass
 
             vals = data.get("values", {})
             for key, value in vals.items():

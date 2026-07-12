@@ -1,0 +1,33 @@
+CAMBIOS V4.3 - Voces IA Local (RVC)
+
+Nueva conversion de voz por IA que ocurre 100% en el PC del usuario, sin
+enviar la voz a ningun servidor.
+
+- Nueva capa RVCBackend: gestiona una carpeta local de modelos de voz
+  (~/VoiceICC/voces_ia), detecta si el motor de IA esta instalado, carga
+  modelos .pth (+ .index) y convierte el audio por bloques en tiempo real
+  con contexto y crossfade.
+- El motor de IA (PyTorch + rvc-python) es OPCIONAL. Si no esta instalado,
+  VoiceICC sigue funcionando igual con su motor DSP y la capa IA queda
+  inactiva. Cuando el usuario instala el backend y coloca un modelo, las
+  voces IA se activan solas.
+- Nueva pestana "Voces IA" (seccion Voces):
+  · Estado del motor con instrucciones de instalacion.
+  · Boton para abrir la carpeta de voces e importar modelos .pth.
+  · Selector de modelo de voz (biblioteca local).
+  · Activar/desactivar la voz IA, con control de tono (semitonos) e
+    intensidad de timbre (indice).
+  · Nota de privacidad: todo local, sin Internet, sin costes por uso; el
+    usuario puede descargar nuevas voces de la comunidad.
+- Integracion en el motor: cuando la voz IA esta activa y lista, produce
+  la voz; si en algun bloque no puede, cae automaticamente a la cadena DSP.
+- Preferencias (modelo, tono, indice, activado) se guardan y se recuperan
+  sin activar el motor si el backend o el modelo no estan disponibles.
+
+Ventajas: funciona sin Internet, mas privacidad, sin costes por uso, y
+voces ampliables descargando modelos.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque completada sin errores, y pruebas de
+la capa RVC (deteccion, biblioteca de modelos, importacion, respaldo a DSP
+y parametros) todas en verde.
