@@ -1,0 +1,10 @@
+CAMBIOS V4.9 - Avatares HQ (lote 4)
+
+- Integrados los avatares de alta calidad del lote 4 (256 px como avatar):
+  Angel, Alienigena, Hacker y Ninja.
+- Ya son 16 de 18 personajes en alta calidad. Mismos nombres de archivo,
+  el mapeo voz->avatar sigue igual.
+- Pendiente del ultimo lote (sigue con el pack anterior): Fantasma y
+  Monstruo.
+
+Verificado: PNGs 256x256 validos, py_compile OK.
