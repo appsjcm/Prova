@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.8.0 Microfono Virtual en el Instalador"
+VERSION = "5.9.0 Micro sin Bucle"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -9413,9 +9413,18 @@ class PremiumApp:
                 self.update_engine()
             except Exception:
                 pass
-            self.mic_virtual_status.set(
-                f"✅ Micrófono VoiceICC listo. Salida enrutada a «{destino}». "
-                "En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».")
+            # Aviso de bucle: si la ENTRADA (tu micro) es un dispositivo
+            # virtual, se realimenta y produce eco. Debe ser tu micro real.
+            entrada = str(self.input_dev.get() or "")
+            if any(k in entrada.lower() for k in ["cable output", "voicemeeter output", "cable", "virtual"]):
+                self.mic_virtual_status.set(
+                    "⚠ Salida enrutada a «" + destino + "», pero tu ENTRADA es un dispositivo virtual "
+                    "(«" + entrada + "»): eso crea un bucle/eco. Cambia la Entrada a tu MICRÓFONO REAL "
+                    "en Ajustes de audio.")
+            else:
+                self.mic_virtual_status.set(
+                    f"✅ Micrófono VoiceICC listo. Entrada: tu micro real · Salida enrutada a «{destino}». "
+                    "En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».")
             try:
                 self.cable_detect_virtual()
             except Exception:
