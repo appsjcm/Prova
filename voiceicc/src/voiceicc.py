@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.4.0 Todas las Voces al Maximo"
+VERSION = "5.5.0 Realismo Maximo Global"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2084,6 +2084,8 @@ class PremiumApp:
         self.rvc_pitch = tk.IntVar(value=0)
         self.rvc_index = tk.DoubleVar(value=50)
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
+        # Realismo máximo: empuja la naturalidad de cualquier voz a su tope.
+        self.realismo_maximo = tk.BooleanVar(value=False)
         self.cable_status = tk.StringVar(value="Cable Virtual listo.")
         self.test_voice_status = tk.StringVar(value="Test de Voz listo.")
         self.autotune_status = tk.StringVar(value="Autotune listo.")
@@ -3883,6 +3885,7 @@ class PremiumApp:
         _vm_toggle("SILENCIAR", self.mute, self.update_engine).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎧 ESCUCHARME", self.monitor_var, self.toggle_monitor).pack(side="left", padx=4, pady=13)
         _vm_toggle("🎙 PUSH-TO-TALK (V)", self.ptt_mode, self.toggle_ptt_mode).pack(side="left", padx=4, pady=13)
+        _vm_toggle("✨ REALISMO MAX", self.realismo_maximo, self.update_engine).pack(side="left", padx=4, pady=13)
         tk.Button(
             bottombar, text="🪟 FLOTANTE", command=self.toggle_float_panel,
             bg="#1c1c25", fg="#dfe2ff", activebackground="#2a3150",
@@ -21321,6 +21324,20 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             else:
                 self.engine.noise_reduction = 0.0
             self.engine.rvc_enabled = bool(self.rvc_enabled.get())
+            # Realismo máximo: acerca cada parámetro de naturalidad a su tope
+            # (new = p + (1-p)*factor), sin pasarse, encima del preset.
+            if bool(self.realismo_maximo.get()):
+                def _boost(p, factor):
+                    return clamp(p + (1.0 - p) * factor, 0.0, 1.0)
+                self.engine.human_realism = _boost(self.engine.human_realism, 0.60)
+                self.engine.human_warmth = _boost(self.engine.human_warmth, 0.40)
+                self.engine.human_breath = _boost(self.engine.human_breath, 0.25)
+                self.engine.de_ess = _boost(self.engine.de_ess, 0.40)
+                self.engine.clarity = _boost(self.engine.clarity, 0.50)
+                self.engine.transient = _boost(self.engine.transient, 0.30)
+                self.engine.vocal_focus = _boost(self.engine.vocal_focus, 0.50)
+                self.engine.proximity = _boost(self.engine.proximity, 0.40)
+                self.engine.smart_level = _boost(self.engine.smart_level, 0.50)
         # Empuja los parámetros de la voz IA al backend (fuera del lock del motor).
         try:
             self.rvc.set_params(pitch=int(self.rvc_pitch.get()),
@@ -21354,6 +21371,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "rvc_model": self.rvc_model.get() if hasattr(self, "rvc_model") else "",
             "rvc_pitch": int(self.rvc_pitch.get()) if hasattr(self, "rvc_pitch") else 0,
             "rvc_index": float(self.rvc_index.get()) if hasattr(self, "rvc_index") else 50.0,
+            "realismo_maximo": bool(self.realismo_maximo.get()) if hasattr(self, "realismo_maximo") else False,
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -21420,6 +21438,11 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                 self.input_dev.set(data["input"])
             if data.get("output"):
                 self.output_dev.set(data["output"])
+
+            try:
+                self.realismo_maximo.set(bool(data.get("realismo_maximo", False)))
+            except Exception:
+                pass
 
             # Voces IA (RVC): recuperar preferencias sin activar el motor si
             # el backend o el modelo no están disponibles.

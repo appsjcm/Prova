@@ -1,0 +1,14 @@
+CAMBIOS V5.5 - Realismo Maximo Global
+
+- Nuevo interruptor "REALISMO MAX" en la barra inferior: con un clic empuja
+  la naturalidad de CUALQUIER voz a su tope, por encima de lo que trae el
+  preset. Acerca cada parametro a su maximo con la formula
+  new = p + (1-p)*factor (realismo, calidez, aliento, de-esser, claridad,
+  transitorios, foco vocal, proximidad y nivelado), sin pasar de 1.0.
+- Al desactivarlo, la voz vuelve exactamente a su preset.
+- El estado se guarda y se recupera en la configuracion.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba de que el refuerzo
+sube los parametros al activar (p.ej. Gaming limpio realism 0.48->0.79,
+claridad 0.30->0.65), vuelve al preset al desactivar y nunca supera 1.0.
