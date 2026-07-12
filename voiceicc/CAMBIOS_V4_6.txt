@@ -1,0 +1,14 @@
+CAMBIOS V4.6 - Barra Limpia
+
+Pulido pedido tras revisar la app en Windows.
+
+- Eliminada la fila-dock superior duplicada de la barra inferior (MIC ·
+  VOICE CHANGER · BACKGROUND FX · MUTE · STOP ALL · onda). Sus controles
+  ya estaban en la barra inferior con imagen, asi que se quita la doble
+  botonera y queda como el mockup de VoiceMod.
+- La cabecera de Cable Virtual ya no muestra la etiqueta de version
+  heredada "V38 CONFIGURACION GUIADA": ahora es una cabecera de texto
+  limpia (titulo + apps compatibles), sin sello de version antiguo.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, y simulacion de arranque completada sin errores.

@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.5.0 Marca Coherente"
+VERSION = "4.6.0 Barra Limpia"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -4045,18 +4045,9 @@ class PremiumApp:
                 lambda _event, index=_index: self.notebook.select(index),
                 add="+",
             )
-        bottom_dock = tk.Frame(workspace, bg="#0f0f15", height=68, highlightbackground="#24242e", highlightthickness=1)
-        bottom_dock.pack(side="bottom", fill="x", padx=8, pady=(0, 8))
-        bottom_dock.pack_propagate(False)
-        tk.Label(bottom_dock, text="MIC", bg="#0f0f15", fg="#777786", font=("Segoe UI", 9, "bold")).pack(side="left", padx=(14, 6))
-        tk.Label(bottom_dock, text="●", bg="#0f0f15", fg="#62ffb4", font=("Segoe UI", 12, "bold")).pack(side="left")
-        tk.Checkbutton(bottom_dock, text="VOICE CHANGER", variable=self.vm_voice_changer_enabled, command=self.vm_toggle_voice_engine, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#8c52ff", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=12)
-        tk.Checkbutton(bottom_dock, text="BACKGROUND FX", variable=self.vm_background_fx_enabled, command=self.vm_toggle_background_fx, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#00aebb", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=2)
-        self.voiceicc_wave_canvas = tk.Canvas(bottom_dock, bg="#0f0f15", highlightthickness=0, height=38, width=210)
-        self.voiceicc_wave_canvas.pack(side="left", fill="x", expand=True, padx=12, pady=7)
-        tk.Checkbutton(bottom_dock, text="MUTE", variable=self.mute, command=self.update_engine, indicatoron=False, bg="#1b1b24", fg="#ffffff", selectcolor="#ff4f7b", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=12)
-        tk.Button(bottom_dock, text="STOP ALL", command=self.vm_stop_all, bg="#2a1720", fg="#ff7b9d", activebackground="#43202e", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=12)
-        tk.Button(bottom_dock, text="VOICE TEST", command=lambda: self.select_tab(self.tab_test_voz), bg="#181821", fg="#d7d7e2", activebackground="#272733", activeforeground="#ffffff", relief="flat", bd=0, padx=14, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right")
+        # (V4.6) Se elimina la fila-dock superior duplicada: sus controles
+        # (VOICE CHANGER, BACKGROUND FX, MUTE, STOP ALL, onda) ya están en la
+        # barra inferior con imagen. Evita la doble botonera del mockup.
 
         # Los módulos históricos se construyen fuera de la navegación pública para mantener compatibilidad.
         self.root.after_idle(lambda: self.apply_workspace_mode(self.workspace_density.get()))
@@ -9138,10 +9129,11 @@ class PremiumApp:
 
         header = self.make_card(cont)
         header.pack(fill="x", pady=(0, 10))
-        if "cable_banner" in self.cable_images:
-            ttk.Label(header, image=self.cable_images["cable_banner"], style="Card.TLabel").pack(anchor="center")
-        else:
-            ttk.Label(header, text="Cable Virtual Pro", style="Card.TLabel", font=("Segoe UI", 22, "bold")).pack(anchor="w")
+        # Cabecera de texto (sin la etiqueta de versión heredada "V38" del
+        # banner antiguo). Título + subtítulo con las apps compatibles.
+        ttk.Label(header, text="🔌 Cable Virtual Pro", style="Card.TLabel", font=("Segoe UI", 20, "bold")).pack(anchor="w")
+        ttk.Label(header, text="VB-Cable · VoiceMeeter · Discord · Fortnite · OBS · Guía rápida",
+                  style="Card.TLabel", font=("Segoe UI", 10)).pack(anchor="w", pady=(2, 0))
 
         main = ttk.Frame(cont)
         main.pack(fill="both", expand=True)
