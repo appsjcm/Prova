@@ -1,0 +1,16 @@
+CAMBIOS V5.8 - Microfono Virtual en el Instalador
+
+- El instalador de Windows ofrece ahora una casilla opcional "Instalar el
+  microfono virtual (VB-CABLE) para usar la voz en cualquier app". Si la
+  marcas, al terminar la instalacion lanza el instalador del microfono
+  virtual.
+- Nuevos scripts instalar_microfono_virtual.py / .bat: descargan el driver
+  estandar VB-CABLE desde su web oficial y lanzan su instalador (pide
+  confirmacion de Windows).
+- Acceso directo en el menu Inicio: "Instalar microfono virtual".
+
+Con esto, desde el propio instalador puedes dejar montado el microfono
+virtual y los datos de Voces IA, cada uno con su casilla.
+
+Verificado: py_compile del programa y del instalador del microfono, y el
+script no-opera de forma limpia fuera de Windows.
