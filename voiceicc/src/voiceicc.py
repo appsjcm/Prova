@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.6.0 RVC Turnkey"
+VERSION = "5.7.0 Microfono Virtual"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2123,6 +2123,7 @@ class PremiumApp:
         # Realismo máximo: empuja la naturalidad de cualquier voz a su tope.
         self.realismo_maximo = tk.BooleanVar(value=False)
         self.cable_status = tk.StringVar(value="Cable Virtual listo.")
+        self.mic_virtual_status = tk.StringVar(value="Comprobando el micrófono virtual…")
         self.test_voice_status = tk.StringVar(value="Test de Voz listo.")
         self.autotune_status = tk.StringVar(value="Autotune listo.")
         self.autotune_key = tk.StringVar(value="Do")
@@ -9211,6 +9212,21 @@ class PremiumApp:
         left = ttk.Frame(main)
         left.pack(side="left", fill="both", expand=True, padx=(0, 10))
 
+        # Micrófono VoiceICC: instala el driver de micrófono virtual (VB-CABLE)
+        # y auto-enruta, para que la voz modulada salga en cualquier app.
+        miccard = self.make_card(left, "🎤 Micrófono VoiceICC (para cualquier app)")
+        miccard.pack(fill="x", pady=(0, 10))
+        ttk.Label(miccard, textvariable=self.mic_virtual_status, style="Card.TLabel",
+                  wraplength=760, justify="left").pack(anchor="w", pady=(0, 8))
+        microw = ttk.Frame(miccard, style="Card.TFrame")
+        microw.pack(anchor="w")
+        ttk.Button(microw, text="🎤 Instalar micrófono virtual", style="Accent.TButton",
+                   command=self.cable_install_virtual_mic).pack(side="left", padx=(0, 8))
+        ttk.Button(microw, text="🔎 Comprobar / enrutar", command=self.cable_setup_virtual_mic).pack(side="left", padx=(0, 8))
+        ttk.Label(miccard, text="1) Instala el micrófono virtual (una vez).  2) VoiceICC enruta su salida ahí.  "
+                              "3) En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(8, 0))
+
         tiles = self.make_card(left, "Configuración rápida")
         tiles.pack(fill="x", pady=(0, 10))
 
@@ -9303,6 +9319,12 @@ class PremiumApp:
             wraplength=310
         ).pack(anchor="w")
 
+        # Estado inicial del micrófono virtual (sin bloquear el arranque).
+        try:
+            self.root.after(600, self.cable_setup_virtual_mic)
+        except Exception:
+            pass
+
     def cable_virtual_keywords(self):
         return ["cable", "voicemeeter", "virtual", "vb-audio", "vb audio", "input", "output"]
 
@@ -9363,6 +9385,95 @@ class PremiumApp:
             self.cable_detect_virtual()
         else:
             self.cable_status.set("No encontré una salida virtual clara para seleccionar.")
+
+    # URL oficial del driver de micrófono virtual VB-CABLE (VB-Audio).
+    VBCABLE_URL = "https://download.vb-audio.com/Download_CABLE/VBCABLE_Driver_Pack45.zip"
+
+    def cable_setup_virtual_mic(self):
+        """Comprueba si hay micrófono virtual y, si lo hay, enruta la salida
+        de VoiceICC a su entrada. Actualiza el estado del 'Micrófono VoiceICC'."""
+        found = self.cable_find_virtual_devices()
+        entradas_app = [n for i, n, ins, outs in found if isinstance(i, int) and outs]  # salidas del sistema (CABLE Input)
+        if not found:
+            self.mic_virtual_status.set(
+                "⚠ No hay micrófono virtual instalado. Pulsa «Instalar micrófono virtual» "
+                "(instala VB-CABLE, el driver que usa VoiceICC como micro en cualquier app).")
+            return False
+        # Elegir CABLE Input como salida de VoiceICC (lo que 'graba' el micro virtual).
+        destino = None
+        for i, n, ins, outs in found:
+            if isinstance(i, int) and outs and any(k in n.lower() for k in ["cable input", "voicemeeter input", "virtual input"]):
+                destino = n
+                break
+        if destino is None and entradas_app:
+            destino = entradas_app[0]
+        if destino:
+            self.output_dev.set(destino)
+            try:
+                self.update_engine()
+            except Exception:
+                pass
+            self.mic_virtual_status.set(
+                f"✅ Micrófono VoiceICC listo. Salida enrutada a «{destino}». "
+                "En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».")
+            try:
+                self.cable_detect_virtual()
+            except Exception:
+                pass
+            return True
+        self.mic_virtual_status.set("⚠ Detecté dispositivos virtuales pero ninguno claro para enrutar. Revisa la lista.")
+        return False
+
+    def cable_install_virtual_mic(self):
+        """Descarga el driver de micrófono virtual VB-CABLE y lanza su
+        instalador (requiere Windows y confirmación de administrador)."""
+        if platform.system() != "Windows":
+            messagebox.showinfo(
+                "Solo Windows",
+                "El micrófono virtual es un driver de Windows. En este sistema no aplica.")
+            return
+        if self.cable_find_virtual_devices():
+            if not messagebox.askyesno(
+                "Micrófono virtual",
+                "Ya detecto un dispositivo de audio virtual. ¿Quieres reinstalar el driver de todos modos?"):
+                self.cable_setup_virtual_mic()
+                return
+        self.mic_virtual_status.set("Descargando el driver de micrófono virtual (VB-CABLE)…")
+
+        def _run():
+            import tempfile
+            try:
+                tmp = Path(tempfile.mkdtemp(prefix="voiceicc_vbcable_"))
+                zip_path = tmp / "vbcable.zip"
+                from urllib.request import urlopen
+                with urlopen(self.VBCABLE_URL) as r, open(zip_path, "wb") as out:
+                    shutil.copyfileobj(r, out)
+                with zipfile.ZipFile(str(zip_path)) as z:
+                    z.extractall(str(tmp))
+                # Elegir el instalador segun arquitectura.
+                setup = None
+                prefer = "VBCABLE_Setup_x64.exe" if platform.machine().endswith("64") else "VBCABLE_Setup.exe"
+                for cand in [tmp / prefer] + list(tmp.glob("VBCABLE_Setup*.exe")):
+                    if cand.exists():
+                        setup = cand
+                        break
+                if setup is None:
+                    self.root.after(0, self.mic_virtual_status.set,
+                                    "⚠ No encontré el instalador dentro del paquete descargado.")
+                    return
+                self.root.after(0, self.mic_virtual_status.set,
+                                "Abriendo el instalador del micrófono virtual. Acepta el aviso de Windows "
+                                "y pulsa «Install Driver». Al terminar, vuelve y pulsa «Comprobar / enrutar».")
+                try:
+                    os.startfile(str(setup))  # noqa: P204
+                except Exception:
+                    subprocess.Popen([str(setup)])
+            except Exception as exc:
+                self.root.after(0, self.mic_virtual_status.set,
+                                f"⚠ No se pudo descargar/instalar el micrófono virtual: {exc}. "
+                                "Puedes instalar VB-CABLE manualmente desde vb-audio.com/Cable.")
+
+        threading.Thread(target=_run, daemon=True).start()
 
     def cable_guides(self):
         return {

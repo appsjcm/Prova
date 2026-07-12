@@ -1,0 +1,26 @@
+CAMBIOS V5.7 - Microfono Virtual (voz modulada en cualquier app)
+
+Ahora VoiceICC ayuda a montar el microfono virtual con un clic, para que
+la voz modulada entre como "micro" en Discord, juegos, OBS, etc.
+
+- Nueva tarjeta "Microfono VoiceICC" al principio de la pestana Cable
+  Virtual:
+  · Boton "Instalar microfono virtual": descarga el driver estandar
+    VB-CABLE (VB-Audio) desde su web oficial y lanza su instalador (pide
+    confirmacion de Windows). Es el driver que hace de microfono virtual.
+  · Boton "Comprobar / enrutar": detecta el dispositivo virtual y enruta
+    solo la salida de VoiceICC a "CABLE Input", dejando el microfono listo.
+  · Estado en vivo que guia los 3 pasos.
+- Al abrir la pestana, comprueba el microfono virtual y muestra el estado.
+- Mensajes claros: en Discord/juego/OBS hay que elegir el microfono
+  "CABLE Output (VB-Audio Virtual Cable)".
+
+Nota: crear un driver de audio FIRMADO con el nombre propio de VoiceICC
+requiere un certificado de firma de kernel de Microsoft (como el driver
+propio de VoiceMod). VoiceICC usa el driver estandar VB-CABLE, que es
+gratuito y funciona igual: la voz modulada sale en cualquier aplicacion.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba del enrutado
+automatico del microfono virtual (sin cable avisa de instalar; con CABLE
+Input presente enruta la salida y deja el microfono listo).
