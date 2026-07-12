@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.2.0 Voces de Persona Reales"
+VERSION = "5.3.0 Realismo al Maximo"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -401,20 +401,20 @@ class VoiceBank:
             "Estudio limpio real": ("Efectos Realistas", dict(pitch=0, bass=14, robot=0, echo=1, radio=0, megaphone=0, gate=9, comp=55, vol=93, autotune=0, autotune_shift=0, vibrato=1, chorus=3)),
             "Autotune natural suave": ("Efectos Realistas", dict(pitch=0, bass=10, robot=0, echo=3, radio=0, megaphone=0, gate=7, comp=45, vol=92, autotune=18, autotune_shift=0, vibrato=3, chorus=9)),
             # GAMING
-            "Gaming limpio":        ("Gaming", dict(pitch=0,  bass=15, robot=0,  echo=0,  radio=3,  megaphone=0,  gate=8,  comp=38, vol=90)),
-            "Discord claro":        ("Gaming", dict(pitch=0,  bass=12, robot=0,  echo=0,  radio=0,  megaphone=0,  gate=9,  comp=58, vol=94)),
-            "Discord nítido":       ("Gaming", dict(pitch=0,  bass=6,  robot=0,  echo=0,  radio=5,  megaphone=0,  gate=9,  comp=64, vol=95)),
+            "Gaming limpio":        ("Gaming", dict(pitch=0,  bass=15, robot=0,  echo=0,  radio=3,  megaphone=0,  gate=8,  comp=38, vol=90, human_realism=48, human_warmth=30, de_ess=24, clarity=30, transient=14, vocal_focus=40, proximity=22, smart_level=48)),
+            "Discord claro":        ("Gaming", dict(pitch=0,  bass=12, robot=0,  echo=0,  radio=0,  megaphone=0,  gate=9,  comp=58, vol=94, human_realism=46, human_warmth=26, de_ess=28, clarity=34, transient=14, vocal_focus=44, proximity=24, smart_level=56)),
+            "Discord nítido":       ("Gaming", dict(pitch=0,  bass=6,  robot=0,  echo=0,  radio=5,  megaphone=0,  gate=9,  comp=64, vol=95, human_realism=44, human_warmth=22, de_ess=32, clarity=38, transient=16, vocal_focus=46, proximity=22, smart_level=60)),
             "Fortnite grave":       ("Gaming", dict(pitch=-5, bass=46, robot=0,  echo=0,  radio=0,  megaphone=0,  gate=7,  comp=52, vol=92)),
             "Fortnite épico":       ("Gaming", dict(pitch=-7, bass=58, robot=3,  echo=6,  radio=0,  megaphone=0,  gate=7,  comp=55, vol=92)),
-            "Streamer":             ("Gaming", dict(pitch=1,  bass=12, robot=3,  echo=3,  radio=5,  megaphone=0,  gate=7,  comp=45, vol=88)),
-            "Comentarista eSports": ("Gaming", dict(pitch=1,  bass=20, robot=0,  echo=2,  radio=12, megaphone=5,  gate=8,  comp=62, vol=94)),
+            "Streamer":             ("Gaming", dict(pitch=1,  bass=12, robot=3,  echo=3,  radio=5,  megaphone=0,  gate=7,  comp=45, vol=88, human_realism=52, human_warmth=34, de_ess=24, clarity=30, transient=12, vocal_focus=38, proximity=24, smart_level=46)),
+            "Comentarista eSports": ("Gaming", dict(pitch=1,  bass=20, robot=0,  echo=2,  radio=12, megaphone=5,  gate=8,  comp=62, vol=94, human_realism=44, human_warmth=28, de_ess=22, clarity=34, transient=16, vocal_focus=46, proximity=22, smart_level=54)),
             "Tryhard oscuro":       ("Gaming", dict(pitch=-4, bass=40, robot=4,  echo=4,  radio=4,  megaphone=0,  gate=8,  comp=50, vol=88)),
             "Gamer nocturno":       ("Gaming", dict(pitch=-2, bass=35, robot=0,  echo=8,  radio=0,  megaphone=0,  gate=7,  comp=42, vol=84)),
 
             # ÉPICAS
-            "Narrador épico":       ("Épicas", dict(pitch=-4, bass=45, robot=0,  echo=12, radio=8,  megaphone=0,  gate=6,  comp=55, vol=92)),
-            "Cine tráiler":         ("Épicas", dict(pitch=-7, bass=60, robot=3,  echo=18, radio=6,  megaphone=0,  gate=7,  comp=60, vol=90)),
-            "Héroe final":          ("Épicas", dict(pitch=-3, bass=45, robot=0,  echo=14, radio=4,  megaphone=0,  gate=6,  comp=52, vol=90)),
+            "Narrador épico":       ("Épicas", dict(pitch=-4, bass=45, robot=0,  echo=12, radio=8,  megaphone=0,  gate=6,  comp=55, vol=92, human_realism=50, human_warmth=44, de_ess=18, clarity=30, transient=14, vocal_focus=42, proximity=24, smart_level=50)),
+            "Cine tráiler":         ("Épicas", dict(pitch=-7, bass=60, robot=3,  echo=18, radio=6,  megaphone=0,  gate=7,  comp=60, vol=90, human_realism=46, human_warmth=48, de_ess=16, clarity=28, transient=16, vocal_focus=44, proximity=26, smart_level=52)),
+            "Héroe final":          ("Épicas", dict(pitch=-3, bass=45, robot=0,  echo=14, radio=4,  megaphone=0,  gate=6,  comp=52, vol=90, human_realism=50, human_warmth=44, de_ess=18, clarity=30, transient=14, vocal_focus=42, proximity=24, smart_level=50)),
             "Titán":                ("Épicas", dict(pitch=-12,bass=90, robot=10, echo=20, radio=0,  megaphone=0,  gate=7,  comp=50, vol=88, formant=-4)),
             "Jefe final":           ("Épicas", dict(pitch=-10,bass=70, robot=28, echo=30, radio=0,  megaphone=0,  gate=8,  comp=45, vol=88)),
 
@@ -437,7 +437,7 @@ class VoiceBank:
             "Computadora retro":    ("Robots", dict(pitch=1,  bass=0,  robot=86, echo=3,  radio=45, megaphone=0,  gate=10, comp=35, vol=82)),
 
             # RADIO
-            "Locutor español":      ("Radio", dict(pitch=-3, bass=35, robot=0,  echo=6,  radio=15, megaphone=0,  gate=7,  comp=55, vol=92)),
+            "Locutor español":      ("Radio", dict(pitch=-3, bass=35, robot=0,  echo=6,  radio=15, megaphone=0,  gate=7,  comp=55, vol=92, human_realism=48, human_warmth=46, de_ess=20, clarity=32, transient=12, vocal_focus=44, proximity=24, smart_level=54)),
             "Radio para directo":   ("Radio", dict(pitch=-1, bass=12, robot=8,  echo=0,  radio=95, megaphone=15, gate=9,  comp=55, vol=94)),
             "Radio antigua":        ("Radio", dict(pitch=-1, bass=0,  robot=15, echo=4,  radio=100,megaphone=25, gate=12, comp=60, vol=90)),
             "Walkie Talkie":        ("Radio", dict(pitch=0,  bass=0,  robot=18, echo=2,  radio=90, megaphone=45, gate=12, comp=55, vol=88)),
@@ -494,10 +494,10 @@ class VoiceBank:
             "Karaoke Balada":       ("Cantadas", dict(pitch=0,  bass=20, robot=0,  echo=28, radio=0,  megaphone=0, gate=8, comp=62, vol=88, autotune=32, autotune_shift=0, vibrato=30, chorus=18)),
 
             # LIMPIAS
-            "Voz clara":            ("Limpias", dict(pitch=0,  bass=8,  robot=0,  echo=0,  radio=0,  megaphone=0,  gate=8,  comp=45, vol=90)),
-            "Podcast":              ("Limpias", dict(pitch=-1, bass=28, robot=0,  echo=2,  radio=6,  megaphone=0,  gate=9,  comp=60, vol=92)),
-            "Nocturna suave":       ("Limpias", dict(pitch=-2, bass=30, robot=0,  echo=10, radio=0,  megaphone=0,  gate=7,  comp=35, vol=82)),
-            "Voz cálida":           ("Limpias", dict(pitch=-1, bass=35, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=7,  comp=50, vol=90)),
+            "Voz clara":            ("Limpias", dict(pitch=0,  bass=8,  robot=0,  echo=0,  radio=0,  megaphone=0,  gate=8,  comp=45, vol=90, human_realism=58, human_warmth=38, human_breath=10, de_ess=26, clarity=26, transient=10, vocal_focus=34, proximity=18, smart_level=44)),
+            "Podcast":              ("Limpias", dict(pitch=-1, bass=28, robot=0,  echo=2,  radio=6,  megaphone=0,  gate=9,  comp=60, vol=92, human_realism=56, human_warmth=48, human_breath=8, de_ess=22, clarity=30, transient=12, vocal_focus=40, proximity=24, smart_level=52)),
+            "Nocturna suave":       ("Limpias", dict(pitch=-2, bass=30, robot=0,  echo=10, radio=0,  megaphone=0,  gate=7,  comp=35, vol=82, human_realism=60, human_warmth=52, human_breath=14, de_ess=20, clarity=18, transient=8, vocal_focus=30, proximity=22, smart_level=42)),
+            "Voz cálida":           ("Limpias", dict(pitch=-1, bass=35, robot=0,  echo=1,  radio=0,  megaphone=0,  gate=7,  comp=50, vol=90, human_realism=58, human_warmth=56, human_breath=10, de_ess=18, clarity=22, transient=10, vocal_focus=34, proximity=24, smart_level=46)),
         }
 
     @staticmethod
