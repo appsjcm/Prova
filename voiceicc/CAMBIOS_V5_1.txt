@@ -1,0 +1,10 @@
+CAMBIOS V5.1 - Avatar en el Flotante
+
+- El panel flotante ahora muestra el avatar (mini, 44 px) de la voz actual
+  junto al nombre, usando los avatares de alta calidad. Se actualiza al
+  cambiar de voz (favoritos del flotante, voz pro, etc.).
+- Nueva version mini de los avatares (avatar_mini_images) generada al
+  cargar, sin coste visible.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, y simulacion de arranque completada sin errores.

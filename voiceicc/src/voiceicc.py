@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.0.0 Avatares HQ Completo"
+VERSION = "5.1.0 Avatar en el Flotante"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2414,6 +2414,7 @@ class PremiumApp:
 
         # Avatares del pack premium (para la voz actual y personajes).
         self.avatar_images = {}
+        self.avatar_mini_images = {}   # versión pequeña (44px) para el flotante
         avatars_dir = Path(resource_path("assets/avatars"))
         if avatars_dir.exists():
             for file in avatars_dir.glob("avatar_*.png"):
@@ -2429,6 +2430,7 @@ class PremiumApp:
                             arr = (h - lado) // 3  # algo más arriba: cara centrada
                             recorte = img.crop((izq, arr, izq + lado, arr + lado))
                             self.avatar_images[clave] = ImageTk.PhotoImage(recorte.resize((128, 128)))
+                            self.avatar_mini_images[clave] = ImageTk.PhotoImage(recorte.resize((44, 44)))
                     else:
                         self.avatar_images[clave] = tk.PhotoImage(file=str(file))
                     self.release_asset_count += 1
@@ -3639,9 +3641,14 @@ class PremiumApp:
                       activeforeground="#ffffff", relief="flat", bd=0,
                       font=("Segoe UI", 8, "bold"), cursor="hand2").pack(side="left", padx=1)
 
-        etiqueta = tk.Label(marco, textvariable=self.preset, bg="#111117", fg="#8e96b1",
-                            font=("Segoe UI", 9), anchor="center")
+        # Fila de identidad: avatar de la voz actual + nombre.
+        etiqueta = tk.Frame(marco, bg="#111117")
         etiqueta.pack(fill="x", padx=6, pady=(0, 5))
+        self._float_avatar_label = tk.Label(etiqueta, bg="#111117", bd=0)
+        self._float_avatar_label.pack(side="left", padx=(2, 6))
+        tk.Label(etiqueta, textvariable=self.preset, bg="#111117", fg="#c7d0ff",
+                 font=("Segoe UI", 9, "bold"), anchor="w").pack(side="left", fill="x", expand=True)
+        self._float_update_avatar()
 
         def empezar(evento):
             win._arrastre = (evento.x, evento.y)
@@ -7470,15 +7477,34 @@ class PremiumApp:
     def update_voice_avatar(self):
         """Muestra el avatar de la voz actual en la tarjeta 'Voz actual'."""
         etiqueta = getattr(self, "voiceicc_current_voice_image_label", None)
+        if etiqueta is not None:
+            clave = self.avatar_for_voice(self.preset.get())
+            if clave and clave in self.avatar_images:
+                try:
+                    etiqueta.configure(image=self.avatar_images[clave])
+                    etiqueta.image = self.avatar_images[clave]
+                except Exception:
+                    pass
+        self._float_update_avatar()
+
+    def _float_update_avatar(self):
+        """Refresca el avatar mini del panel flotante con la voz actual."""
+        etiqueta = getattr(self, "_float_avatar_label", None)
         if etiqueta is None:
             return
+        try:
+            if not etiqueta.winfo_exists():
+                return
+        except Exception:
+            return
         clave = self.avatar_for_voice(self.preset.get())
-        if clave and clave in self.avatar_images:
-            try:
-                etiqueta.configure(image=self.avatar_images[clave])
-                etiqueta.image = self.avatar_images[clave]
-            except Exception:
-                pass
+        img = self.avatar_mini_images.get(clave) if clave else None
+        try:
+            if img is not None:
+                etiqueta.configure(image=img)
+                etiqueta.image = img
+        except Exception:
+            pass
 
     def apply_pro_voice(self, voice_name):
         if voice_name in VoiceBank.all_presets():
