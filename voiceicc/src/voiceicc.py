@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "5.9.0 Micro sin Bucle"
+VERSION = "6.0.0 Micro Auto-Enrutado"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -9409,21 +9409,31 @@ class PremiumApp:
             destino = entradas_app[0]
         if destino:
             self.output_dev.set(destino)
+            # Guardia de bucle: si la ENTRADA (tu micro) es un dispositivo
+            # virtual, se realimenta y produce eco. Debe ser tu micro real.
+            # Intentamos corregirlo solo con un micrófono real disponible.
+            entrada = str(self.input_dev.get() or "")
+            aviso = ""
+            es_virtual = any(k in entrada.lower() for k in ["cable output", "voicemeeter output", "cable", "virtual"])
+            if es_virtual or not entrada:
+                real = self._first_real_microphone()
+                if real:
+                    self.input_dev.set(real)
+                    entrada = real
+                    aviso = f" Cambié la entrada a tu micrófono real («{real}»)."
+                    es_virtual = False
             try:
                 self.update_engine()
             except Exception:
                 pass
-            # Aviso de bucle: si la ENTRADA (tu micro) es un dispositivo
-            # virtual, se realimenta y produce eco. Debe ser tu micro real.
-            entrada = str(self.input_dev.get() or "")
-            if any(k in entrada.lower() for k in ["cable output", "voicemeeter output", "cable", "virtual"]):
+            if es_virtual:
                 self.mic_virtual_status.set(
                     "⚠ Salida enrutada a «" + destino + "», pero tu ENTRADA es un dispositivo virtual "
                     "(«" + entrada + "»): eso crea un bucle/eco. Cambia la Entrada a tu MICRÓFONO REAL "
                     "en Ajustes de audio.")
             else:
                 self.mic_virtual_status.set(
-                    f"✅ Micrófono VoiceICC listo. Entrada: tu micro real · Salida enrutada a «{destino}». "
+                    f"✅ Micrófono VoiceICC listo.{aviso} Salida enrutada a «{destino}». "
                     "En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».")
             try:
                 self.cable_detect_virtual()
@@ -9432,6 +9442,19 @@ class PremiumApp:
             return True
         self.mic_virtual_status.set("⚠ Detecté dispositivos virtuales pero ninguno claro para enrutar. Revisa la lista.")
         return False
+
+    def _first_real_microphone(self):
+        """Devuelve el nombre del primer micrófono REAL (no virtual) disponible,
+        para evitar bucles al enrutar el micrófono virtual."""
+        try:
+            nombres = list(self.input_map.keys())
+        except Exception:
+            nombres = []
+        virtual = ["cable", "voicemeeter", "vb-audio", "vb audio", "virtual"]
+        for nombre in nombres:
+            if not any(k in nombre.lower() for k in virtual):
+                return nombre
+        return None
 
     def cable_install_virtual_mic(self):
         """Descarga el driver de micrófono virtual VB-CABLE y lanza su
@@ -11061,8 +11084,11 @@ class PremiumApp:
         candidatos = [
             Path(resource_path("instalar_datos_ia.bat")),
             Path(os.path.dirname(os.path.abspath(sys.argv[0]))) / "instalar_datos_ia.bat",
-            Path(__file__).resolve().parent.parent / "instalar_datos_ia.bat",
         ]
+        try:
+            candidatos.append(Path(__file__).resolve().parent.parent / "instalar_datos_ia.bat")
+        except Exception:
+            pass
         bat = next((c for c in candidatos if c.exists()), None)
         if bat is None:
             messagebox.showinfo(
