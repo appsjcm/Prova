@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "4.0.0 Controles Reales"
+VERSION = "4.1.0 Dock en Vivo"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
 
 
@@ -3422,6 +3422,27 @@ class PremiumApp:
         except Exception:
             pass
 
+    def _animate_dock_waveform(self):
+        """Anima la onda del dock: recorre los fotogramas cuando el motor está
+        activo y no está silenciado; se queda quieta (plano) si está parado."""
+        try:
+            frames = getattr(self, "_dock_wave_frames", None)
+            wave = getattr(self, "vm_dock_wave", None)
+            if frames and wave is not None:
+                activo = self.engine.running and not bool(self.mute.get())
+                if activo:
+                    self._dock_wave_i = (self._dock_wave_i + 1) % len(frames)
+                    wave.configure(image=frames[self._dock_wave_i])
+                else:
+                    self._dock_wave_i = 0
+                    wave.configure(image=frames[0])
+        except Exception:
+            pass
+        try:
+            self.root.after(120, self._animate_dock_waveform)
+        except Exception:
+            pass
+
     def vm_toggle_power(self):
         if self.engine.running:
             self.stop()
@@ -3597,6 +3618,16 @@ class PremiumApp:
             padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
         ).pack(side="left", padx=4, pady=13)
 
+        # Onda del dock (pack de UI funcional): animada cuando el motor está
+        # activo, quieta cuando está parado. Si no hay imágenes, no aparece.
+        wave_frames = [self.ui_dock_images.get(f"waveform_{i}") for i in range(6)]
+        if all(f is not None for f in wave_frames):
+            self._dock_wave_frames = wave_frames
+            self._dock_wave_i = 0
+            self.vm_dock_wave = tk.Label(bottombar, image=wave_frames[0], bg="#101016", bd=0)
+            self.vm_dock_wave.pack(side="left", padx=8, pady=9)
+            self._animate_dock_waveform()
+
         vm_meters = tk.Frame(bottombar, bg="#101016")
         vm_meters.pack(side="left", fill="x", expand=True, padx=10)
         self.vm_bottom_mic_bar = ttk.Progressbar(vm_meters, maximum=100)
@@ -3605,12 +3636,20 @@ class PremiumApp:
         self.vm_bottom_out_bar.pack(fill="x")
 
         tk.Label(bottombar, textvariable=self.state, bg="#101016", fg="#8e96b1", font=("Segoe UI", 9), anchor="e").pack(side="left", padx=6)
-        tk.Button(
-            bottombar, text="⛔ STOP ALL", command=self.vm_stop_all,
-            bg="#3d1a2b", fg="#ff5c8a", activebackground="#7a2140",
-            activeforeground="#ffffff", relief="flat", bd=0,
-            padx=14, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2"
-        ).pack(side="right", padx=12, pady=12)
+        stop_active = self.ui_dock_images.get("stop_all_active")
+        if stop_active is not None:
+            tk.Button(
+                bottombar, image=stop_active, command=self.vm_stop_all,
+                bg="#101016", activebackground="#101016", relief="flat",
+                bd=0, cursor="hand2"
+            ).pack(side="right", padx=12, pady=9)
+        else:
+            tk.Button(
+                bottombar, text="⛔ STOP ALL", command=self.vm_stop_all,
+                bg="#3d1a2b", fg="#ff5c8a", activebackground="#7a2140",
+                activeforeground="#ffffff", relief="flat", bd=0,
+                padx=14, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2"
+            ).pack(side="right", padx=12, pady=12)
 
         self.voiceicc_topbar = tk.Frame(workspace, bg="#101016", height=70)
         topbar = self.voiceicc_topbar

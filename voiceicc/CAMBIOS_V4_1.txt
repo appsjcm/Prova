@@ -1,0 +1,12 @@
+CAMBIOS V4.1 - Dock en Vivo
+
+- Onda animada en la barra inferior (pack de UI funcional): recorre los
+  fotogramas dock_waveform_0..5 cuando el motor esta activo y no esta
+  silenciado; se queda plana al parar o al silenciar. Nuevo metodo
+  _animate_dock_waveform que se refresca cada 120 ms.
+- Boton STOP ALL con imagen real del dock (dock_stop_all_active) en lugar
+  del boton de texto, con respaldo automatico si falta la imagen.
+- Ambos elementos solo aparecen si sus imagenes estan presentes; si no,
+  la barra sigue funcionando con los controles de siempre.
+- Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a
+  self indefinidas, y simulacion de arranque completada sin errores.
