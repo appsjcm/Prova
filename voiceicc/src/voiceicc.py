@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.5.0 Aviso por Carga"
+VERSION = "6.6.0 Ruta IA Guiada"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -238,18 +238,58 @@ class RVCBackend:
         except Exception:
             pass
 
-    def data_report(self):
-        """Resumen legible del estado de los datos de IA (para la interfaz)."""
-        ok, motivo = self.detect()
-        modelos = len(self.list_models())
-        faltan = self.base_models_present()
-        partes = [motivo]
-        partes.append(f"Modelos de voz: {modelos}.")
-        if faltan:
-            partes.append("Faltan modelos base: " + ", ".join(faltan) + ".")
+    def readiness(self):
+        """Checklist estructurado del estado de la ruta IA, para guiar al
+        usuario paso a paso. Los modelos base solo hacen falta para .pth."""
+        def _imp(mod):
+            try:
+                __import__(mod)
+                return True
+            except Exception:
+                return False
+        torch_ok = _imp("torch")
+        rvc_ok = _imp("rvc_python")
+        onnx_ok, provs = self.onnx_info()
+        motor_ok = onnx_ok or (torch_ok and rvc_ok)
+        provider = self._best_onnx_provider(provs).replace("ExecutionProvider", "") if onnx_ok else ("PyTorch" if torch_ok else "-")
+        modelos = self.list_models()
+        sel = next((m for m in modelos if m["name"] == self.active_model), None)
+        usa_onnx = bool(sel and sel.get("onnx"))
+        faltan_base = self.base_models_present()
+        # Los modelos base (hubert/rmvpe) solo son necesarios para la vía .pth.
+        need_base = bool(sel is None or not sel.get("onnx")) and not onnx_ok
+        base_ok = (not need_base) or (not faltan_base)
+        listo = bool(motor_ok and modelos and base_ok)
+        if not motor_ok:
+            siguiente = "Instala el motor: pip install onnxruntime (rápido) o rvc-python torch (completo)."
+        elif not modelos:
+            siguiente = "Importa un modelo de voz (.onnx recomendado, o .pth) en la carpeta de voces."
+        elif need_base and faltan_base:
+            siguiente = "Descarga los modelos base (botón «Descargar modelos base»)."
+        elif not self.enabled:
+            siguiente = "Activa la voz IA y elige tu voz."
         else:
-            partes.append("Modelos base listos.")
-        return " ".join(partes)
+            siguiente = "Todo listo: habla y saldrá con la voz IA."
+        return {
+            "motor_ok": motor_ok, "onnx": onnx_ok, "torch": torch_ok and rvc_ok,
+            "provider": provider, "modelos": len(modelos), "usa_onnx": usa_onnx,
+            "base_ok": base_ok, "need_base": need_base, "faltan_base": faltan_base,
+            "listo": listo, "siguiente": siguiente,
+        }
+
+    def data_report(self):
+        """Resumen legible del estado de los datos de IA (para la interfaz),
+        en forma de checklist con el siguiente paso."""
+        r = self.readiness()
+        motor = f"✅ Motor IA ({r['provider']})" if r["motor_ok"] else "⬜ Motor IA (falta instalar)"
+        voces = f"✅ Modelos de voz: {r['modelos']}" if r["modelos"] else "⬜ Sin modelos de voz"
+        if not r["need_base"]:
+            base = "✅ Base no necesaria (ONNX)"
+        elif r["base_ok"]:
+            base = "✅ Modelos base"
+        else:
+            base = "⬜ Faltan modelos base: " + ", ".join(r["faltan_base"])
+        return f"{motor}   ·   {voces}   ·   {base}\n➡ {r['siguiente']}"
 
     # -- biblioteca de modelos de voz --
     def list_models(self):
@@ -11188,6 +11228,7 @@ class PremiumApp:
         self._rvc_model_combo.pack(side="left", padx=(0, 8))
         self._rvc_model_combo.bind("<<ComboboxSelected>>", lambda e: self._rvc_apply_model())
         ttk.Button(fila, text="🔄 Actualizar", command=self._rvc_refresh_models).pack(side="left", padx=(0, 8))
+        ttk.Button(fila, text="🧪 Probar voz IA", command=self._rvc_selftest).pack(side="left", padx=(0, 8))
 
         # Controles de la conversión.
         ctrl = self.make_card(cont, "Conversión")
@@ -11314,6 +11355,42 @@ class PremiumApp:
                 self.rvc_status.set(f"⚠ No se pudo cargar '{nombre}'. Revisa que el .pth sea un modelo RVC válido.")
             else:
                 self.rvc_status.set("⚠ " + motivo)
+
+    def _rvc_selftest(self):
+        """Comprueba la ruta IA de punta a punta: estado + inferencia de prueba
+        sobre un tono corto (sin necesitar audio en directo)."""
+        r = self.rvc.readiness()
+        lineas = [
+            f"Motor IA: {'sí' if r['motor_ok'] else 'no'}  ·  acelerador: {r['provider']}",
+            f"Modelos de voz: {r['modelos']}  ·  seleccionado usa ONNX: {'sí' if r['usa_onnx'] else 'no'}",
+            f"Modelos base: {'no hacen falta (ONNX)' if not r['need_base'] else ('ok' if r['base_ok'] else 'faltan')}",
+            f"Siguiente paso: {r['siguiente']}",
+        ]
+        # Si hay un modelo cargado, prueba una inferencia de 200 ms.
+        nombre = self.rvc_model.get()
+        if r["motor_ok"] and nombre:
+            try:
+                if self.rvc._loaded_name != nombre:
+                    self.rvc.load(nombre)
+                self.rvc.enabled = True
+                import numpy as _np
+                n = int(self.engine.rate * 0.2)
+                t = _np.arange(n, dtype=_np.float32) / self.engine.rate
+                tono = (0.2 * _np.sin(2 * _np.pi * 150.0 * t)).astype(_np.float32)
+                import time as _time
+                t0 = _time.perf_counter()
+                out = self.rvc.process_block(tono, self.engine.rate)
+                dt = (_time.perf_counter() - t0) * 1000.0
+                if out is not None and len(out):
+                    lineas.append(f"Inferencia de prueba: OK · {dt:.0f} ms para 200 ms de audio.")
+                else:
+                    lineas.append("Inferencia de prueba: el modelo no devolvió audio (revisa el modelo).")
+            except Exception as exc:
+                lineas.append(f"Inferencia de prueba: error · {exc}")
+            finally:
+                self.rvc.enabled = bool(self.rvc_enabled.get())
+        messagebox.showinfo("Prueba de Voz IA", "\n".join(lineas))
+        self._rvc_refresh_status()
 
     def _rvc_toggle(self):
         if bool(self.rvc_enabled.get()):
