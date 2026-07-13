@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.5.0 Barra Legible"
+VERSION = "7.6.0 Version Visible"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -11596,7 +11596,7 @@ class PremiumApp:
 
         header = self.make_card(cont)
         header.pack(fill="x", pady=(0, 10))
-        ttk.Label(header, text="🤖 Voces IA (RVC) · Conversión local",
+        ttk.Label(header, text=f"🤖 Voces IA (RVC) · Conversión local   ·   VoiceICC v{VERSION_SHORT}",
                   style="Card.TLabel", font=("Segoe UI", 20, "bold")).pack(anchor="w")
         ttk.Label(header, text="Convierte tu voz con modelos de IA (RVC) en tu propio PC. "
                               "Sin Internet, sin enviar tu voz a servidores, sin costes por uso.",
