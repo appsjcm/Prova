@@ -1,0 +1,11 @@
+CAMBIOS V7.1 - TTS Portapapeles
+
+- Nuevo boton "Leer portapapeles" en Texto a Voz: dice en voz alta lo que
+  tengas copiado (Ctrl+C). Comodo para leer mensajes en Discord/streams sin
+  escribir. Sale por el micro virtual como el resto del TTS.
+- La voz TTS elegida se guarda y se recupera al reiniciar (config).
+- _tts_speak admite texto directo (reutilizado por el portapapeles).
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba del portapapeles (vacio avisa;
+con texto lo pasa a la sintesis).

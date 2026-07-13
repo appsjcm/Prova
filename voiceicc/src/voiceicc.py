@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.0.0 Fuentes de Voces"
+VERSION = "7.1.0 TTS Portapapeles"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -11522,7 +11522,10 @@ class PremiumApp:
                                  insertbackground=COLORS["text"], relief="flat", wrap="word", font=("Segoe UI", 10))
         self._tts_text.pack(fill="x", pady=(8, 6))
         self._tts_text.insert("1.0", "Hola, esto es VoiceICC hablando con voz sintética.")
-        ttk.Button(ttscard, text="🔊 Hablar", style="Accent.TButton", command=self._tts_speak).pack(anchor="w")
+        brow = ttk.Frame(ttscard, style="Card.TFrame")
+        brow.pack(anchor="w")
+        ttk.Button(brow, text="🔊 Hablar", style="Accent.TButton", command=self._tts_speak).pack(side="left", padx=(0, 8))
+        ttk.Button(brow, text="📋 Leer portapapeles", command=self._tts_speak_clipboard).pack(side="left")
 
         self._rvc_refresh_status()
         self._rvc_refresh_models()
@@ -11595,7 +11598,18 @@ class PremiumApp:
         except Exception as exc:
             messagebox.showerror("No se pudo importar", str(exc))
 
-    def _tts_speak(self):
+    def _tts_speak_clipboard(self):
+        """Lee en voz alta el texto del portapapeles."""
+        try:
+            texto = self.root.clipboard_get()
+        except Exception:
+            texto = ""
+        if not (texto or "").strip():
+            self.tts_status.set("⚠ El portapapeles está vacío o no es texto.")
+            return
+        self._tts_speak(texto)
+
+    def _tts_speak(self, texto=None):
         ok, motivo = self.tts.available()
         if not ok:
             self.tts_status.set("⚠ " + motivo)
@@ -11605,10 +11619,12 @@ class PremiumApp:
         if not nombre:
             self.tts_status.set("⚠ Importa/elige una voz TTS primero.")
             return
-        try:
-            texto = self._tts_text.get("1.0", tk.END).strip()
-        except Exception:
-            texto = ""
+        if texto is None:
+            try:
+                texto = self._tts_text.get("1.0", tk.END)
+            except Exception:
+                texto = ""
+        texto = (texto or "").strip()
         if not texto:
             return
         self.tts_status.set("Sintetizando…")
@@ -22255,6 +22271,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "rvc_pitch": int(self.rvc_pitch.get()) if hasattr(self, "rvc_pitch") else 0,
             "rvc_index": float(self.rvc_index.get()) if hasattr(self, "rvc_index") else 50.0,
             "realismo_maximo": bool(self.realismo_maximo.get()) if hasattr(self, "realismo_maximo") else False,
+            "tts_voice": self.tts_voice.get() if hasattr(self, "tts_voice") else "",
         }
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=4, ensure_ascii=False)
@@ -22324,6 +22341,13 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
             try:
                 self.realismo_maximo.set(bool(data.get("realismo_maximo", False)))
+            except Exception:
+                pass
+
+            try:
+                tv = data.get("tts_voice", "")
+                if tv and tv in self.tts.list_voices():
+                    self.tts_voice.set(tv)
             except Exception:
                 pass
 
