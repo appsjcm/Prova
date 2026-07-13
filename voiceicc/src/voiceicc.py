@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.6.0 Version Visible"
+VERSION = "7.7.0 ONNX Incluido"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -272,16 +272,24 @@ class RVCBackend:
         sel = next((m for m in modelos if m["name"] == self.active_model), None)
         usa_onnx = bool(sel and sel.get("onnx"))
         faltan_base = self.base_models_present()
-        # Los modelos base (hubert/rmvpe) solo son necesarios para la vía .pth.
-        need_base = bool(sel is None or not sel.get("onnx")) and not onnx_ok
+        # El motor que necesita el modelo SELECCIONADO:
+        #  · .onnx  -> onnxruntime (viene incluido en el .exe).
+        #  · .pth   -> rvc-python + torch (motor completo) + modelos base.
+        sel_es_pth = bool(sel and not sel.get("onnx"))
+        motor_sel_ok = (torch_ok and rvc_ok) if sel_es_pth else onnx_ok
+        need_base = sel_es_pth
         base_ok = (not need_base) or (not faltan_base)
-        listo = bool(motor_ok and modelos and base_ok)
-        if not motor_ok:
-            siguiente = "Instala el motor: pip install onnxruntime (rápido) o rvc-python torch (completo)."
+        listo = bool(modelos and motor_sel_ok and base_ok)
+        if not modelos and not motor_ok:
+            siguiente = "Importa un modelo de voz .onnx (funciona ya, sin instalar nada)."
         elif not modelos:
-            siguiente = "Importa un modelo de voz (.onnx recomendado, o .pth) en la carpeta de voces."
+            siguiente = "Importa un modelo de voz .onnx (recomendado, ya funciona) o .pth."
+        elif sel_es_pth and not (torch_ok and rvc_ok):
+            siguiente = "Este modelo .pth necesita el motor completo (botón «Instalar motor completo») o usa un modelo .onnx."
         elif need_base and faltan_base:
             siguiente = "Descarga los modelos base (botón «Descargar modelos base»)."
+        elif not motor_sel_ok:
+            siguiente = "Falta el motor para este modelo. Usa un modelo .onnx (ya incluido)."
         elif not self.enabled:
             siguiente = "Activa la voz IA y elige tu voz."
         else:

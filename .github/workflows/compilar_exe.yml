@@ -39,6 +39,7 @@ jobs:
           --name VoiceICC
           --icon assets/app_icon.ico
           --add-data "assets;assets"
+          --collect-all onnxruntime
           src/voiceicc.py
 
       - name: Instalar Inno Setup
