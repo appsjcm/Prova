@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.3.0 Python Automatico"
+VERSION = "7.4.0 Guia del Micro"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -9732,6 +9732,7 @@ class PremiumApp:
         ttk.Button(microw, text="🎤 Instalar micrófono virtual", style="Accent.TButton",
                    command=self.cable_install_virtual_mic).pack(side="left", padx=(0, 8))
         ttk.Button(microw, text="🔎 Comprobar / enrutar", command=self.cable_setup_virtual_mic).pack(side="left", padx=(0, 8))
+        ttk.Button(microw, text="📖 Guía paso a paso", command=self.mic_guide_window).pack(side="left", padx=(0, 8))
         ttk.Label(miccard, text="1) Instala el micrófono virtual (una vez).  2) VoiceICC enruta su salida ahí.  "
                               "3) En Discord/juego/OBS elige el micrófono «CABLE Output (VB-Audio Virtual Cable)».",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(8, 0))
@@ -9897,6 +9898,101 @@ class PremiumApp:
 
     # URL oficial del driver de micrófono virtual VB-CABLE (VB-Audio).
     VBCABLE_URL = "https://download.vb-audio.com/Download_CABLE/VBCABLE_Driver_Pack45.zip"
+
+    def mic_guide_window(self):
+        """Guía visual paso a paso del micrófono virtual: diagrama del flujo de
+        audio + instrucciones concretas para Discord, OBS, juegos y Windows."""
+        win = tk.Toplevel(self.root)
+        win.title("Guía del Micrófono VoiceICC")
+        win.configure(bg="#0f0f16")
+        try:
+            win.geometry("720x620")
+            win.transient(self.root)
+        except Exception:
+            pass
+
+        tk.Label(win, text="🎤 Cómo usar tu voz en cualquier app",
+                 bg="#0f0f16", fg="#ffffff", font=("Segoe UI", 15, "bold")).pack(anchor="w", padx=16, pady=(14, 2))
+        tk.Label(win, text="El micrófono virtual (VB-CABLE) lleva tu voz de VoiceICC a Discord, juegos y OBS. "
+                          "En esas apps, elige como micrófono «CABLE Output (VB-Audio Virtual Cable)».",
+                 bg="#0f0f16", fg="#aab0d6", font=("Segoe UI", 10), wraplength=680, justify="left").pack(anchor="w", padx=16)
+
+        # Diagrama del flujo de audio.
+        cv = tk.Canvas(win, height=110, bg="#0f0f16", highlightthickness=0)
+        cv.pack(fill="x", padx=16, pady=(10, 6))
+        cajas = [("🎙\nTu micro", "#1c2a4a"), ("VoiceICC\n(voz IA/FX)", "#3a1f6b"),
+                 ("CABLE Input\n(salida VoiceICC)", "#123a2a"), ("CABLE Output\n(micro en la app)", "#3a2a12"),
+                 ("Discord\nJuego · OBS", "#3a1230")]
+        x = 12
+        ancho = 128
+        for i, (texto, color) in enumerate(cajas):
+            cv.create_rectangle(x, 30, x + ancho, 90, fill=color, outline="#7c5cff", width=2)
+            cv.create_text(x + ancho / 2, 60, text=texto, fill="#ffffff", font=("Segoe UI", 9, "bold"), justify="center")
+            if i < len(cajas) - 1:
+                cv.create_text(x + ancho + 8, 60, text="➜", fill="#7c5cff", font=("Segoe UI", 14, "bold"))
+            x += ancho + 20
+
+        nb = ttk.Notebook(win)
+        nb.pack(fill="both", expand=True, padx=12, pady=(6, 12))
+
+        secciones = [
+            ("Resumen", [
+                "1. Instala el micrófono virtual: botón «Instalar micrófono virtual» (una vez). Acepta el aviso de Windows.",
+                "2. En VoiceICC pulsa «Comprobar / enrutar»: deja tu MICRO REAL como entrada y CABLE Input como salida.",
+                "3. En tu app (Discord/juego/OBS) elige como MICRÓFONO: «CABLE Output (VB-Audio Virtual Cable)».",
+                "4. Pon VoiceICC en marcha (▶) y elige una voz. Al hablar, tu voz modulada entra en la app.",
+            ]),
+            ("Discord", [
+                "1. Abre Ajustes de usuario (⚙, abajo a la izquierda).",
+                "2. Ve a «Voz y vídeo».",
+                "3. Dispositivo de entrada → «CABLE Output (VB-Audio Virtual Cable)».",
+                "4. Desactiva «Reducción de ruido» / Krisp (puede filtrar la voz IA).",
+                "5. Usa «Comprobemos» para probar que se te oye.",
+            ]),
+            ("OBS", [
+                "Opción A (recomendada):",
+                "1. Fuentes → ➕ → «Captura de entrada de audio».",
+                "2. Dispositivo → «CABLE Output (VB-Audio Virtual Cable)».",
+                "Opción B: Ajustes → Audio → Micrófono/Auxiliar → «CABLE Output».",
+            ]),
+            ("Juegos (Fortnite…)", [
+                "1. Entra en los ajustes de Audio/Voz del juego.",
+                "2. En «Dispositivo de entrada» o «Canal de voz» elige «CABLE Output (VB-Audio Virtual Cable)».",
+                "3. Si el juego no deja elegir micrófono, cámbialo en Windows (pestaña «Windows»): todas las apps lo usarán.",
+            ]),
+            ("Windows", [
+                "Para que TODAS las apps usen tu voz por defecto:",
+                "1. Clic derecho en el altavoz (barra de tareas) → «Configuración de sonido».",
+                "2. En «Entrada», elige «CABLE Output (VB-Audio Virtual Cable)».",
+                "3. (Para escucharte a ti) usa el botón «🎧 ESCUCHARME» de VoiceICC, no el cable.",
+            ]),
+            ("Problemas", [
+                "• No me oyen: ¿VoiceICC está en ▶? ¿La salida de VoiceICC es «CABLE Input»?",
+                "• Eco o bucle: tu ENTRADA debe ser tu micro REAL, no «CABLE Output». VoiceICC lo corrige solo al enrutar.",
+                "• Voz cortada/robótica: sube la latencia en Ajustes de audio y vuelve a empezar el directo.",
+                "• No aparece «CABLE Output»: reinicia el PC tras instalar el micrófono virtual.",
+            ]),
+        ]
+        for titulo, pasos in secciones:
+            fr = tk.Frame(nb, bg="#12121b")
+            nb.add(fr, text=titulo)
+            for paso in pasos:
+                neg = paso[0].isdigit() is False and paso.endswith(":")
+                tk.Label(fr, text=paso, bg="#12121b", fg="#dfe2ff" if not neg else "#c7a6ff",
+                         font=("Segoe UI", 10, "bold" if neg else "normal"),
+                         wraplength=660, justify="left").pack(anchor="w", padx=14, pady=3)
+
+        bottom = tk.Frame(win, bg="#0f0f16")
+        bottom.pack(fill="x", padx=16, pady=(0, 12))
+        tk.Button(bottom, text="🎤 Instalar micrófono virtual", command=self.cable_install_virtual_mic,
+                  bg="#7c5cff", fg="#ffffff", relief="flat", bd=0, padx=12, pady=7,
+                  font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=(0, 8))
+        tk.Button(bottom, text="🔎 Comprobar / enrutar", command=self.cable_setup_virtual_mic,
+                  bg="#1b1b24", fg="#dfe2ff", relief="flat", bd=0, padx=12, pady=7,
+                  font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=(0, 8))
+        tk.Button(bottom, text="Cerrar", command=win.destroy,
+                  bg="#1b1b24", fg="#dfe2ff", relief="flat", bd=0, padx=12, pady=7,
+                  font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right")
 
     def cable_setup_virtual_mic(self):
         """Comprueba si hay micrófono virtual y, si lo hay, enruta la salida

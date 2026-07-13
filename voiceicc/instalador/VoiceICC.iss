@@ -1,5 +1,5 @@
 #define MyAppName "VoiceICC"
-#define MyAppVersion "7.3"
+#define MyAppVersion "7.4"
 #define MyAppPublisher "Modulador de Voz Premium"
 #define MyAppExeName "VoiceICC.exe"
 
