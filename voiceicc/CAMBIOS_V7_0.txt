@@ -1,0 +1,17 @@
+CAMBIOS V7.0 - Fuentes de Voces
+
+- Nuevo boton "Buscar voces (voice-models.com)" en la seccion de modelos de
+  Voces IA: abre el catalogo de la comunidad en el navegador. Copias el
+  enlace de descarga del modelo y lo pegas en el campo de URL.
+- La descarga por URL ahora acepta ZIP: muchos modelos (voice-models.com)
+  vienen en .zip con el .pth + .index dentro. VoiceICC lo descarga, extrae
+  el modelo y su indice a la carpeta de voces y listo. Tambien sigue
+  aceptando .pth/.onnx directos con su .index.
+- RVCBackend._import_from_zip().
+
+Nota: la busqueda y la descarga ocurren en el PC del usuario (que si puede
+acceder a esos sitios); todo local.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de extraccion de ZIP (saca .pth
+e .index del zip, tanto desde archivo como desde una descarga simulada).

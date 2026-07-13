@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.9.0 Voces TTS Faciles"
+VERSION = "7.0.0 Fuentes de Voces"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -338,8 +338,9 @@ class RVCBackend:
         return nombre or "modelo"
 
     def download_model_from_url(self, pth_url, index_url=None, name=None, progress=None):
-        """Descarga un modelo de voz (.pth/.onnx) y, opcionalmente, su .index
-        desde URLs directas (por ejemplo, de HuggingFace '.../resolve/...').
+        """Descarga un modelo de voz desde una URL directa. Acepta .pth/.onnx
+        (opcionalmente con su .index) o un .zip que los contenga (típico de
+        voice-models.com): en ese caso extrae el .pth/.onnx y el .index.
         Devuelve el nombre del modelo importado."""
         from urllib.request import urlopen, Request
         def _bajar(url, destino):
@@ -348,15 +349,42 @@ class RVCBackend:
             req = Request(url, headers={"User-Agent": "VoiceICC"})
             with urlopen(req) as r, open(destino, "wb") as out:
                 shutil.copyfileobj(r, out)
+
         fname = self._url_filename(pth_url)
         stem = name or os.path.splitext(fname)[0]
-        ext = os.path.splitext(fname)[1] or ".pth"
-        if ext.lower() not in (".pth", ".onnx"):
+        ext = os.path.splitext(fname)[1].lower()
+
+        # ZIP: descarga a temporal, extrae el modelo y el índice.
+        if ext == ".zip" or "zip" in ext:
+            import tempfile
+            tmp = Path(tempfile.mkdtemp()) / "modelo.zip"
+            _bajar(pth_url, str(tmp))
+            return self._import_from_zip(str(tmp), name)
+
+        if ext not in (".pth", ".onnx"):
             ext = ".pth"
         destino = Path(self.models_dir) / f"{stem}{ext}"
         _bajar(pth_url, str(destino))
         if index_url:
             _bajar(index_url, str(Path(self.models_dir) / f"{stem}.index"))
+        return stem
+
+    def _import_from_zip(self, zip_path, name=None):
+        """Extrae el primer .pth/.onnx (y un .index si hay) de un zip a la
+        carpeta de voces. Devuelve el nombre del modelo."""
+        with zipfile.ZipFile(zip_path) as z:
+            nombres = z.namelist()
+            modelo = next((n for n in nombres if n.lower().endswith((".pth", ".onnx"))), None)
+            if not modelo:
+                raise ValueError("El zip no contiene ningún modelo .pth o .onnx.")
+            indice = next((n for n in nombres if n.lower().endswith(".index")), None)
+            mext = os.path.splitext(modelo)[1].lower()
+            stem = name or os.path.splitext(os.path.basename(modelo))[0]
+            with z.open(modelo) as src, open(Path(self.models_dir) / f"{stem}{mext}", "wb") as out:
+                shutil.copyfileobj(src, out)
+            if indice:
+                with z.open(indice) as src, open(Path(self.models_dir) / f"{stem}.index", "wb") as out:
+                    shutil.copyfileobj(src, out)
         return stem
 
     # -- carga / descarga del modelo --
@@ -11429,9 +11457,13 @@ class PremiumApp:
         url2.pack(fill="x", pady=(0, 2))
         ttk.Label(url2, text="URL del .index (opcional):", style="Card.TLabel", width=26).pack(side="left")
         ttk.Entry(url2, textvariable=self.rvc_url_index).pack(side="left", fill="x", expand=True, padx=(6, 0))
-        ttk.Button(lib, text="⬇ Descargar modelo desde URL", command=self._rvc_download_url).pack(anchor="w", pady=(4, 0))
-        ttk.Label(lib, text="En HuggingFace, abre el archivo .pth y usa el botón «download» (URL que contiene «/resolve/»). "
-                          "Repite con el .index si lo tiene.",
+        dlrow = ttk.Frame(lib, style="Card.TFrame")
+        dlrow.pack(anchor="w", pady=(4, 0), fill="x")
+        ttk.Button(dlrow, text="⬇ Descargar modelo desde URL", command=self._rvc_download_url).pack(side="left", padx=(0, 8))
+        ttk.Button(dlrow, text="🌐 Buscar voces (voice-models.com)",
+                   command=lambda: webbrowser.open("https://voice-models.com")).pack(side="left")
+        ttk.Label(lib, text="Busca una voz en voice-models.com o HuggingFace, copia el enlace de descarga del "
+                          ".pth (en HuggingFace, el que contiene «/resolve/») y pégalo arriba. Añade el .index si lo tiene.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(2, 0))
 
         # Controles de la conversión.
