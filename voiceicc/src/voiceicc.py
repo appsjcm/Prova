@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.1.0 TTS Portapapeles"
+VERSION = "7.2.0 Instalar con un Clic"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -97,6 +97,22 @@ COLORS = {
 
 def clamp(value, low, high):
     return max(low, min(high, value))
+
+
+def find_system_python():
+    """Devuelve el comando de Python del sistema (lista para subprocess) para
+    instalar/usar paquetes de IA. En modo desarrollo es el propio Python; en
+    el .exe empaquetado busca 'py -3' o 'python' en el PATH (el exe no puede
+    importar paquetes instalados con pip, pero sí llamarlos como subproceso)."""
+    if not getattr(sys, "frozen", False):
+        return [sys.executable]
+    for cand in (["py", "-3"], ["python"], ["python3"]):
+        try:
+            if shutil.which(cand[0]):
+                return cand
+        except Exception:
+            pass
+    return None
 
 
 class RVCBackend:
@@ -542,14 +558,49 @@ class PiperTTS:
         self._voice = None
         self._loaded_name = None
         self.sample_rate = 22050
+        self._mode = None        # "import" | "subprocess" | None
+        self._python = None      # comando de Python del sistema (modo subproceso)
+
+    def install(self, progress=None):
+        """Instala el motor TTS (piper-tts) con el Python del sistema.
+        Devuelve (ok, mensaje)."""
+        py = find_system_python()
+        if py is None:
+            return False, "No encuentro Python. Instala Python 3 desde python.org y reintenta."
+        if progress:
+            progress("Instalando piper-tts… (puede tardar unos minutos)")
+        try:
+            p = subprocess.run(py + ["-m", "pip", "install", "--upgrade", "piper-tts"],
+                               capture_output=True, text=True, timeout=1800)
+            if p.returncode == 0:
+                self._mode = None  # forzar re-deteccion
+                return True, "Motor TTS instalado."
+            return False, "Fallo al instalar: " + (p.stderr or p.stdout or "")[-300:]
+        except Exception as exc:
+            return False, f"Error al instalar: {exc}"
 
     def available(self):
-        """(ok, motivo). Necesita el paquete piper-tts."""
+        """(ok, motivo). Funciona con piper importable (modo desarrollo) o con
+        piper instalado en el Python del sistema (modo .exe, vía subproceso)."""
         try:
             import piper  # noqa: F401
+            self._mode = "import"
             return True, "Motor TTS (Piper) disponible."
         except Exception:
-            return False, "Falta el motor TTS. Instalalo con: pip install piper-tts"
+            pass
+        py = find_system_python()
+        if py:
+            try:
+                p = subprocess.run(py + ["-c", "import piper"],
+                                   capture_output=True, text=True, timeout=20)
+                if p.returncode == 0:
+                    self._mode = "subprocess"
+                    self._python = py
+                    return True, "Motor TTS (Piper) disponible en Python del sistema."
+            except Exception:
+                pass
+        self._mode = None
+        return False, "Falta el motor TTS. Púlsa «Instalar motor TTS» (o pip install piper-tts)."
 
     def list_voices(self):
         try:
@@ -631,6 +682,17 @@ class PiperTTS:
         if cfg is None:
             print(f"Falta la config {name}.onnx.json junto al modelo.")
             return False
+        # Leer la tasa de muestreo de la config (JSON), sin importar piper.
+        try:
+            with open(str(cfg), "r", encoding="utf-8") as f:
+                self.sample_rate = int(json.load(f).get("audio", {}).get("sample_rate", 22050))
+        except Exception:
+            self.sample_rate = 22050
+        if self._mode == "subprocess":
+            # No se importa piper: se sintetiza por subproceso al hablar.
+            self._voice = None
+            self._loaded_name = name
+            return True
         try:
             from piper import PiperVoice
             self._voice = PiperVoice.load(str(onnx), config_path=str(cfg))
@@ -638,18 +700,43 @@ class PiperTTS:
             try:
                 self.sample_rate = int(self._voice.config.sample_rate)
             except Exception:
-                self.sample_rate = 22050
+                pass
             return True
         except Exception as exc:
             print("No se pudo cargar la voz TTS:", exc)
             self._voice = None
             return False
 
+    def _read_wav(self, path):
+        import wave as _wave
+        with _wave.open(str(path), "rb") as wf:
+            sr = wf.getframerate()
+            data = wf.readframes(wf.getnframes())
+        audio = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
+        return audio, sr
+
     def synthesize(self, text):
         """Devuelve (audio_float32_mono, sample_rate) para el texto dado."""
-        if self._voice is None or not text.strip():
+        if not text.strip() or not self._loaded_name:
             return None, self.sample_rate
-        # API de piper segun version: primero flujo raw int16; si no, a WAV.
+        # Modo subproceso (.exe): llama a piper del sistema y lee el WAV.
+        if self._mode == "subprocess" and self._python:
+            try:
+                import tempfile
+                onnx = Path(self.voices_dir) / f"{self._loaded_name}.onnx"
+                tmp = Path(tempfile.mkdtemp()) / "tts.wav"
+                cmd = self._python + ["-m", "piper", "--model", str(onnx),
+                                      "--output_file", str(tmp)]
+                subprocess.run(cmd, input=text, text=True,
+                               capture_output=True, timeout=120)
+                if tmp.exists():
+                    return self._read_wav(tmp)
+            except Exception as exc:
+                print("Síntesis TTS (subproceso) falló:", exc)
+            return None, self.sample_rate
+        # Modo import (desarrollo).
+        if self._voice is None:
+            return None, self.sample_rate
         try:
             trozos = []
             for b in self._voice.synthesize_stream_raw(text):
@@ -660,17 +747,12 @@ class PiperTTS:
         except Exception as exc:
             print("synthesize_stream_raw no disponible:", exc)
         try:
-            import io as _io
             import wave as _wave
             import tempfile
             tmp = Path(tempfile.mkdtemp()) / "tts.wav"
             with _wave.open(str(tmp), "wb") as wf:
                 self._voice.synthesize(text, wf)
-            with _wave.open(str(tmp), "rb") as wf:
-                sr = wf.getframerate()
-                data = wf.readframes(wf.getnframes())
-            audio = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
-            return audio, sr
+            return self._read_wav(tmp)
         except Exception as exc:
             print("Sintesis TTS fallo:", exc)
             return None, self.sample_rate
@@ -4208,13 +4290,18 @@ class PremiumApp:
                 build()
             except Exception as exc:
                 print(f"No se pudo construir módulo diferido {getattr(build, '__name__', build)}: {exc}")
-        # Miniaturas de voces + refresco de las rejillas que las usan.
+        # Miniaturas de voces + refresco de TODAS las rejillas que las usan
+        # (favoritos, personajes, caja de voces y vista previa).
         try:
             self._load_voice_thumbnails()
-            if hasattr(self, "refresh_favoritos_pro"):
-                self.refresh_favoritos_pro()
-            if hasattr(self, "update_voice_preview"):
-                self.update_voice_preview()
+            for metodo in ("refresh_favoritos_pro", "update_voice_preview",
+                           "populate_personas_grid", "populate_voicebox_grid"):
+                fn = getattr(self, metodo, None)
+                if callable(fn):
+                    try:
+                        fn()
+                    except Exception:
+                        pass
         except Exception as exc:
             print(f"No se pudieron cargar/refrescar miniaturas de voz: {exc}")
 
@@ -11426,11 +11513,15 @@ class PremiumApp:
         self._rvc_status_label.pack(anchor="w", pady=(0, 8))
         botones = ttk.Frame(estado, style="Card.TFrame")
         botones.pack(anchor="w")
-        ttk.Button(botones, text="🔎 Comprobar motor", command=self._rvc_refresh_status).pack(side="left", padx=(0, 8))
-        ttk.Button(botones, text="⚙ Instalar datos IA…", command=self._rvc_install_data).pack(side="left", padx=(0, 8))
-        ttk.Button(botones, text="🧠 Descargar modelos base", command=self._rvc_download_base).pack(side="left", padx=(0, 8))
-        ttk.Button(botones, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
-        ttk.Button(botones, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="⚡ Instalar motor rápido (ONNX)", style="Accent.TButton", command=self._rvc_install_onnx).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="🧩 Instalar motor completo (.pth)", command=self._rvc_install_full).pack(side="left", padx=(0, 8))
+        ttk.Button(botones, text="🔎 Comprobar", command=self._rvc_refresh_status).pack(side="left", padx=(0, 8))
+        botones2 = ttk.Frame(estado, style="Card.TFrame")
+        botones2.pack(anchor="w", pady=(6, 0))
+        ttk.Button(botones2, text="🧠 Descargar modelos base", command=self._rvc_download_base).pack(side="left", padx=(0, 8))
+        ttk.Button(botones2, text="⚙ Instalar datos IA…", command=self._rvc_install_data).pack(side="left", padx=(0, 8))
+        ttk.Button(botones2, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
+        ttk.Button(botones2, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
         ttk.Label(estado, text="Rápido (recomendado): pip install onnxruntime  ·  usa modelos de voz .onnx.   "
                               "Completo: pip install rvc-python torch  ·  usa modelos .pth (y su .index). "
                               "Copia el modelo en la carpeta de voces.",
@@ -11495,6 +11586,8 @@ class PremiumApp:
                               "Es distinto de las Voces IA (RVC): esto crea voz a partir de texto.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(0, 6))
         ttk.Label(ttscard, textvariable=self.tts_status, style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(0, 6))
+        ttk.Button(ttscard, text="⚡ Instalar motor TTS (un clic)", style="Accent.TButton",
+                   command=self._tts_install_engine).pack(anchor="w", pady=(0, 6))
         tfila = ttk.Frame(ttscard, style="Card.TFrame")
         tfila.pack(fill="x")
         ttk.Label(tfila, text="Voz TTS:", style="Card.TLabel").pack(side="left", padx=(0, 8))
@@ -11544,6 +11637,46 @@ class PremiumApp:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + " · Importa una voz Piper (.onnx + .onnx.json).")
         else:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + f" · Voces: {len(voces)}.")
+
+    def _pip_install_bg(self, paquetes, status_var, ok_msg, then=None):
+        """Instala paquetes con el Python del sistema, en segundo plano."""
+        py = find_system_python()
+        if py is None:
+            status_var.set("⚠ No encuentro Python en el equipo. Instala Python 3 desde python.org "
+                           "(marca «Add to PATH») y reintenta.")
+            return
+        status_var.set("Instalando " + ", ".join(paquetes) + "… (puede tardar varios minutos)")
+
+        def _run():
+            try:
+                cmd = py + ["-m", "pip", "install", "--upgrade"] + paquetes
+                p = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+                if p.returncode == 0:
+                    self.root.after(0, status_var.set, ok_msg)
+                else:
+                    err = (p.stderr or p.stdout or "")[-220:]
+                    self.root.after(0, status_var.set, f"⚠ No se pudo instalar: {err}")
+            except Exception as exc:
+                self.root.after(0, status_var.set, f"⚠ Error al instalar: {exc}")
+            if then:
+                self.root.after(0, then)
+
+        threading.Thread(target=_run, daemon=True).start()
+
+    def _tts_install_engine(self):
+        self._pip_install_bg(["piper-tts"], self.tts_status,
+                             "✅ Motor TTS instalado. Descarga una voz y pulsa Hablar.",
+                             then=self._tts_refresh)
+
+    def _rvc_install_onnx(self):
+        self._pip_install_bg(["onnxruntime"], self.rvc_status,
+                             "✅ Motor rápido (ONNX) instalado. Importa una voz .onnx y actívala.",
+                             then=self._rvc_refresh_status)
+
+    def _rvc_install_full(self):
+        self._pip_install_bg(["rvc-python", "torch"], self.rvc_status,
+                             "✅ Motor completo instalado. Descarga los modelos base y una voz .pth.",
+                             then=self._rvc_refresh_status)
 
     def _tts_download_catalog(self):
         nombre = self.tts_catalog.get()

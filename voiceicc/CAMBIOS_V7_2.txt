@@ -1,0 +1,34 @@
+CAMBIOS V7.2 - Instalar con un Clic (RVC + TTS automatizados)
+
+Arreglos y automatizacion pedidos tras probar.
+
+1) IMAGENES DE VOZ que faltaban: la rejilla de Personajes (y la caja de
+   voces) no se refrescaba tras la carga diferida de miniaturas de la 6.2.
+   Ahora, al terminar de cargar las miniaturas en segundo plano, se
+   refrescan TODAS las rejillas (favoritos, personajes, caja de voces y
+   vista previa). Ya salen las imagenes de cada voz.
+
+2) INSTALAR MOTOR CON UN CLIC (sin escribir pip en la terminal):
+   - Voces IA: botones "Instalar motor rapido (ONNX)" y "Instalar motor
+     completo (.pth)". Buscan el Python del sistema y hacen el pip install
+     en segundo plano, con estado en vivo.
+   - Texto a Voz: boton "Instalar motor TTS (un clic)" -> pip install
+     piper-tts.
+   - Nuevo ayudante find_system_python(): en el .exe empaquetado localiza
+     'py -3' o 'python' del sistema.
+
+3) TTS QUE FUNCIONA EN EL .EXE: un ejecutable de PyInstaller no puede
+   importar paquetes instalados con pip. Por eso el TTS ahora tiene modo
+   SUBPROCESO: si piper no es importable pero esta en el Python del
+   sistema, VoiceICC lo llama como subproceso (python -m piper --model ...
+   --output_file ...) y reproduce el WAV por la salida/micro virtual.
+   La deteccion y la carga funcionan en ambos modos (import y subproceso).
+
+Nota sobre "falta una salida virtual": es el driver de microfono virtual
+(VB-CABLE). Instalalo desde Cable Virtual > "Instalar microfono virtual"
+(o marca su casilla en el instalador). Sin el no hay salida/entrada virtual.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores, y pruebas de: find_system_python,
+deteccion TTS por subproceso, load leyendo sample_rate del .onnx.json y
+sintesis construyendo el comando de piper y leyendo el WAV.
