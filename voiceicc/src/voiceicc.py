@@ -13,16 +13,12 @@ import threading
 import shutil
 import subprocess
 import platform
-try:
-    import winreg
-except ImportError:
-    winreg = None
 import random
 import time
 import math
 import re
 try:
-    import winreg
+    import winreg   # solo Windows; None en otros sistemas
 except ImportError:
     winreg = None
 
@@ -75,10 +71,18 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.9.0 Mas Contraste"
+VERSION = "7.9.1 Limpieza"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
+CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_config.json")
+# Nombre antiguo del archivo de configuración (hasta la 7.9). Si existe y aún
+# no hay el nuevo, se migra automáticamente para no perder los ajustes.
+_LEGACY_CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
+try:
+    if os.path.exists(_LEGACY_CONFIG_FILE) and not os.path.exists(CONFIG_FILE):
+        shutil.copy2(_LEGACY_CONFIG_FILE, CONFIG_FILE)
+except Exception:
+    pass
 
 
 COLORS = {

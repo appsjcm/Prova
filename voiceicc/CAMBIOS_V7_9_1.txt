@@ -1,0 +1,19 @@
+CAMBIOS V7.9.1 - Limpieza (tras revision del proyecto)
+
+Arreglos concretos de la revision:
+
+- Import duplicado de winreg: aparecia dos veces (lineas 16-19 y 24-27).
+  Ahora se importa una sola vez.
+- Archivo de configuracion renombrado: de "voiceicc_v2_3_config.json"
+  (nombre heredado) a "voiceicc_config.json". Migracion automatica: si
+  existe el archivo antiguo y aun no el nuevo, se copian tus ajustes sin
+  perder nada.
+
+Nota sobre otras sugerencias de la revision (ya presentes):
+- Perfilador de CPU: ya existe desde la 6.4 (perf_stats + aviso por carga).
+- Audio en hilo aparte: el callback de audio ya corre en el hilo de
+  PortAudio, separado de la interfaz.
+- Cache de modelos IA: RVC/TTS cargan el modelo una vez y lo mantienen.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y winreg importado una vez.
