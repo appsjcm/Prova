@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.7.0 ONNX Incluido"
+VERSION = "7.8.0 Buscador Legible"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -3645,6 +3645,8 @@ class PremiumApp:
 
     def vm_search_submit(self, _event=None):
         query = self.vm_search_var.get().strip()
+        if query == getattr(self, "_search_placeholder", None):
+            query = ""
         if not query:
             self.open_search_palette()
             return
@@ -4492,10 +4494,26 @@ class PremiumApp:
         search_area.pack(side="left", fill="x", expand=True, padx=14, pady=13)
         search_box = tk.Frame(search_area, bg="#1c1c25", highlightbackground="#343443", highlightthickness=1)
         search_box.pack(fill="x")
-        tk.Label(search_box, text="⌕", bg="#1c1c25", fg="#00ddeb", font=("Segoe UI", 17, "bold")).pack(side="left", padx=(12, 5))
+        tk.Label(search_box, text="🔍", bg="#1c1c25", fg="#00ddeb", font=("Segoe UI", 13)).pack(side="left", padx=(12, 5))
         search_entry = tk.Entry(search_box, textvariable=self.vm_search_var, bg="#1c1c25", fg="#ffffff", insertbackground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 11))
         search_entry.pack(side="left", fill="x", expand=True, ipady=9)
         search_entry.bind("<Return>", self.vm_search_submit)
+        # Texto de ayuda (placeholder) cuando la caja está vacía.
+        self._search_placeholder = "Buscar módulos y voces…"
+
+        def _sph_out(_e=None):
+            if not self.vm_search_var.get():
+                search_entry.configure(fg="#7a7a8c")
+                self.vm_search_var.set(self._search_placeholder)
+
+        def _sph_in(_e=None):
+            if self.vm_search_var.get() == self._search_placeholder:
+                self.vm_search_var.set("")
+                search_entry.configure(fg="#ffffff")
+
+        search_entry.bind("<FocusIn>", _sph_in)
+        search_entry.bind("<FocusOut>", _sph_out)
+        _sph_out()
         tk.Button(search_box, text="SEARCH", command=self.vm_search_submit, bg="#8c52ff", fg="#ffffff", activebackground="#ff4fa3", activeforeground="#ffffff", relief="flat", bd=0, padx=15, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=4, pady=4)
         tk.Button(search_box, text="★", command=self.pin_current_module_to_hub, bg="#1d2135", fg="#ffd166", activebackground="#2a3150", activeforeground="#ffffff", relief="flat", bd=0, padx=10, pady=8, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=(0,4), pady=4)
 
