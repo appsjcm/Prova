@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.2.0 Instalar con un Clic"
+VERSION = "7.3.0 Python Automatico"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -11638,12 +11638,49 @@ class PremiumApp:
         else:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + f" · Voces: {len(voces)}.")
 
+    PYTHON_INSTALLER_URL = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe"
+
+    def _download_and_run_python(self, status_var):
+        """Descarga el instalador oficial de Python y lo lanza (marca solo
+        «Add python.exe to PATH» e instala). Al terminar, reintenta el motor."""
+        if platform.system() != "Windows":
+            status_var.set("⚠ Instala Python 3 desde python.org y reintenta.")
+            return
+        status_var.set("Descargando Python (instalador oficial)…")
+
+        def _run():
+            try:
+                import tempfile
+                from urllib.request import urlopen, Request
+                tmp = Path(tempfile.mkdtemp()) / "python_setup.exe"
+                req = Request(self.PYTHON_INSTALLER_URL, headers={"User-Agent": "VoiceICC"})
+                with urlopen(req) as r, open(tmp, "wb") as out:
+                    shutil.copyfileobj(r, out)
+                self.root.after(0, status_var.set,
+                                "Abriendo el instalador de Python. IMPORTANTE: marca «Add python.exe to "
+                                "PATH» y pulsa Install. Al terminar, vuelve y pulsa «Instalar motor» otra vez.")
+                try:
+                    os.startfile(str(tmp))  # noqa: P204
+                except Exception:
+                    subprocess.Popen([str(tmp)])
+            except Exception as exc:
+                self.root.after(0, status_var.set,
+                                f"⚠ No se pudo descargar Python: {exc}. Instálalo a mano desde python.org.")
+
+        threading.Thread(target=_run, daemon=True).start()
+
     def _pip_install_bg(self, paquetes, status_var, ok_msg, then=None):
         """Instala paquetes con el Python del sistema, en segundo plano."""
         py = find_system_python()
         if py is None:
-            status_var.set("⚠ No encuentro Python en el equipo. Instala Python 3 desde python.org "
-                           "(marca «Add to PATH») y reintenta.")
+            if platform.system() == "Windows" and messagebox.askyesno(
+                "Falta Python",
+                "Para instalar el motor de IA hace falta Python 3, y no lo encuentro en tu equipo.\n\n"
+                "¿Quieres que VoiceICC descargue e inicie el instalador oficial de Python?\n"
+                "(Marca «Add python.exe to PATH» en su ventana.)"):
+                self._download_and_run_python(status_var)
+            else:
+                status_var.set("⚠ Falta Python 3. Instálalo desde python.org (marca «Add to PATH») y reintenta.")
             return
         status_var.set("Instalando " + ", ".join(paquetes) + "… (puede tardar varios minutos)")
 

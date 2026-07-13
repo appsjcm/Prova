@@ -1,0 +1,15 @@
+CAMBIOS V7.3 - Python Automatico
+
+- Los botones de "Instalar motor" (RVC y TTS) necesitan Python 3. Si no lo
+  hay en el equipo, VoiceICC ahora ofrece DESCARGARLO e iniciar el
+  instalador oficial de Python con un clic (recordando marcar "Add
+  python.exe to PATH"). Antes solo avisaba de que faltaba.
+- Nuevo _download_and_run_python() y PYTHON_INSTALLER_URL (python.org).
+- Tras instalar Python, vuelves a pulsar "Instalar motor" y ya funciona.
+
+Con esto la cadena queda automatizada de punta a punta para quien no tenga
+nada instalado: (Python) -> motor (ONNX/rvc/piper) -> voces -> hablar.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de: con Python instala el paquete
+con el comando correcto; sin Python ofrece descargar el instalador oficial.
