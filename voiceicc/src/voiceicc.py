@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.7.0 Texto a Voz"
+VERSION = "6.8.0 Descargar Voz por URL"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -330,6 +330,34 @@ class RVCBackend:
         if idx.exists():
             shutil.copy2(str(idx), str(Path(self.models_dir) / idx.name))
         return dst.stem
+
+    @staticmethod
+    def _url_filename(url):
+        from urllib.parse import urlparse, unquote
+        nombre = os.path.basename(unquote(urlparse(url).path))
+        return nombre or "modelo"
+
+    def download_model_from_url(self, pth_url, index_url=None, name=None, progress=None):
+        """Descarga un modelo de voz (.pth/.onnx) y, opcionalmente, su .index
+        desde URLs directas (por ejemplo, de HuggingFace '.../resolve/...').
+        Devuelve el nombre del modelo importado."""
+        from urllib.request import urlopen, Request
+        def _bajar(url, destino):
+            if progress:
+                progress(f"Descargando {Path(destino).name}…")
+            req = Request(url, headers={"User-Agent": "VoiceICC"})
+            with urlopen(req) as r, open(destino, "wb") as out:
+                shutil.copyfileobj(r, out)
+        fname = self._url_filename(pth_url)
+        stem = name or os.path.splitext(fname)[0]
+        ext = os.path.splitext(fname)[1] or ".pth"
+        if ext.lower() not in (".pth", ".onnx"):
+            ext = ".pth"
+        destino = Path(self.models_dir) / f"{stem}{ext}"
+        _bajar(pth_url, str(destino))
+        if index_url:
+            _bajar(index_url, str(Path(self.models_dir) / f"{stem}.index"))
+        return stem
 
     # -- carga / descarga del modelo --
     def load(self, name):
@@ -2392,6 +2420,9 @@ class PremiumApp:
         # Texto a voz (TTS).
         self.tts_voice = tk.StringVar(value="")
         self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
+        # Descarga de modelos RVC desde URL.
+        self.rvc_url_pth = tk.StringVar(value="")
+        self.rvc_url_index = tk.StringVar(value="")
         # Realismo máximo: empuja la naturalidad de cualquier voz a su tope.
         self.realismo_maximo = tk.BooleanVar(value=False)
         self.cable_status = tk.StringVar(value="Cable Virtual listo.")
@@ -11346,6 +11377,20 @@ class PremiumApp:
         ttk.Button(fila, text="🔄 Actualizar", command=self._rvc_refresh_models).pack(side="left", padx=(0, 8))
         ttk.Button(fila, text="🧪 Probar voz IA", command=self._rvc_selftest).pack(side="left", padx=(0, 8))
 
+        # Descargar modelo desde una URL directa (p. ej. HuggingFace .../resolve/...).
+        url1 = ttk.Frame(lib, style="Card.TFrame")
+        url1.pack(fill="x", pady=(8, 2))
+        ttk.Label(url1, text="URL del modelo (.pth/.onnx):", style="Card.TLabel", width=26).pack(side="left")
+        ttk.Entry(url1, textvariable=self.rvc_url_pth).pack(side="left", fill="x", expand=True, padx=(6, 0))
+        url2 = ttk.Frame(lib, style="Card.TFrame")
+        url2.pack(fill="x", pady=(0, 2))
+        ttk.Label(url2, text="URL del .index (opcional):", style="Card.TLabel", width=26).pack(side="left")
+        ttk.Entry(url2, textvariable=self.rvc_url_index).pack(side="left", fill="x", expand=True, padx=(6, 0))
+        ttk.Button(lib, text="⬇ Descargar modelo desde URL", command=self._rvc_download_url).pack(anchor="w", pady=(4, 0))
+        ttk.Label(lib, text="En HuggingFace, abre el archivo .pth y usa el botón «download» (URL que contiene «/resolve/»). "
+                          "Repite con el .index si lo tiene.",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(2, 0))
+
         # Controles de la conversión.
         ctrl = self.make_card(cont, "Conversión")
         ctrl.pack(fill="x", pady=(0, 10))
@@ -11552,6 +11597,34 @@ class PremiumApp:
             self.rvc_status.set("Instalando datos de Voces IA en una ventana aparte…")
         except Exception as exc:
             messagebox.showerror("No se pudo iniciar", str(exc))
+
+    def _rvc_download_url(self):
+        """Descarga un modelo de voz RVC desde una URL directa (en segundo plano)."""
+        pth = self.rvc_url_pth.get().strip()
+        idx = self.rvc_url_index.get().strip() or None
+        if not pth:
+            self.rvc_status.set("⚠ Pega la URL directa del modelo (.pth/.onnx).")
+            return
+        if "/blob/" in pth:
+            pth = pth.replace("/blob/", "/resolve/")  # HuggingFace: blob -> resolve
+        if idx and "/blob/" in idx:
+            idx = idx.replace("/blob/", "/resolve/")
+        self.rvc_status.set("Descargando modelo desde URL (puede tardar)…")
+
+        def _run():
+            try:
+                nombre = self.rvc.download_model_from_url(
+                    pth, index_url=idx,
+                    progress=lambda m: self.root.after(0, self.rvc_status.set, m))
+                def _fin():
+                    self._rvc_refresh_models()
+                    self.rvc_model.set(nombre)
+                    self.rvc_status.set(f"✅ Modelo '{nombre}' descargado y añadido a tu biblioteca.")
+                self.root.after(0, _fin)
+            except Exception as exc:
+                self.root.after(0, self.rvc_status.set, f"⚠ No se pudo descargar: {exc}")
+
+        threading.Thread(target=_run, daemon=True).start()
 
     def _rvc_import_model(self):
         try:
