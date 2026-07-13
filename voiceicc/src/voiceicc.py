@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.3.0 Menos Peso Muerto"
+VERSION = "6.4.0 Medicion y ONNX"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -139,18 +139,49 @@ class RVCBackend:
         # Buffer de streaming para tiempo real (ventana con contexto).
         self._buf = np.zeros(0, dtype=np.float32)
         self._tail = np.zeros(0, dtype=np.float32)
+        # Aceleración ONNX (inferencia nativa, más rápida que PyTorch puro).
+        self._onnx_session = None
+        self.onnx_provider = None
+
+    # -- detección de ONNX Runtime (inferencia acelerada) --
+    def onnx_info(self):
+        """Devuelve (disponible, lista_de_providers). Los providers indican la
+        aceleración: CUDA (NVIDIA), DmlExecutionProvider (DirectML: AMD/Intel),
+        CPUExecutionProvider (CPU)."""
+        try:
+            import onnxruntime as ort
+            provs = list(ort.get_available_providers())
+            return True, provs
+        except Exception:
+            return False, []
+
+    def _best_onnx_provider(self, provs):
+        for pref in ("CUDAExecutionProvider", "DmlExecutionProvider", "CPUExecutionProvider"):
+            if pref in provs:
+                return pref
+        return provs[0] if provs else "CPUExecutionProvider"
 
     # -- detección del backend opcional --
     def detect(self, force=False):
         """Comprueba si el backend de IA está instalado. Devuelve (ok, motivo)."""
         if self._backend_ok is not None and not force:
             return self._backend_ok, self._backend_reason
+        onnx_ok, provs = self.onnx_info()
+        onnx_txt = ""
+        if onnx_ok:
+            onnx_txt = " · ONNX activo (" + self._best_onnx_provider(provs).replace("ExecutionProvider", "") + ")"
         try:
             import torch  # noqa: F401
         except Exception:
+            # Sin torch pero con ONNX y un modelo .onnx, aún se puede inferir.
+            if onnx_ok:
+                self._backend_ok = True
+                self._backend_reason = ("Motor ONNX disponible (rápido, local)" + onnx_txt +
+                                        ". Para modelos .pth instala también: pip install rvc-python torch")
+                return self._backend_ok, self._backend_reason
             self._backend_ok = False
-            self._backend_reason = ("Falta el motor de IA (PyTorch). Instálalo con: "
-                                    "pip install rvc-python torch")
+            self._backend_reason = ("Falta el motor de IA. Rápido: pip install onnxruntime  ·  "
+                                    "completo: pip install rvc-python torch")
             return self._backend_ok, self._backend_reason
         try:
             import rvc_python  # noqa: F401
@@ -160,7 +191,7 @@ class RVCBackend:
                                     "pip install rvc-python")
             return self._backend_ok, self._backend_reason
         self._backend_ok = True
-        self._backend_reason = "Motor de IA disponible (procesamiento local)."
+        self._backend_reason = "Motor de IA disponible (procesamiento local)" + onnx_txt + "."
         return True, self._backend_reason
 
     @property
@@ -222,25 +253,34 @@ class RVCBackend:
 
     # -- biblioteca de modelos de voz --
     def list_models(self):
-        """Lista los modelos .pth (con su .index si existe) de la carpeta."""
+        """Lista los modelos de voz de la carpeta: .onnx (inferencia rápida) y
+        .pth (con su .index si existe)."""
         out = []
         try:
-            for f in sorted(Path(self.models_dir).glob("*.pth")):
+            base = Path(self.models_dir)
+            vistos = set()
+            for f in sorted(base.glob("*.onnx")):
+                out.append({"name": f.stem, "pth": str(f), "index": None, "onnx": True})
+                vistos.add(f.stem)
+            for f in sorted(base.glob("*.pth")):
+                if f.stem in vistos:
+                    continue
                 idx = None
                 cand = f.with_suffix(".index")
                 if cand.exists():
                     idx = str(cand)
                 else:
-                    otros = list(Path(self.models_dir).glob(f"{f.stem}*.index"))
+                    otros = list(base.glob(f"{f.stem}*.index"))
                     if otros:
                         idx = str(otros[0])
-                out.append({"name": f.stem, "pth": str(f), "index": idx})
+                out.append({"name": f.stem, "pth": str(f), "index": idx, "onnx": False})
         except Exception:
             pass
         return out
 
     def import_model(self, src_path):
-        """Copia un .pth (y su .index si viene al lado) a la carpeta de voces."""
+        """Copia un modelo (.onnx o .pth, con su .index si viene al lado) a la
+        carpeta de voces."""
         src = Path(src_path)
         if not src.exists():
             raise FileNotFoundError(src_path)
@@ -263,6 +303,31 @@ class RVCBackend:
         model = next((m for m in self.list_models() if m["name"] == name), None)
         if not model:
             return False
+        # Ruta ONNX (rápida): modelos .onnx con onnxruntime.
+        if model.get("onnx"):
+            onnx_ok, provs = self.onnx_info()
+            if not onnx_ok:
+                print("Modelo .onnx pero falta onnxruntime (pip install onnxruntime)")
+                return False
+            try:
+                import onnxruntime as ort
+                provider = self._best_onnx_provider(provs)
+                sess = ort.InferenceSession(model["pth"], providers=[provider])
+                with self.lock:
+                    self._onnx_session = sess
+                    self.onnx_provider = provider
+                    self._impl = sess     # marca "cargado" (ready)
+                    self._loaded_name = name
+                    self._buf = np.zeros(0, dtype=np.float32)
+                    self._tail = np.zeros(0, dtype=np.float32)
+                return True
+            except Exception as exc:
+                print("No se pudo cargar el modelo ONNX:", exc)
+                with self.lock:
+                    self._impl = None
+                    self._onnx_session = None
+                return False
+        # Ruta PyTorch (rvc-python) para .pth.
         try:
             self._apply_base_env()
             from rvc_python.infer import RVCInference
@@ -274,6 +339,7 @@ class RVCBackend:
                 pass
             with self.lock:
                 self._impl = impl
+                self._onnx_session = None
                 self._loaded_name = name
                 self._buf = np.zeros(0, dtype=np.float32)
                 self._tail = np.zeros(0, dtype=np.float32)
@@ -287,6 +353,8 @@ class RVCBackend:
     def unload(self):
         with self.lock:
             self._impl = None
+            self._onnx_session = None
+            self.onnx_provider = None
             self._loaded_name = None
             self._buf = np.zeros(0, dtype=np.float32)
             self._tail = np.zeros(0, dtype=np.float32)
@@ -304,7 +372,18 @@ class RVCBackend:
                 pass
 
     def _infer_array(self, audio, sr):
-        """Ejecuta la inferencia del modelo cargado sobre un array mono."""
+        """Ejecuta la inferencia del modelo cargado sobre un array mono.
+        Usa ONNX (rápido) si hay sesión cargada; si no, rvc-python."""
+        sess = self._onnx_session
+        if sess is not None:
+            try:
+                x = np.asarray(audio, dtype=np.float32).reshape(1, -1)
+                inp = sess.get_inputs()[0].name
+                out = sess.run(None, {inp: x})[0]
+                return np.asarray(out, dtype=np.float32).reshape(-1)
+            except Exception as exc:
+                print("Inferencia ONNX falló:", exc)
+                return None
         impl = self._impl
         if impl is None:
             return None
@@ -645,6 +724,11 @@ class AudioEngine:
         # Latido: número total de callbacks procesados. Si deja de subir
         # con el directo activo, el dispositivo se desconectó o falló.
         self.callback_count = 0
+        # Perfilado del motor: tiempo de proceso por bloque (s).
+        self._proc_last = 0.0
+        self._proc_ema = 0.0     # media móvil exponencial
+        self._proc_max = 0.0     # peor bloque desde el último reset
+        self._proc_frames = 0    # tamaño de bloque real
         # Canales reales de la salida abierta (1=mono, 2=estéreo).
         self.out_channels = 1
 
@@ -1578,6 +1662,7 @@ class AudioEngine:
         self.callback_count += 1
         if status:
             self.xrun_count += 1
+        t0 = time.perf_counter()
         try:
             y = self.process(indata)
             if outdata.shape[1] > 1:
@@ -1587,6 +1672,37 @@ class AudioEngine:
         except Exception as e:
             print("Error de audio:", e)
             outdata[:] = np.zeros_like(outdata)
+        # Perfilado: tiempo de proceso por bloque y carga de CPU del DSP
+        # (tiempo de proceso / duración del bloque). >1.0 = no llega a tiempo.
+        dt = time.perf_counter() - t0
+        self._proc_last = dt
+        self._proc_ema = dt if self._proc_ema == 0.0 else (0.92 * self._proc_ema + 0.08 * dt)
+        if dt > self._proc_max:
+            self._proc_max = dt
+        self._proc_frames = int(frames) or self._proc_frames
+
+    def perf_stats(self):
+        """Estadísticas de rendimiento del motor para la interfaz.
+        load = tiempo de proceso / duración del bloque (0..1 sano; >1 = corta)."""
+        frames = self._proc_frames or 0
+        block_s = (frames / self.rate) if (frames and self.rate) else 0.0
+        avg_ms = self._proc_ema * 1000.0
+        max_ms = self._proc_max * 1000.0
+        block_ms = block_s * 1000.0
+        load = (self._proc_ema / block_s) if block_s > 0 else 0.0
+        return {
+            "frames": frames,
+            "rate": self.rate,
+            "block_ms": block_ms,
+            "avg_ms": avg_ms,
+            "max_ms": max_ms,
+            "load": load,
+            "xruns": self.xrun_count,
+        }
+
+    def reset_perf_stats(self):
+        self._proc_ema = 0.0
+        self._proc_max = 0.0
 
     def configure_rate(self, rate):
         """Reconfigura todos los buffers y filtros dependientes de la tasa de muestreo."""
@@ -10112,7 +10228,10 @@ class PremiumApp:
             bps = max(0, (cb - self._watchdog_last_cb) / 5.0)
             self._watchdog_last_cb = cb
             if self.engine.running:
-                self.xrun_status.set(f"Cortes de audio: {count} · bloques/s: {bps:.0f}")
+                p = self.engine.perf_stats()
+                self.xrun_status.set(
+                    f"Cortes: {count} · bloques/s: {bps:.0f} · CPU DSP: {p['load']*100:.0f}% "
+                    f"(proc {p['avg_ms']:.1f} ms / bloque {p['block_ms']:.1f} ms · pico {p['max_ms']:.1f} ms)")
             else:
                 self.xrun_status.set(f"Cortes de audio: {count}")
             delta = count - self._watchdog_last
@@ -11045,8 +11164,9 @@ class PremiumApp:
         ttk.Button(botones, text="🧠 Descargar modelos base", command=self._rvc_download_base).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="📁 Carpeta de voces", command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
         ttk.Button(botones, text="⬇ Importar modelo…", command=self._rvc_import_model).pack(side="left", padx=(0, 8))
-        ttk.Label(estado, text="Para activarlas: pip install rvc-python torch  ·  luego copia un modelo .pth "
-                              "(y su .index) en la carpeta de voces.",
+        ttk.Label(estado, text="Rápido (recomendado): pip install onnxruntime  ·  usa modelos de voz .onnx.   "
+                              "Completo: pip install rvc-python torch  ·  usa modelos .pth (y su .index). "
+                              "Copia el modelo en la carpeta de voces.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(8, 0))
 
         # Biblioteca de modelos.
