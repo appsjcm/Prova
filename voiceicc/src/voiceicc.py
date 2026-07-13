@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.8.0 Buscador Legible"
+VERSION = "7.9.0 Mas Contraste"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -4342,10 +4342,10 @@ class PremiumApp:
             self.vm_logo_text = tk.Label(marca, text="Voice", bg="#111117", fg="#ffffff", font=("Segoe UI", 18, "bold"))
             self.vm_logo_text.pack(side="left")
             tk.Label(marca, text="ICC", bg="#111117", fg="#c7a6ff", font=("Segoe UI", 18, "bold")).pack(side="left")
-            tk.Label(logo_wrap, text="PREMIUM VOICE LAB", bg="#111117", fg="#5b5b6b", font=("Segoe UI", 7, "bold")).pack(anchor="w", padx=11)
+            tk.Label(logo_wrap, text="PREMIUM VOICE LAB", bg="#111117", fg="#8a8a9c", font=("Segoe UI", 7, "bold")).pack(anchor="w", padx=11)
         tk.Button(logo_wrap, text="≡", command=self.vm_toggle_sidebar, bg="#1b1b24", fg="#d8d8e3", activebackground="#262632", activeforeground="#ffffff", relief="flat", bd=0, padx=8, pady=2, font=("Segoe UI", 11, "bold"), cursor="hand2").pack(anchor="ne", padx=6, pady=(0, 4))
 
-        tk.Label(self.vm_sidebar, text="MODES" if not self.vm_sidebar_collapsed.get() else "•", bg="#111117", fg="#626270", font=("Segoe UI", 9, "bold"), anchor="w" if not self.vm_sidebar_collapsed.get() else "center").pack(fill="x", padx=20 if not self.vm_sidebar_collapsed.get() else 0, pady=(5, 4))
+        tk.Label(self.vm_sidebar, text="MODES" if not self.vm_sidebar_collapsed.get() else "•", bg="#111117", fg="#8a8a9c", font=("Segoe UI", 9, "bold"), anchor="w" if not self.vm_sidebar_collapsed.get() else "center").pack(fill="x", padx=20 if not self.vm_sidebar_collapsed.get() else 0, pady=(5, 4))
         self.vm_sidebar_nav = tk.Frame(self.vm_sidebar, bg="#111117")
         self.vm_sidebar_nav.pack(fill="x")
 
@@ -4487,7 +4487,7 @@ class PremiumApp:
         title_area.pack(side="left", fill="y", padx=(14, 8))
         self.main_title_label = tk.Label(title_area, text="VoiceICC · Your voice. Your identity.", bg="#101016", fg="#ffffff", font=("Segoe UI", 14, "bold"), anchor="w")
         self.main_title_label.pack(anchor="w", pady=(10, 0))
-        self.main_subtitle_label = tk.Label(title_area, textvariable=self.current_route, bg="#101016", fg="#898999", font=("Segoe UI", 9), anchor="w")
+        self.main_subtitle_label = tk.Label(title_area, textvariable=self.current_route, bg="#101016", fg="#a2a2b6", font=("Segoe UI", 9), anchor="w")
         self.main_subtitle_label.pack(anchor="w")
 
         search_area = tk.Frame(topbar, bg="#101016")
