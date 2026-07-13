@@ -1,0 +1,13 @@
+CAMBIOS V6.3 - Menos Peso Muerto
+
+- Eliminadas 47 imagenes mas que se cargaban en el arranque sin que ningun
+  widget las mostrara:
+  · pack_soundboard (20), pack_platform (12), pack_device (12) y
+    pack_cards (3): dicts que se llenaban pero no leia nadie.
+- Con las de la 6.1/6.2 (voice_card_images 73 + inicio_premium 8), suman
+  128 cargas de imagen eliminadas del arranque, ademas de la carga en dos
+  fases (packs ocultos + miniaturas de voces en segundo plano).
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas y simulacion de arranque sin errores. Comprobado que los packs
+eliminados no los lee ningun widget (solo se cargaban).

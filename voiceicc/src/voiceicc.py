@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.2.0 Arranque Rapido Plus"
+VERSION = "6.3.0 Menos Peso Muerto"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2444,11 +2444,9 @@ class PremiumApp:
                     print(f"No se pudo cargar {file}: {exc}")
 
         _cargar_pack("pack_nav", self.nav_icons, "nav_", (22, 22))
-        _cargar_pack("pack_soundboard", self.soundboard_icons, "soundboard_", (40, 40))
         _cargar_pack("pack_backgrounds", self.background_images, "background_", None)
-        _cargar_pack("pack_platform", self.platform_icons, "platform_", (28, 28))
-        _cargar_pack("pack_device", self.device_icons, "device_", (24, 24))
-        _cargar_pack("pack_cards", self.card_images, "card_", (150, 90))
+        # (pack_soundboard, pack_platform, pack_device y pack_cards no los
+        #  muestra ningún widget: no se cargan, para acelerar el arranque.)
         # Pack de UI funcional (toggles, flotante, dock) tipo VoiceMod.
         _cargar_pack("ui_toggles", self.ui_toggle_images, "toggle_", (155, 29))
         _cargar_pack("ui_floating", self.ui_floating_images, "floating_", (64, 64))
