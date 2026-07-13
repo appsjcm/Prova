@@ -13,3 +13,7 @@ onnxruntime
 # rvc-python
 # torch
 # torchaudio
+
+# --- Texto a Voz (TTS) con modelos Piper (.onnx) ---
+# Para la funcion "Texto a Voz": escribes y lo dice con voz sintetica.
+piper-tts

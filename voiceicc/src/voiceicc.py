@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.6.0 Ruta IA Guiada"
+VERSION = "6.7.0 Texto a Voz"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -466,6 +466,117 @@ class RVCBackend:
         with self.lock:
             self._tail = y.copy()
         return y
+
+
+class PiperTTS:
+    """Texto a voz (TTS) LOCAL con modelos Piper (.onnx). Escribes texto y lo
+    dice con una voz sintetica, todo en el PC. Es distinto de RVC: RVC
+    transforma TU voz en directo; Piper crea voz a partir de texto.
+
+    Un modelo Piper son dos archivos: <voz>.onnx y <voz>.onnx.json (config).
+    Ambos deben estar en la carpeta de voces TTS."""
+
+    def __init__(self, voices_dir=None):
+        base = voices_dir or os.path.join(os.path.expanduser("~"), "VoiceICC", "tts_voces")
+        self.voices_dir = base
+        try:
+            os.makedirs(self.voices_dir, exist_ok=True)
+        except Exception:
+            pass
+        self._voice = None
+        self._loaded_name = None
+        self.sample_rate = 22050
+
+    def available(self):
+        """(ok, motivo). Necesita el paquete piper-tts."""
+        try:
+            import piper  # noqa: F401
+            return True, "Motor TTS (Piper) disponible."
+        except Exception:
+            return False, "Falta el motor TTS. Instalalo con: pip install piper-tts"
+
+    def list_voices(self):
+        try:
+            return sorted(p.stem for p in Path(self.voices_dir).glob("*.onnx"))
+        except Exception:
+            return []
+
+    def _config_for(self, onnx_path):
+        p = Path(onnx_path)
+        cand = Path(str(p) + ".json")          # <voz>.onnx.json
+        if cand.exists():
+            return cand
+        cand2 = p.with_suffix(".json")          # <voz>.json
+        if cand2.exists():
+            return cand2
+        return None
+
+    def import_voice(self, src_path):
+        """Copia un modelo .onnx (y su .onnx.json si viene al lado) a la carpeta."""
+        src = Path(src_path)
+        if not src.exists():
+            raise FileNotFoundError(src_path)
+        shutil.copy2(str(src), str(Path(self.voices_dir) / src.name))
+        cfg = self._config_for(src)
+        if cfg is not None:
+            shutil.copy2(str(cfg), str(Path(self.voices_dir) / cfg.name))
+        return src.stem
+
+    def load(self, name):
+        ok, _ = self.available()
+        if not ok or not name:
+            self._voice = None
+            return False
+        onnx = Path(self.voices_dir) / f"{name}.onnx"
+        if not onnx.exists():
+            return False
+        cfg = self._config_for(onnx)
+        if cfg is None:
+            print(f"Falta la config {name}.onnx.json junto al modelo.")
+            return False
+        try:
+            from piper import PiperVoice
+            self._voice = PiperVoice.load(str(onnx), config_path=str(cfg))
+            self._loaded_name = name
+            try:
+                self.sample_rate = int(self._voice.config.sample_rate)
+            except Exception:
+                self.sample_rate = 22050
+            return True
+        except Exception as exc:
+            print("No se pudo cargar la voz TTS:", exc)
+            self._voice = None
+            return False
+
+    def synthesize(self, text):
+        """Devuelve (audio_float32_mono, sample_rate) para el texto dado."""
+        if self._voice is None or not text.strip():
+            return None, self.sample_rate
+        # API de piper segun version: primero flujo raw int16; si no, a WAV.
+        try:
+            trozos = []
+            for b in self._voice.synthesize_stream_raw(text):
+                trozos.append(np.frombuffer(b, dtype=np.int16))
+            if trozos:
+                audio = np.concatenate(trozos).astype(np.float32) / 32768.0
+                return audio, self.sample_rate
+        except Exception as exc:
+            print("synthesize_stream_raw no disponible:", exc)
+        try:
+            import io as _io
+            import wave as _wave
+            import tempfile
+            tmp = Path(tempfile.mkdtemp()) / "tts.wav"
+            with _wave.open(str(tmp), "wb") as wf:
+                self._voice.synthesize(text, wf)
+            with _wave.open(str(tmp), "rb") as wf:
+                sr = wf.getframerate()
+                data = wf.readframes(wf.getnframes())
+            audio = np.frombuffer(data, dtype=np.int16).astype(np.float32) / 32768.0
+            return audio, sr
+        except Exception as exc:
+            print("Sintesis TTS fallo:", exc)
+            return None, self.sample_rate
 
 
 
@@ -2048,6 +2159,8 @@ class PremiumApp:
         # si no está, esta capa queda inactiva y el motor DSP sigue igual.
         self.rvc = RVCBackend()
         self.engine.rvc_backend = self.rvc
+        # Texto a voz (TTS) local con modelos Piper (.onnx).
+        self.tts = PiperTTS()
         self.input_map = {}
         self.output_map = {}
         self.input_combos = []
@@ -2276,6 +2389,9 @@ class PremiumApp:
         self.rvc_pitch = tk.IntVar(value=0)
         self.rvc_index = tk.DoubleVar(value=50)
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
+        # Texto a voz (TTS).
+        self.tts_voice = tk.StringVar(value="")
+        self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
         # Realismo máximo: empuja la naturalidad de cualquier voz a su tope.
         self.realismo_maximo = tk.BooleanVar(value=False)
         self.cable_status = tk.StringVar(value="Cable Virtual listo.")
@@ -11251,8 +11367,120 @@ class PremiumApp:
                                   "comunidad y colocarlas en la carpeta de voces para usarlas al instante.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w")
 
+        # ---- Texto a Voz (TTS con Piper) ----
+        ttscard = self.make_card(cont, "🔊 Texto a Voz (TTS)")
+        ttscard.pack(fill="x", pady=(10, 0))
+        ttk.Label(ttscard, text="Escribe y VoiceICC lo dice con una voz sintética (modelos Piper .onnx). "
+                              "Sale por tu salida/micrófono virtual, ideal para Discord y juegos. "
+                              "Es distinto de las Voces IA (RVC): esto crea voz a partir de texto.",
+                  style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(0, 6))
+        ttk.Label(ttscard, textvariable=self.tts_status, style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(0, 6))
+        tfila = ttk.Frame(ttscard, style="Card.TFrame")
+        tfila.pack(fill="x")
+        ttk.Label(tfila, text="Voz TTS:", style="Card.TLabel").pack(side="left", padx=(0, 8))
+        self._tts_voice_combo = ttk.Combobox(tfila, textvariable=self.tts_voice, state="readonly", width=30)
+        self._tts_voice_combo.pack(side="left", padx=(0, 8))
+        ttk.Button(tfila, text="🔄", width=3, command=self._tts_refresh).pack(side="left", padx=(0, 4))
+        ttk.Button(tfila, text="⬇ Importar voz TTS…", command=self._tts_import).pack(side="left", padx=(0, 4))
+        ttk.Button(tfila, text="📁", width=3, command=lambda: open_folder(self.tts.voices_dir)).pack(side="left")
+        self._tts_text = tk.Text(ttscard, height=3, bg=COLORS["panel2"], fg=COLORS["text"],
+                                 insertbackground=COLORS["text"], relief="flat", wrap="word", font=("Segoe UI", 10))
+        self._tts_text.pack(fill="x", pady=(8, 6))
+        self._tts_text.insert("1.0", "Hola, esto es VoiceICC hablando con voz sintética.")
+        ttk.Button(ttscard, text="🔊 Hablar", style="Accent.TButton", command=self._tts_speak).pack(anchor="w")
+
         self._rvc_refresh_status()
         self._rvc_refresh_models()
+        self._tts_refresh()
+
+    def _tts_refresh(self):
+        voces = self.tts.list_voices()
+        try:
+            self._tts_voice_combo["values"] = voces
+        except Exception:
+            pass
+        if voces and self.tts_voice.get() not in voces:
+            self.tts_voice.set(voces[0])
+        ok, motivo = self.tts.available()
+        if not voces:
+            self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + " · Importa una voz Piper (.onnx + .onnx.json).")
+        else:
+            self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + f" · Voces: {len(voces)}.")
+
+    def _tts_import(self):
+        try:
+            ruta = filedialog.askopenfilename(title="Elige una voz Piper (.onnx)",
+                                              filetypes=[("Voz Piper", "*.onnx"), ("Todos", "*.*")])
+        except Exception:
+            ruta = ""
+        if not ruta:
+            return
+        try:
+            nombre = self.tts.import_voice(ruta)
+            self._tts_refresh()
+            self.tts_voice.set(nombre)
+            cfg = self.tts._config_for(Path(self.tts.voices_dir) / f"{nombre}.onnx")
+            if cfg is None:
+                messagebox.showwarning("Falta la config",
+                    f"Importé '{nombre}.onnx' pero falta su archivo de configuración "
+                    f"'{nombre}.onnx.json'. Cópialo a la misma carpeta (viene con la voz Piper).")
+            else:
+                messagebox.showinfo("Voz TTS importada", f"Voz '{nombre}' lista.")
+        except Exception as exc:
+            messagebox.showerror("No se pudo importar", str(exc))
+
+    def _tts_speak(self):
+        ok, motivo = self.tts.available()
+        if not ok:
+            self.tts_status.set("⚠ " + motivo)
+            messagebox.showinfo("Motor TTS no disponible", motivo)
+            return
+        nombre = self.tts_voice.get()
+        if not nombre:
+            self.tts_status.set("⚠ Importa/elige una voz TTS primero.")
+            return
+        try:
+            texto = self._tts_text.get("1.0", tk.END).strip()
+        except Exception:
+            texto = ""
+        if not texto:
+            return
+        self.tts_status.set("Sintetizando…")
+
+        def _run():
+            try:
+                if self.tts._loaded_name != nombre:
+                    if not self.tts.load(nombre):
+                        self.root.after(0, self.tts_status.set,
+                                        f"⚠ No se pudo cargar '{nombre}'. ¿Está su .onnx.json al lado?")
+                        return
+                audio, sr = self.tts.synthesize(texto)
+                if audio is None or not len(audio):
+                    self.root.after(0, self.tts_status.set, "⚠ No se generó audio (revisa la voz).")
+                    return
+                audio = self._resample_mono(audio, sr, self.engine.rate)
+                self.engine.add_sfx(audio)   # se mezcla a la salida / micro virtual
+                self.root.after(0, self.tts_status.set,
+                                f"✅ Dicho ({len(audio)/self.engine.rate:.1f} s). Sale por tu salida/micro virtual.")
+            except Exception as exc:
+                self.root.after(0, self.tts_status.set, f"⚠ Error TTS: {exc}")
+
+        threading.Thread(target=_run, daemon=True).start()
+
+    def _resample_mono(self, audio, sr_in, sr_out):
+        """Remuestreo lineal simple a la tasa del motor."""
+        try:
+            audio = np.asarray(audio, dtype=np.float32).reshape(-1)
+            if sr_in == sr_out or len(audio) == 0:
+                return audio
+            n_out = int(round(len(audio) * float(sr_out) / float(sr_in)))
+            if n_out <= 1:
+                return audio
+            xp = np.linspace(0.0, 1.0, len(audio), dtype=np.float32)
+            xq = np.linspace(0.0, 1.0, n_out, dtype=np.float32)
+            return np.interp(xq, xp, audio).astype(np.float32)
+        except Exception:
+            return np.asarray(audio, dtype=np.float32).reshape(-1)
 
     def _rvc_refresh_status(self):
         ok, _motivo = self.rvc.detect(force=True)

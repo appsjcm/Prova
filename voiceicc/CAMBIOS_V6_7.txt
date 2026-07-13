@@ -1,0 +1,25 @@
+CAMBIOS V6.7 - Texto a Voz (TTS con Piper)
+
+El .onnx que se probo (es_ES-carlfm-x-low) NO es un modelo RVC, es un modelo
+Piper de TEXTO A VOZ. Asi que se anade esa funcion.
+
+- Nuevo motor PiperTTS local: escribes texto y VoiceICC lo dice con una voz
+  sintetica (.onnx de Piper). Todo en el PC. Distinto de RVC (que transforma
+  tu voz en directo); esto crea voz a partir de texto.
+- Nueva tarjeta "Texto a Voz (TTS)" en la pestana Voces IA:
+  · Selector de voz TTS, importar voz (.onnx + su .onnx.json), abrir carpeta
+    (~/VoiceICC/tts_voces) y estado del motor.
+  · Cuadro de texto + boton "Hablar": sintetiza y lo enruta a la salida /
+    microfono virtual (se mezcla con el audio de salida), ideal para Discord
+    y juegos.
+- Remuestreo a la tasa del motor para que suene bien a 44.1/48 kHz.
+- requirements_ia.txt incluye piper-tts (opcional).
+
+Importante: una voz Piper son DOS archivos, <voz>.onnx y <voz>.onnx.json.
+Hay que poner ambos en la carpeta de voces TTS (el .onnx.json trae la
+configuracion de fonemas; sin el no puede sintetizar).
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y pruebas del backend TTS (deteccion del
+motor, listado, importacion de voz con y sin config, y deteccion de config
+faltante).
