@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.4.0 Medicion y ONNX"
+VERSION = "6.5.0 Aviso por Carga"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -10249,6 +10249,15 @@ class PremiumApp:
                     self.performance_status.set(
                         f"⚠ {delta} cortes de audio en 5 s. Cierra programas pesados o desactiva efectos."
                     )
+            elif self.engine.running:
+                # Aviso PROACTIVO segun la CPU del DSP medida, antes de que
+                # aparezcan cortes.
+                load = self.engine.perf_stats().get("load", 0.0)
+                if load >= 0.90:
+                    extra = " Desactiva Realismo Máximo o efectos pesados." if bool(getattr(self, "realismo_maximo", None) and self.realismo_maximo.get()) else " Sube la latencia o desactiva efectos pesados."
+                    self.performance_status.set(f"⚠ CPU del DSP muy alta ({load*100:.0f}%): probablemente habrá cortes.{extra}")
+                elif load >= 0.75:
+                    self.performance_status.set(f"CPU del DSP alta ({load*100:.0f}%). Vas justo de margen; si oyes cortes, sube la latencia.")
         except Exception:
             pass
         self.root.after(5000, self.watchdog_tick)
