@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "6.8.0 Descargar Voz por URL"
+VERSION = "6.9.0 Voces TTS Faciles"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -549,6 +549,47 @@ class PiperTTS:
         if cfg is not None:
             shutil.copy2(str(cfg), str(Path(self.voices_dir) / cfg.name))
         return src.stem
+
+    # Voces Piper en español conocidas (repo oficial rhasspy/piper-voices).
+    # El .onnx.json se deriva anadiendo ".json" a la URL del .onnx.
+    ES_VOICES = {
+        "es_ES-carlfm-x_low": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/carlfm/x_low/es_ES-carlfm-x_low.onnx",
+        "es_ES-davefx-medium": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx",
+        "es_ES-sharvard-medium": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/sharvard/medium/es_ES-sharvard-medium.onnx",
+        "es_ES-mls_10246-low": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/mls_10246/low/es_ES-mls_10246-low.onnx",
+        "es_MX-ald-medium": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/ald/medium/es_MX-ald-medium.onnx",
+        "es_MX-claude-high": "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_MX/claude/high/es_MX-claude-high.onnx",
+    }
+
+    def download_voice_from_url(self, onnx_url, json_url=None, name=None, progress=None):
+        """Descarga una voz Piper (.onnx) y su config (.onnx.json). Si no se da
+        json_url, se deriva anadiendo '.json' a la URL del .onnx."""
+        from urllib.request import urlopen, Request
+        if "/blob/" in onnx_url:
+            onnx_url = onnx_url.replace("/blob/", "/resolve/")
+        if not json_url:
+            json_url = onnx_url + ".json"
+        elif "/blob/" in json_url:
+            json_url = json_url.replace("/blob/", "/resolve/")
+
+        from urllib.parse import urlparse, unquote
+        fname = os.path.basename(unquote(urlparse(onnx_url).path)) or "voz.onnx"
+        stem = name or (fname[:-5] if fname.endswith(".onnx") else os.path.splitext(fname)[0])
+
+        def _bajar(url, destino):
+            if progress:
+                progress(f"Descargando {Path(destino).name}…")
+            req = Request(url, headers={"User-Agent": "VoiceICC"})
+            with urlopen(req) as r, open(destino, "wb") as out:
+                shutil.copyfileobj(r, out)
+
+        onnx_dst = Path(self.voices_dir) / f"{stem}.onnx"
+        _bajar(onnx_url, str(onnx_dst))
+        try:
+            _bajar(json_url, str(Path(self.voices_dir) / f"{stem}.onnx.json"))
+        except Exception as exc:
+            print("No se pudo descargar el .onnx.json:", exc)
+        return stem
 
     def load(self, name):
         ok, _ = self.available()
@@ -2420,6 +2461,8 @@ class PremiumApp:
         # Texto a voz (TTS).
         self.tts_voice = tk.StringVar(value="")
         self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
+        self.tts_catalog = tk.StringVar(value="es_ES-davefx-medium")
+        self.tts_url = tk.StringVar(value="")
         # Descarga de modelos RVC desde URL.
         self.rvc_url_pth = tk.StringVar(value="")
         self.rvc_url_index = tk.StringVar(value="")
@@ -11428,6 +11471,21 @@ class PremiumApp:
         ttk.Button(tfila, text="🔄", width=3, command=self._tts_refresh).pack(side="left", padx=(0, 4))
         ttk.Button(tfila, text="⬇ Importar voz TTS…", command=self._tts_import).pack(side="left", padx=(0, 4))
         ttk.Button(tfila, text="📁", width=3, command=lambda: open_folder(self.tts.voices_dir)).pack(side="left")
+
+        # Descargar voces en español conocidas (repo oficial de Piper).
+        cat = ttk.Frame(ttscard, style="Card.TFrame")
+        cat.pack(fill="x", pady=(8, 2))
+        ttk.Label(cat, text="Voz española:", style="Card.TLabel").pack(side="left", padx=(0, 8))
+        ttk.Combobox(cat, textvariable=self.tts_catalog, state="readonly", width=24,
+                     values=list(PiperTTS.ES_VOICES.keys())).pack(side="left", padx=(0, 8))
+        ttk.Button(cat, text="⬇ Descargar esta voz", command=self._tts_download_catalog).pack(side="left", padx=(0, 8))
+        # Descargar por URL directa (el .onnx.json se baja solo).
+        cu = ttk.Frame(ttscard, style="Card.TFrame")
+        cu.pack(fill="x", pady=(0, 2))
+        ttk.Label(cu, text="o URL .onnx:", style="Card.TLabel").pack(side="left", padx=(0, 8))
+        ttk.Entry(cu, textvariable=self.tts_url).pack(side="left", fill="x", expand=True, padx=(0, 8))
+        ttk.Button(cu, text="⬇", width=3, command=self._tts_download_url).pack(side="left")
+
         self._tts_text = tk.Text(ttscard, height=3, bg=COLORS["panel2"], fg=COLORS["text"],
                                  insertbackground=COLORS["text"], relief="flat", wrap="word", font=("Segoe UI", 10))
         self._tts_text.pack(fill="x", pady=(8, 6))
@@ -11451,6 +11509,37 @@ class PremiumApp:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + " · Importa una voz Piper (.onnx + .onnx.json).")
         else:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + f" · Voces: {len(voces)}.")
+
+    def _tts_download_catalog(self):
+        nombre = self.tts_catalog.get()
+        url = PiperTTS.ES_VOICES.get(nombre)
+        if url:
+            self._tts_download(url)
+
+    def _tts_download_url(self):
+        url = self.tts_url.get().strip()
+        if not url:
+            self.tts_status.set("⚠ Pega la URL directa del modelo .onnx de la voz.")
+            return
+        self._tts_download(url)
+
+    def _tts_download(self, onnx_url):
+        """Descarga una voz Piper (.onnx + .onnx.json) en segundo plano."""
+        self.tts_status.set("Descargando voz TTS (puede tardar)…")
+
+        def _run():
+            try:
+                nombre = self.tts.download_voice_from_url(
+                    onnx_url, progress=lambda m: self.root.after(0, self.tts_status.set, m))
+                def _fin():
+                    self._tts_refresh()
+                    self.tts_voice.set(nombre)
+                    self.tts_status.set(f"✅ Voz TTS '{nombre}' descargada (modelo + config).")
+                self.root.after(0, _fin)
+            except Exception as exc:
+                self.root.after(0, self.tts_status.set, f"⚠ No se pudo descargar la voz TTS: {exc}")
+
+        threading.Thread(target=_run, daemon=True).start()
 
     def _tts_import(self):
         try:
