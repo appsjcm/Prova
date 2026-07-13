@@ -75,7 +75,7 @@ except Exception:
 
 
 APP_NAME = "VoiceICC"
-VERSION = "7.4.0 Guia del Micro"
+VERSION = "7.5.0 Barra Legible"
 VERSION_SHORT = VERSION.split()[0]                       # "4.4.0"
 VERSION_TAG = "V" + ".".join(VERSION_SHORT.split(".")[:2])  # "V4.4"
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), "voiceicc_v2_3_config.json")
@@ -2904,7 +2904,8 @@ class PremiumApp:
         # (pack_soundboard, pack_platform, pack_device y pack_cards no los
         #  muestra ningún widget: no se cargan, para acelerar el arranque.)
         # Pack de UI funcional (toggles, flotante, dock) tipo VoiceMod.
-        _cargar_pack("ui_toggles", self.ui_toggle_images, "toggle_", (155, 29))
+        # Interruptores más grandes: el texto horneado del PNG se lee mejor.
+        _cargar_pack("ui_toggles", self.ui_toggle_images, "toggle_", (224, 42))
         _cargar_pack("ui_floating", self.ui_floating_images, "floating_", (64, 64))
         _cargar_pack("ui_dock", self.ui_dock_images, "dock_", (44, 44))
 
@@ -4386,7 +4387,7 @@ class PremiumApp:
 
         # Barra inferior de control (como el diseño): power, Voice Changer,
         # FX de fondo, silenciar, medidores en vivo y Stop All.
-        bottombar = tk.Frame(workspace, bg="#101016", height=62)
+        bottombar = tk.Frame(workspace, bg="#101016", height=72)
         bottombar.pack(side="bottom", fill="x", padx=8, pady=(4, 8))
         bottombar.pack_propagate(False)
 
@@ -4404,14 +4405,14 @@ class PremiumApp:
                 indicatoron=False, bg="#1c1c25", fg="#dfe2ff",
                 selectcolor="#1f7a4d", activebackground="#2a3150",
                 activeforeground="#ffffff", relief="flat", bd=0,
-                padx=12, pady=7, font=("Segoe UI", 9, "bold"), cursor="hand2"
+                padx=13, pady=9, font=("Segoe UI", 10, "bold"), cursor="hand2"
             )
 
         def _bar_toggle(base, texto, var, cmd):
             """Usa el interruptor con imagen del pack si existe; si no, texto."""
             img = self._img_toggle(bottombar, base, var, cmd)
             if img is not None:
-                img.pack(side="left", padx=4, pady=16)
+                img.pack(side="left", padx=4, pady=14)
             else:
                 _vm_toggle(texto, var, cmd).pack(side="left", padx=4, pady=13)
 
