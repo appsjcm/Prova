@@ -645,12 +645,27 @@ class PiperTTS:
             try:
                 import tempfile
                 onnx = Path(self.voices_dir) / f"{self._loaded_name}.onnx"
+                cfg = self._config_for(onnx)
+                if cfg is None:
+                    print(f"Falta la config {self._loaded_name}.onnx.json junto al modelo.")
+                    return None, self.sample_rate
                 tmp = Path(tempfile.mkdtemp()) / "tts.wav"
-                cmd = self._python + ["-m", "piper", "--model", str(onnx),
-                                      "--output_file", str(tmp)]
-                subprocess.run(cmd, input=text, text=True,
-                               capture_output=True, timeout=120)
-                if tmp.exists():
+                script = (
+                    "import sys, wave\n"
+                    "from piper import PiperVoice\n"
+                    "model, config, output = sys.argv[1:4]\n"
+                    "text = sys.stdin.read()\n"
+                    "voice = PiperVoice.load(model, config_path=config)\n"
+                    "with wave.open(output, 'wb') as wf:\n"
+                    "    voice.synthesize(text, wf)\n"
+                )
+                cmd = self._python + ["-c", script, str(onnx), str(cfg), str(tmp)]
+                p = subprocess.run(cmd, input=text, text=True,
+                                   capture_output=True, timeout=120)
+                if p.returncode != 0:
+                    print("Sintesis TTS (subproceso) fallo:", (p.stderr or p.stdout or "")[-500:])
+                    return None, self.sample_rate
+                if tmp.exists() and tmp.stat().st_size > 44:
                     return self._read_wav(tmp)
             except Exception as exc:
                 print("Síntesis TTS (subproceso) falló:", exc)

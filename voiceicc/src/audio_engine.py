@@ -982,11 +982,12 @@ class AudioEngine:
         # Conversión de voz por IA local (RVC): si hay un modelo cargado y
         # activo, produce la voz; si no entrega bloque, cae a la cadena DSP.
         conv = None
+        clean = None
         rvc = self.rvc_backend
         if (not mute) and self.rvc_enabled and rvc is not None and rvc.ready:
             try:
-                base = self.noise_reduce_stream(x)
-                conv = rvc.process_block(base, self.rate)
+                clean = self.noise_reduce_stream(x)
+                conv = rvc.process_block(clean, self.rate)
             except Exception:
                 conv = None
             if conv is not None and len(conv) != len(x):
@@ -999,10 +1000,10 @@ class AudioEngine:
             y = self.soft_limit(conv * volume)
         elif not effects_enabled:
             # Modo voz limpia: deja pasar el micro sin cambiar la voz, pero mantiene soundboard.
-            y = self.noise_reduce_stream(x)
+            y = clean if clean is not None else self.noise_reduce_stream(x)
             y = self.soft_limit(y * volume)
         else:
-            y = self.noise_reduce_stream(x)
+            y = clean if clean is not None else self.noise_reduce_stream(x)
             y = self.gate(y, noise_gate)
             y = self.pitch_shift(y, pitch)
             y = self.formant_stream(y, formant)
