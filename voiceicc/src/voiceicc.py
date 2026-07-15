@@ -464,6 +464,8 @@ class PremiumApp:
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
         self.ai_diagnostic_status = tk.StringVar(value="Diagnostico IA: pulsa 'Diagnostico rapido' para revisar la instalacion.")
         self.rvc_library_status = tk.StringVar(value="Biblioteca de voces IA: sin revisar.")
+        self.ai_event_log_status = tk.StringVar(value="Eventos IA: sin eventos todavia.")
+        self.ai_event_log = []
         # Texto a voz (TTS).
         self.tts_voice = tk.StringVar(value="")
         self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
@@ -9648,10 +9650,58 @@ class PremiumApp:
         ttk.Button(brow, text="🔊 Hablar", style="Accent.TButton", command=self._tts_speak).pack(side="left", padx=(0, 8))
         ttk.Button(brow, text="📋 Leer portapapeles", command=self._tts_speak_clipboard).pack(side="left")
 
+        logcard = self.make_card(cont, "Estado tecnico")
+        logcard.pack(fill="x", pady=(10, 0))
+        ttk.Label(logcard, textvariable=self.ai_event_log_status, style="Card.TLabel",
+                  wraplength=760, justify="left").pack(anchor="w", pady=(0, 8))
+        logrow = ttk.Frame(logcard, style="Card.TFrame")
+        logrow.pack(anchor="w")
+        ttk.Button(logrow, text="Copiar informe", command=self._ai_copy_report).pack(side="left", padx=(0, 8))
+        ttk.Button(logrow, text="Limpiar eventos", command=self._ai_clear_events).pack(side="left", padx=(0, 8))
+
         self._rvc_refresh_status()
         self._rvc_refresh_models()
         self._tts_refresh()
         self._ai_run_diagnostic()
+
+    def _ai_log_event(self, message):
+        try:
+            stamp = datetime.now().strftime("%H:%M:%S")
+        except Exception:
+            stamp = "--:--:--"
+        self.ai_event_log.append(f"{stamp} - {message}")
+        self.ai_event_log = self.ai_event_log[-8:]
+        self.ai_event_log_status.set("Eventos IA:\n" + "\n".join(self.ai_event_log))
+
+    def _ai_clear_events(self):
+        self.ai_event_log = []
+        self.ai_event_log_status.set("Eventos IA: sin eventos todavia.")
+
+    def _ai_copy_report(self):
+        try:
+            snap = self._ai_diagnostic_snapshot()
+            report = [
+                f"VoiceICC {VERSION}",
+                "Diagnostico IA:",
+                *snap.get("lines", []),
+                "",
+                "Biblioteca:",
+                self.rvc_library_status.get(),
+                "",
+                "Estado RVC:",
+                self.rvc_status.get(),
+                "",
+                "Estado TTS:",
+                self.tts_status.get(),
+                "",
+                "Eventos:",
+                *(self.ai_event_log or ["Sin eventos."]),
+            ]
+            self.root.clipboard_clear()
+            self.root.clipboard_append("\n".join(report))
+            self._ai_log_event("Informe tecnico copiado al portapapeles.")
+        except Exception as exc:
+            messagebox.showerror("Informe IA", f"No se pudo copiar el informe:\n{exc}")
 
     def _ai_diagnostic_snapshot(self):
         """Estado compacto de IA/audio para orientar la instalacion."""
@@ -9733,11 +9783,13 @@ class PremiumApp:
     def _ai_run_diagnostic(self):
         snap = self._ai_diagnostic_snapshot()
         self.ai_diagnostic_status.set("\n".join(snap["lines"]))
+        self._ai_log_event("Diagnostico rapido ejecutado.")
         return snap
 
     def _ai_repair_next_step(self):
         snap = self._ai_run_diagnostic()
         nxt = snap.get("next")
+        self._ai_log_event("Reparar siguiente paso: " + (nxt or "todo listo"))
         if nxt == "python":
             self._download_and_run_python(self.ai_diagnostic_status)
         elif nxt == "rvc_motor":
@@ -9833,16 +9885,19 @@ class PremiumApp:
         threading.Thread(target=_run, daemon=True).start()
 
     def _tts_install_engine(self):
+        self._ai_log_event("Instalacion de motor TTS iniciada.")
         self._pip_install_bg(["piper-tts"], self.tts_status,
                              "✅ Motor TTS instalado. Descarga una voz y pulsa Hablar.",
                              then=self._tts_refresh)
 
     def _rvc_install_onnx(self):
+        self._ai_log_event("Instalacion de motor rapido ONNX iniciada.")
         self._pip_install_bg(["onnxruntime"], self.rvc_status,
                              "✅ Motor rápido (ONNX) instalado. Importa una voz .onnx y actívala.",
                              then=self._rvc_refresh_status)
 
     def _rvc_install_full(self):
+        self._ai_log_event("Instalacion de motor completo RVC iniciada.")
         self._pip_install_bg(["rvc-python", "torch"], self.rvc_status,
                              "✅ Motor completo instalado. Descarga los modelos base y una voz .pth.",
                              then=self._rvc_refresh_status)
@@ -9863,6 +9918,7 @@ class PremiumApp:
     def _tts_download(self, onnx_url):
         """Descarga una voz Piper (.onnx + .onnx.json) en segundo plano."""
         self.tts_status.set("Descargando voz TTS (puede tardar)…")
+        self._ai_log_event("Descarga de voz TTS iniciada.")
 
         def _run():
             try:
@@ -9872,8 +9928,10 @@ class PremiumApp:
                     self._tts_refresh()
                     self.tts_voice.set(nombre)
                     self.tts_status.set(f"✅ Voz TTS '{nombre}' descargada (modelo + config).")
+                    self._ai_log_event(f"Voz TTS descargada: {nombre}.")
                 self.root.after(0, _fin)
             except Exception as exc:
+                self.root.after(0, self._ai_log_event, f"Error descargando voz TTS: {exc}")
                 self.root.after(0, self.tts_status.set, f"⚠ No se pudo descargar la voz TTS: {exc}")
 
         threading.Thread(target=_run, daemon=True).start()
@@ -9892,12 +9950,15 @@ class PremiumApp:
             self.tts_voice.set(nombre)
             cfg = self.tts._config_for(Path(self.tts.voices_dir) / f"{nombre}.onnx")
             if cfg is None:
+                self._ai_log_event(f"Voz TTS importada sin config: {nombre}.")
                 messagebox.showwarning("Falta la config",
                     f"Importé '{nombre}.onnx' pero falta su archivo de configuración "
                     f"'{nombre}.onnx.json'. Cópialo a la misma carpeta (viene con la voz Piper).")
             else:
+                self._ai_log_event(f"Voz TTS importada: {nombre}.")
                 messagebox.showinfo("Voz TTS importada", f"Voz '{nombre}' lista.")
         except Exception as exc:
+            self._ai_log_event(f"Error importando voz TTS: {exc}")
             messagebox.showerror("No se pudo importar", str(exc))
 
     def _tts_speak_clipboard(self):
@@ -9915,11 +9976,13 @@ class PremiumApp:
         ok, motivo = self.tts.available()
         if not ok:
             self.tts_status.set("⚠ " + motivo)
+            self._ai_log_event("TTS no disponible: " + motivo)
             messagebox.showinfo("Motor TTS no disponible", motivo)
             return
         nombre = self.tts_voice.get()
         if not nombre:
             self.tts_status.set("⚠ Importa/elige una voz TTS primero.")
+            self._ai_log_event("TTS detenido: no hay voz seleccionada.")
             return
         if texto is None:
             try:
@@ -9937,16 +10000,20 @@ class PremiumApp:
                     if not self.tts.load(nombre):
                         self.root.after(0, self.tts_status.set,
                                         f"⚠ No se pudo cargar '{nombre}'. ¿Está su .onnx.json al lado?")
+                        self.root.after(0, self._ai_log_event, f"No se pudo cargar voz TTS: {nombre}.")
                         return
                 audio, sr = self.tts.synthesize(texto)
                 if audio is None or not len(audio):
                     self.root.after(0, self.tts_status.set, "⚠ No se generó audio (revisa la voz).")
+                    self.root.after(0, self._ai_log_event, "TTS no genero audio.")
                     return
                 audio = self._resample_mono(audio, sr, self.engine.rate)
                 self.engine.add_sfx(audio)   # se mezcla a la salida / micro virtual
                 self.root.after(0, self.tts_status.set,
                                 f"✅ Dicho ({len(audio)/self.engine.rate:.1f} s). Sale por tu salida/micro virtual.")
+                self.root.after(0, self._ai_log_event, f"TTS reproducido con {nombre}.")
             except Exception as exc:
+                self.root.after(0, self._ai_log_event, f"Error TTS: {exc}")
                 self.root.after(0, self.tts_status.set, f"⚠ Error TTS: {exc}")
 
         threading.Thread(target=_run, daemon=True).start()
@@ -10047,8 +10114,10 @@ class PremiumApp:
         faltan = self.rvc.base_models_present()
         if not faltan:
             self.rvc_status.set("✅ Los modelos base ya están descargados.")
+            self._ai_log_event("Modelos base RVC ya estaban listos.")
             return
         self.rvc_status.set("Descargando modelos base de IA (puede tardar)…")
+        self._ai_log_event("Descarga de modelos base RVC iniciada.")
 
         def _run():
             try:
@@ -10057,11 +10126,14 @@ class PremiumApp:
                 def _fin():
                     if ok >= total and total > 0:
                         self.rvc_status.set("✅ Modelos base descargados. Ya puedes usar Voces IA.")
+                        self._ai_log_event("Modelos base RVC descargados.")
                     else:
                         self.rvc_status.set(f"⚠ Descargados {ok}/{total} modelos base. Revisa tu conexión.")
+                        self._ai_log_event(f"Descarga parcial de modelos base: {ok}/{total}.")
                     self._rvc_refresh_status()
                 self.root.after(0, _fin)
             except Exception as exc:
+                self.root.after(0, self._ai_log_event, f"Error descargando modelos base: {exc}")
                 self.root.after(0, self.rvc_status.set, f"⚠ Error al descargar: {exc}")
 
         threading.Thread(target=_run, daemon=True).start()
@@ -10101,12 +10173,14 @@ class PremiumApp:
         idx = self.rvc_url_index.get().strip() or None
         if not pth:
             self.rvc_status.set("⚠ Pega la URL directa del modelo (.pth/.onnx).")
+            self._ai_log_event("Descarga de modelo cancelada: falta URL.")
             return
         if "/blob/" in pth:
             pth = pth.replace("/blob/", "/resolve/")  # HuggingFace: blob -> resolve
         if idx and "/blob/" in idx:
             idx = idx.replace("/blob/", "/resolve/")
         self.rvc_status.set("Descargando modelo desde URL (puede tardar)…")
+        self._ai_log_event("Descarga de modelo IA iniciada.")
 
         def _run():
             try:
@@ -10117,8 +10191,10 @@ class PremiumApp:
                     self._rvc_refresh_models()
                     self.rvc_model.set(nombre)
                     self.rvc_status.set(f"✅ Modelo '{nombre}' descargado y añadido a tu biblioteca.")
+                    self._ai_log_event(f"Modelo IA descargado: {nombre}.")
                 self.root.after(0, _fin)
             except Exception as exc:
+                self.root.after(0, self._ai_log_event, f"Error descargando modelo IA: {exc}")
                 self.root.after(0, self.rvc_status.set, f"⚠ No se pudo descargar: {exc}")
 
         threading.Thread(target=_run, daemon=True).start()
@@ -10136,8 +10212,10 @@ class PremiumApp:
             nombre = self.rvc.import_model(ruta)
             self.rvc_model.set(nombre)
             self._rvc_refresh_models()
+            self._ai_log_event(f"Modelo IA importado: {nombre}.")
             messagebox.showinfo("Voz IA importada", f"Modelo '{nombre}' añadido a tu biblioteca de voces IA.")
         except Exception as exc:
+            self._ai_log_event(f"Error importando modelo IA: {exc}")
             messagebox.showerror("No se pudo importar", str(exc))
 
     def _rvc_apply_model(self):
@@ -10148,12 +10226,15 @@ class PremiumApp:
         ok = self.rvc.load(nombre)
         if ok:
             self.rvc_status.set(f"✅ Voz IA cargada: {nombre} (procesamiento local).")
+            self._ai_log_event(f"Voz IA cargada: {nombre}.")
         else:
             det_ok, motivo = self.rvc.detect()
             if det_ok:
                 self.rvc_status.set(f"⚠ No se pudo cargar '{nombre}'. Revisa que el .pth sea un modelo RVC válido.")
+                self._ai_log_event(f"No se pudo cargar voz IA: {nombre}.")
             else:
                 self.rvc_status.set("⚠ " + motivo)
+                self._ai_log_event("Motor IA no disponible: " + motivo)
 
     def _rvc_selftest(self):
         """Comprueba la ruta IA de punta a punta: estado + inferencia de prueba
@@ -10198,23 +10279,27 @@ class PremiumApp:
                 self.rvc_enabled.set(False)
                 self.rvc.enabled = False
                 self.rvc_status.set("⚠ " + motivo)
+                self._ai_log_event("Voz IA no activada: " + motivo)
                 messagebox.showinfo("Motor de IA no disponible", motivo)
                 return
             if not self.rvc_model.get():
                 self.rvc_enabled.set(False)
                 self.rvc.enabled = False
                 self.rvc_status.set("⚠ Elige o importa un modelo de voz IA antes de activarla.")
+                self._ai_log_event("Voz IA no activada: falta elegir modelo.")
                 return
             self.engine.rvc_failures = 0
             self.engine.rvc_disabled_reason = ""
             self.rvc.enabled = True
             if self.rvc._loaded_name != self.rvc_model.get():
                 self._rvc_apply_model()
+            self._ai_log_event("Voz IA activada.")
         else:
             self.rvc.enabled = False
             self.engine.rvc_failures = 0
             self.engine.rvc_disabled_reason = ""
             self.rvc_status.set("Voz IA desactivada. Motor DSP en uso.")
+            self._ai_log_event("Voz IA desactivada.")
         self.update_engine()
 
     def build_creador_voces_tab(self):
