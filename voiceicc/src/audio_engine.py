@@ -35,6 +35,9 @@ class AudioEngine:
         # cargado, reemplaza la cadena DSP como fuente de la voz.
         self.rvc_backend = None
         self.rvc_enabled = False
+        self.rvc_failures = 0
+        self.rvc_disabled_reason = ""
+        self.rvc_failure_limit = 20
         self.autotune = 0.0
         self.autotune_shift = 0.0
         # Autotune REAL: detecta el tono y lo corrige a una escala.
@@ -985,13 +988,30 @@ class AudioEngine:
         clean = None
         rvc = self.rvc_backend
         if (not mute) and self.rvc_enabled and rvc is not None and rvc.ready:
+            rvc_failed = False
             try:
                 clean = self.noise_reduce_stream(x)
                 conv = rvc.process_block(clean, self.rate)
             except Exception:
                 conv = None
+                rvc_failed = True
+            if conv is None:
+                rvc_failed = True
             if conv is not None and len(conv) != len(x):
                 conv = None
+                rvc_failed = True
+            if conv is not None:
+                self.rvc_failures = 0
+                self.rvc_disabled_reason = ""
+            elif rvc_failed:
+                self.rvc_failures += 1
+                if self.rvc_failures >= self.rvc_failure_limit:
+                    self.rvc_enabled = False
+                    self.rvc_disabled_reason = "Voz IA desactivada temporalmente: el modelo fallo varias veces seguidas."
+                    try:
+                        rvc.enabled = False
+                    except Exception:
+                        pass
 
         if mute:
             y = np.zeros_like(x)

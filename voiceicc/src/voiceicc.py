@@ -9965,6 +9965,13 @@ class PremiumApp:
     def _rvc_refresh_status(self):
         ok, _motivo = self.rvc.detect(force=True)
         informe = self.rvc.data_report()
+        aviso_seguro = getattr(self.engine, "rvc_disabled_reason", "")
+        if aviso_seguro:
+            try:
+                self.rvc_enabled.set(False)
+            except Exception:
+                pass
+            informe = informe + "\n⚠ " + aviso_seguro
         self.rvc_status.set(("✅ " if ok else "⚠ ") + informe)
 
     def _rvc_refresh_models(self):
@@ -10142,11 +10149,15 @@ class PremiumApp:
                 self.rvc.enabled = False
                 self.rvc_status.set("⚠ Elige o importa un modelo de voz IA antes de activarla.")
                 return
+            self.engine.rvc_failures = 0
+            self.engine.rvc_disabled_reason = ""
             self.rvc.enabled = True
             if self.rvc._loaded_name != self.rvc_model.get():
                 self._rvc_apply_model()
         else:
             self.rvc.enabled = False
+            self.engine.rvc_failures = 0
+            self.engine.rvc_disabled_reason = ""
             self.rvc_status.set("Voz IA desactivada. Motor DSP en uso.")
         self.update_engine()
 
@@ -20520,7 +20531,14 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                 self.engine.noise_reduction = clamp(float(self.nr_amount.get()) / 100, 0, 1)
             else:
                 self.engine.noise_reduction = 0.0
-            self.engine.rvc_enabled = bool(self.rvc_enabled.get())
+            rvc_requested = bool(self.rvc_enabled.get())
+            if rvc_requested and getattr(self.engine, "rvc_disabled_reason", ""):
+                rvc_requested = False
+                try:
+                    self.rvc_enabled.set(False)
+                except Exception:
+                    pass
+            self.engine.rvc_enabled = rvc_requested
             # Realismo máximo: acerca cada parámetro de naturalidad a su tope
             # (new = p + (1-p)*factor), sin pasarse, encima del preset.
             if bool(self.realismo_maximo.get()):
