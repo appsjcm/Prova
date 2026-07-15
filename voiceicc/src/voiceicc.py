@@ -16055,6 +16055,34 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
         tk.Button(hero, text="✦  ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
 
+        start_panel = tk.Frame(main, bg="#0d121e", highlightbackground="#2b3550", highlightthickness=1)
+        start_panel.pack(fill="x", padx=8, pady=(0, 8))
+        start_head = tk.Frame(start_panel, bg="#0d121e")
+        start_head.pack(fill="x", padx=14, pady=(12, 6))
+        tk.Label(start_head, text="Empieza aqui", bg="#0d121e", fg="#ffffff",
+                 font=("Segoe UI", 13, "bold")).pack(side="left")
+        tk.Label(start_head, text="4 rutas claras para configurar, probar y salir en directo",
+                 bg="#0d121e", fg="#9ca8c6", font=("Segoe UI", 9)).pack(side="left", padx=(10, 0))
+        start_grid = tk.Frame(start_panel, bg="#0d121e")
+        start_grid.pack(fill="x", padx=10, pady=(0, 12))
+        start_actions = [
+            ("DIRECTO", "Entrar en vivo y controlar micro/salida.", "#00e5ff", "tab_directo_pro"),
+            ("VOCES", "Elegir personaje, preset o voz IA.", "#a65cff", "tab_voces"),
+            ("EFECTOS", "Abrir soundboard y ambientes para stream.", "#ff5c8a", "tab_sonidos"),
+            ("AJUSTES", "Configurar dispositivos y estabilidad.", "#62ffb4", "tab_ajustes"),
+        ]
+        for idx, (title, subtitle, color, attr) in enumerate(start_actions):
+            card = tk.Frame(start_grid, bg="#111725", highlightbackground="#273149", highlightthickness=1)
+            card.grid(row=0, column=idx, sticky="nsew", padx=(0 if idx == 0 else 5, 0 if idx == 3 else 5))
+            tk.Label(card, text=title, bg="#111725", fg=color,
+                     font=("Segoe UI", 11, "bold"), anchor="w").pack(fill="x", padx=12, pady=(12, 2))
+            tk.Label(card, text=subtitle, bg="#111725", fg="#aeb7d0",
+                     font=("Segoe UI", 8), wraplength=180, justify="left", anchor="w").pack(fill="x", padx=12, pady=(0, 10))
+            tk.Button(card, text="Abrir", command=lambda a=attr: self.voiceicc_open_feature(a),
+                      bg="#20283d", fg="#ffffff", activebackground=color, activeforeground="#ffffff",
+                      relief="flat", bd=0, pady=7, cursor="hand2").pack(fill="x", padx=12, pady=(0, 12))
+            start_grid.columnconfigure(idx, weight=1)
+
         top = tk.Frame(main, bg="#090d16")
         top.pack(fill="x", padx=8, pady=(0, 8))
         access = tk.Frame(top, bg="#090d16")
