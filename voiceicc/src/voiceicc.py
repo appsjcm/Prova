@@ -462,6 +462,7 @@ class PremiumApp:
         self.rvc_pitch = tk.IntVar(value=0)
         self.rvc_index = tk.DoubleVar(value=50)
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
+        self.ai_diagnostic_status = tk.StringVar(value="Diagnostico IA: pulsa 'Diagnostico rapido' para revisar la instalacion.")
         # Texto a voz (TTS).
         self.tts_voice = tk.StringVar(value="")
         self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
@@ -9514,6 +9515,20 @@ class PremiumApp:
                               "Sin Internet, sin enviar tu voz a servidores, sin costes por uso.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(4, 0))
 
+        diag = self.make_card(cont, "Diagnostico rapido")
+        diag.pack(fill="x", pady=(0, 10))
+        ttk.Label(diag, textvariable=self.ai_diagnostic_status, style="Card.TLabel",
+                  wraplength=760, justify="left").pack(anchor="w", pady=(0, 8))
+        diag_buttons = ttk.Frame(diag, style="Card.TFrame")
+        diag_buttons.pack(anchor="w")
+        ttk.Button(diag_buttons, text="Diagnostico rapido", style="Accent.TButton",
+                   command=self._ai_run_diagnostic).pack(side="left", padx=(0, 8))
+        ttk.Button(diag_buttons, text="Reparar siguiente paso",
+                   command=self._ai_repair_next_step).pack(side="left", padx=(0, 8))
+        ttk.Button(diag_buttons, text="Actualizar todo",
+                   command=lambda: [self._rvc_refresh_status(), self._rvc_refresh_models(),
+                                    self._tts_refresh(), self._ai_run_diagnostic()]).pack(side="left", padx=(0, 8))
+
         # Estado del motor y requisitos.
         estado = self.make_card(cont, "Motor de IA")
         estado.pack(fill="x", pady=(0, 10))
@@ -9632,6 +9647,110 @@ class PremiumApp:
         self._rvc_refresh_status()
         self._rvc_refresh_models()
         self._tts_refresh()
+        self._ai_run_diagnostic()
+
+    def _ai_diagnostic_snapshot(self):
+        """Estado compacto de IA/audio para orientar la instalacion."""
+        data = {"lines": [], "next": None}
+
+        py = find_system_python()
+        if py:
+            data["lines"].append("[OK] Python disponible: " + " ".join(py))
+        else:
+            data["lines"].append("[FALTA] Python no esta disponible para instalar motores IA.")
+            data["next"] = data["next"] or "python"
+
+        try:
+            devices = sd.query_devices()
+            inputs = sum(1 for d in devices if int(d.get("max_input_channels", 0) or 0) > 0)
+            outputs = sum(1 for d in devices if int(d.get("max_output_channels", 0) or 0) > 0)
+            if inputs and outputs:
+                data["lines"].append(f"[OK] Audio: {inputs} entradas y {outputs} salidas detectadas.")
+            else:
+                data["lines"].append("[FALTA] Audio: no veo microfono y salida completos.")
+                data["next"] = data["next"] or "audio"
+        except Exception as exc:
+            data["lines"].append(f"[AVISO] Audio: no se pudo consultar dispositivos ({exc}).")
+            data["next"] = data["next"] or "audio"
+
+        try:
+            r = self.rvc.readiness()
+            motor = "ONNX" if r.get("onnx") else ("RVC/PyTorch" if r.get("torch") else "-")
+            data["lines"].append(f"[{'OK' if r.get('motor_ok') else 'FALTA'}] Motor de voz IA: {motor}.")
+            if not r.get("motor_ok"):
+                data["next"] = data["next"] or "rvc_motor"
+            if r.get("modelos"):
+                data["lines"].append(f"[OK] Modelos RVC/ONNX: {r.get('modelos')} encontrados.")
+            else:
+                data["lines"].append("[FALTA] Modelos RVC/ONNX: importa o descarga una voz.")
+                data["next"] = data["next"] or "rvc_model"
+            if r.get("need_base") and not r.get("base_ok"):
+                faltan = ", ".join(r.get("faltan_base") or [])
+                data["lines"].append("[FALTA] Modelos base RVC: " + faltan)
+                data["next"] = data["next"] or "rvc_base"
+            elif r.get("need_base"):
+                data["lines"].append("[OK] Modelos base RVC listos.")
+            else:
+                data["lines"].append("[OK] Modelos base RVC: no necesarios para ONNX.")
+        except Exception as exc:
+            data["lines"].append(f"[AVISO] Voces IA: no se pudo comprobar RVC ({exc}).")
+            data["next"] = data["next"] or "rvc_motor"
+
+        try:
+            tts_ok, tts_msg = self.tts.available()
+            voices = self.tts.list_voices()
+            data["lines"].append(f"[{'OK' if tts_ok else 'FALTA'}] Motor TTS Piper: {tts_msg}")
+            if not tts_ok:
+                data["next"] = data["next"] or "tts_motor"
+            if voices:
+                data["lines"].append(f"[OK] Voces TTS: {len(voices)} disponibles.")
+            else:
+                data["lines"].append("[FALTA] Voces TTS: descarga una voz Piper.")
+                data["next"] = data["next"] or "tts_voice"
+        except Exception as exc:
+            data["lines"].append(f"[AVISO] TTS: no se pudo comprobar Piper ({exc}).")
+            data["next"] = data["next"] or "tts_motor"
+
+        if data["next"] is None:
+            data["lines"].append("[LISTO] Todo lo esencial esta preparado para probar Voces IA y TTS.")
+        else:
+            labels = {
+                "python": "instalar Python 3",
+                "audio": "revisar microfono/salida en Ajustes",
+                "rvc_motor": "instalar motor rapido ONNX",
+                "rvc_model": "importar o descargar un modelo de voz IA",
+                "rvc_base": "descargar modelos base RVC",
+                "tts_motor": "instalar motor TTS",
+                "tts_voice": "descargar una voz TTS",
+            }
+            data["lines"].append("Siguiente paso recomendado: " + labels.get(data["next"], data["next"]) + ".")
+        return data
+
+    def _ai_run_diagnostic(self):
+        snap = self._ai_diagnostic_snapshot()
+        self.ai_diagnostic_status.set("\n".join(snap["lines"]))
+        return snap
+
+    def _ai_repair_next_step(self):
+        snap = self._ai_run_diagnostic()
+        nxt = snap.get("next")
+        if nxt == "python":
+            self._download_and_run_python(self.ai_diagnostic_status)
+        elif nxt == "rvc_motor":
+            self._rvc_install_onnx()
+        elif nxt == "rvc_base":
+            self._rvc_download_base()
+        elif nxt == "rvc_model":
+            self._rvc_import_model()
+        elif nxt == "tts_motor":
+            self._tts_install_engine()
+        elif nxt == "tts_voice":
+            self._tts_download_catalog()
+        elif nxt == "audio":
+            self.select_tab(self.tab_ajustes)
+            self.state.set("Estado: revisa microfono y salida en Ajustes.")
+        else:
+            messagebox.showinfo("Diagnostico IA", "Todo lo esencial esta listo.")
 
     def _tts_refresh(self):
         voces = self.tts.list_voices()
