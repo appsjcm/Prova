@@ -266,6 +266,9 @@ class PremiumApp:
         self.last_session_summary = tk.StringVar(value="")
         self.premium_flow_status = tk.StringVar(value="Premium Flow listo.")
         self.broadcast_ready = tk.StringVar(value="")
+        self.home_live_state = tk.StringVar(value="Directo: parado")
+        self.home_audio_state = tk.StringVar(value="Audio: pendiente")
+        self.home_voice_state = tk.StringVar(value="Voz: Luna Vega")
         self.pc_fix_status = tk.StringVar(value="Ajuste de pantalla listo.")
         self.start_minimized = tk.BooleanVar(value=False)
         self.startup_windows_status = tk.StringVar(value="Comprobando inicio con Windows…")
@@ -16063,6 +16066,18 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                  font=("Segoe UI", 13, "bold")).pack(side="left")
         tk.Label(start_head, text="4 rutas claras para configurar, probar y salir en directo",
                  bg="#0d121e", fg="#9ca8c6", font=("Segoe UI", 9)).pack(side="left", padx=(10, 0))
+        status_strip = tk.Frame(start_panel, bg="#0d121e")
+        status_strip.pack(fill="x", padx=10, pady=(0, 8))
+        for idx, (label_var, color) in enumerate([
+            (self.home_live_state, "#00e5ff"),
+            (self.home_audio_state, "#62ffb4"),
+            (self.home_voice_state, "#a65cff"),
+        ]):
+            pill = tk.Frame(status_strip, bg="#111725", highlightbackground="#273149", highlightthickness=1)
+            pill.grid(row=0, column=idx, sticky="nsew", padx=(0 if idx == 0 else 5, 0 if idx == 2 else 5))
+            tk.Label(pill, textvariable=label_var, bg="#111725", fg=color,
+                     font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=12, pady=7)
+            status_strip.columnconfigure(idx, weight=1)
         start_grid = tk.Frame(start_panel, bg="#0d121e")
         start_grid.pack(fill="x", padx=10, pady=(0, 12))
         start_actions = [
@@ -16222,6 +16237,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         self.refresh_creator_hub_panels()
         self.voiceicc_refresh_dashboard_metrics()
+        self.update_broadcast_ready()
         self.root.after(2000, self.sys_status_tick)
 
     def inicio_data(self):
@@ -19488,6 +19504,14 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         else:
             status = f"CONFIGURA VOICEICC · {done}/4"
         self.broadcast_ready.set(status)
+        try:
+            self.home_live_state.set("Directo: activo" if self.engine.running else "Directo: parado")
+            audio_ready = bool(self.input_dev.get()) and bool(self.output_dev.get())
+            self.home_audio_state.set("Audio: listo" if audio_ready else "Audio: elige micro y salida")
+            voice_name = self.voiceicc_current_voice_name.get() or self.preset.get() or "sin elegir"
+            self.home_voice_state.set(f"Voz: {voice_name}")
+        except Exception:
+            pass
         return done
 
     def build_home_tab(self):
