@@ -16048,15 +16048,15 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(flowbar, text="PREMIUM FLOW", bg="#111827", fg="#00e5ff", font=("Segoe UI", 9, "bold")).pack(side="left", padx=(14, 8), pady=10)
         for profile_name in ["Streaming", "Podcast", "Gaming", "Canto"]:
             tk.Button(flowbar, text=profile_name, command=lambda n=profile_name: self.apply_session_profile(n), bg="#1d2540", fg="#ffffff", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="left", padx=3, pady=7)
-        tk.Button(flowbar, text="Guardar sesión", command=self.save_current_session_snapshot, bg="#241b38", fg="#ff8dcc", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=(3, 10), pady=7)
+        tk.Button(flowbar, text="Guardar sesion", command=self.save_current_session_snapshot, bg="#241b38", fg="#ff8dcc", activebackground="#7c5cff", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=(3, 10), pady=7)
         tk.Button(flowbar, text="Reanudar", command=self.resume_last_session, bg="#172d2d", fg="#62ffb4", activebackground="#225050", activeforeground="#ffffff", relief="flat", bd=0, padx=12, pady=6, font=("Segoe UI", 9, "bold"), cursor="hand2").pack(side="right", padx=3, pady=7)
         tk.Label(flowbar, textvariable=self.broadcast_ready, bg="#111827", fg="#ffd166", font=("Consolas", 10, "bold")).pack(side="right", padx=12)
         title_wrap = tk.Frame(hero, bg="#090d16")
         title_wrap.pack(side="left", fill="x", expand=True)
-        tk.Label(title_wrap, text="¡Bienvenido a VoiceICC!", bg="#090d16", fg="#ffffff", font=("Segoe UI", 28, "bold"), anchor="w").pack(anchor="w")
+        tk.Label(title_wrap, text="Bienvenido a VoiceICC", bg="#090d16", fg="#ffffff", font=("Segoe UI", 28, "bold"), anchor="w").pack(anchor="w")
         tk.Label(title_wrap, text="Tu estudio de voz profesional todo en uno.", bg="#090d16", fg="#919bb8", font=("Segoe UI", 10), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
-        tk.Button(hero, text="✦  ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
+        tk.Button(hero, text="ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
 
         start_panel = tk.Frame(main, bg="#0d121e", highlightbackground="#2b3550", highlightthickness=1)
         start_panel.pack(fill="x", padx=8, pady=(0, 8))
@@ -16103,10 +16103,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         access = tk.Frame(top, bg="#090d16")
         access.pack(side="left", fill="both", expand=True)
         cards = [
-            ("◉", "TEST DE VOZ", "Prueba tu voz en tiempo real", "#a65cff", "tab_test_voz"),
-            ("🎙", "VOICEBOX", "Cambia tu voz con inteligencia avanzada", "#00dff5", "tab_voice_characters"),
-            ("▦", "SOUNDBOARD", "Reproduce sonidos y efectos en directo", "#ff4f9a", "tab_sonidos"),
-            ("〽", "CADENA VOCAL", "Ajusta tu sonido con efectos profesionales", "#c45cff", "tab_cadena_vocal"),
+            ("T", "TEST DE VOZ", "Prueba tu voz en tiempo real", "#a65cff", "tab_test_voz"),
+            ("V", "VOICEBOX", "Cambia tu voz con inteligencia avanzada", "#00dff5", "tab_voice_characters"),
+            ("S", "SOUNDBOARD", "Reproduce sonidos y efectos en directo", "#ff4f9a", "tab_sonidos"),
+            ("C", "CADENA VOCAL", "Ajusta tu sonido con efectos profesionales", "#c45cff", "tab_cadena_vocal"),
         ]
         for idx,(icon,title,subtitle,color,attr) in enumerate(cards):
             card=tk.Frame(access,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
@@ -16141,7 +16141,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         featured.pack(fill="x",padx=8,pady=(0,8))
         head=tk.Frame(featured,bg="#0d121e"); head.pack(fill="x",padx=10,pady=(8,3))
         tk.Label(head,text="Voces destacadas",bg="#0d121e",fg="#ffffff",font=("Segoe UI",10,"bold")).pack(side="left")
-        tk.Button(head,text="Ver todas  ›",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
+        tk.Button(head,text="Ver todas >",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
         voice_row=tk.Frame(featured,bg="#0d121e"); voice_row.pack(fill="x",padx=8,pady=(2,10))
         names=["Luna Vega","Nora Pulse","Leo Nova","Bruno Atlas","Mia Echo","Kai Flux","Zoe Neon","Axel Noir"]
         data={item["name"]:item for item in self.voice_characters_data()}
@@ -16166,15 +16166,15 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         info.pack(fill="both",expand=True,padx=8,pady=(0,8))
         actions=tk.Frame(info,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
         actions.grid(row=0,column=0,sticky="nsew",padx=(0,5))
-        tk.Label(actions,text="Acciones rápidas",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
-        for label,attr in [("◉  Grabar mi voz","tab_grabadora"),("⌘  Abrir VoiceLab","tab_cadena_vocal"),("♬  Ver efectos","tab_realistic_effects"),("▣  Auditoría de versión","tab_publicacion_pro")]:
+        tk.Label(actions,text="Acciones rapidas",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
+        for label,attr in [("Grabar mi voz","tab_grabadora"),("Abrir VoiceLab","tab_cadena_vocal"),("Ver efectos","tab_realistic_effects"),("Auditoria de version","tab_publicacion_pro")]:
             row=tk.Frame(actions,bg="#171d2c"); row.pack(fill="x",padx=10,pady=3)
             tk.Button(row,text=label,command=lambda a=attr:self.voiceicc_open_feature(a),bg="#171d2c",fg="#dbe1f5",activebackground="#242c42",activeforeground="#ffffff",relief="flat",bd=0,anchor="w",pady=7,cursor="hand2").pack(side="left",fill="x",expand=True)
-            tk.Label(row,text="›",bg="#171d2c",fg="#9aa6c2",font=("Segoe UI",12)).pack(side="right",padx=8)
+            tk.Label(row,text=">",bg="#171d2c",fg="#9aa6c2",font=("Segoe UI",12)).pack(side="right",padx=8)
 
         recent=tk.Frame(info,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
         recent.grid(row=0,column=1,sticky="nsew",padx=5)
-        tk.Label(recent,text="Módulos recientes",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
+        tk.Label(recent,text="Modulos recientes",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
         recent_items=[("Soundboard","hace 2 min","tab_sonidos"),("Cadena vocal","hace 15 min","tab_cadena_vocal"),("Efectos","hace 30 min","tab_realistic_effects"),("VoiceLab","ayer","tab_human_realism")]
         for label,when,attr in recent_items:
             row=tk.Frame(recent,bg="#171d2c"); row.pack(fill="x",padx=10,pady=3)
@@ -19522,20 +19522,20 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         hero.pack(fill="x", padx=8, pady=(8, 8))
         title_wrap = tk.Frame(hero, bg="#090d16")
         title_wrap.pack(side="left", fill="x", expand=True)
-        tk.Label(title_wrap, text="¡Bienvenido a VoiceICC!", bg="#090d16", fg="#ffffff", font=("Segoe UI", 26, "bold"), anchor="w").pack(anchor="w")
+        tk.Label(title_wrap, text="Bienvenido a VoiceICC", bg="#090d16", fg="#ffffff", font=("Segoe UI", 26, "bold"), anchor="w").pack(anchor="w")
         tk.Label(title_wrap, text="Tu estudio de voz profesional todo en uno.", bg="#090d16", fg="#919bb8", font=("Segoe UI", 10), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
-        tk.Label(hero, text="REFERENCE MATCH · ULTRA PREMIUM", bg="#1b1530", fg="#caa9ff", font=("Segoe UI", 9, "bold"), padx=12, pady=6).pack(side="right", padx=8)
+        tk.Label(hero, text="REFERENCE MATCH - ULTRA PREMIUM", bg="#1b1530", fg="#caa9ff", font=("Segoe UI", 9, "bold"), padx=12, pady=6).pack(side="right", padx=8)
 
         top = tk.Frame(main, bg="#090d16")
         top.pack(fill="x", padx=8, pady=(0, 8))
         access = tk.Frame(top, bg="#090d16")
         access.pack(side="left", fill="both", expand=True)
         cards = [
-            ("◉", "TEST DE VOZ", "Prueba tu voz en tiempo real", "#a65cff", "tab_test_voz"),
-            ("🎙", "VOICEBOX", "Cambia tu voz con inteligencia avanzada", "#00dff5", "tab_voice_characters"),
-            ("▦", "SOUNDBOARD", "Reproduce sonidos y efectos en directo", "#ff4f9a", "tab_sonidos"),
-            ("〽", "CADENA VOCAL", "Ajusta tu sonido con efectos profesionales", "#c45cff", "tab_cadena_vocal"),
+            ("T", "TEST DE VOZ", "Prueba tu voz en tiempo real", "#a65cff", "tab_test_voz"),
+            ("V", "VOICEBOX", "Cambia tu voz con inteligencia avanzada", "#00dff5", "tab_voice_characters"),
+            ("S", "SOUNDBOARD", "Reproduce sonidos y efectos en directo", "#ff4f9a", "tab_sonidos"),
+            ("C", "CADENA VOCAL", "Ajusta tu sonido con efectos profesionales", "#c45cff", "tab_cadena_vocal"),
         ]
         for idx,(icon,title,subtitle,color,attr) in enumerate(cards):
             card=tk.Frame(access,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
@@ -19566,7 +19566,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         featured.pack(fill="x",padx=8,pady=(0,8))
         head=tk.Frame(featured,bg="#0d121e"); head.pack(fill="x",padx=10,pady=(8,3))
         tk.Label(head,text="Voces destacadas",bg="#0d121e",fg="#ffffff",font=("Segoe UI",10,"bold")).pack(side="left")
-        tk.Button(head,text="Ver todas  ›",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
+        tk.Button(head,text="Ver todas >",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
         voice_row=tk.Frame(featured,bg="#0d121e"); voice_row.pack(fill="x",padx=8,pady=(2,10))
         names=["Luna Vega","Nora Pulse","Leo Nova","Bruno Atlas","Mia Echo","Kai Flux","Zoe Neon","Axel Noir"]
         data={item["name"]:item for item in self.voice_characters_data()}
@@ -19589,15 +19589,15 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         info.pack(fill="both",expand=True,padx=8,pady=(0,8))
         actions=tk.Frame(info,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
         actions.grid(row=0,column=0,sticky="nsew",padx=(0,5))
-        tk.Label(actions,text="Acciones rápidas",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
-        for label,attr in [("◉  Grabar mi voz","tab_grabadora"),("⌘  Abrir VoiceLab","tab_cadena_vocal"),("♬  Ver efectos","tab_realistic_effects"),("▣  Auditoría de versión","tab_publicacion_pro")]:
+        tk.Label(actions,text="Acciones rapidas",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
+        for label,attr in [("Grabar mi voz","tab_grabadora"),("Abrir VoiceLab","tab_cadena_vocal"),("Ver efectos","tab_realistic_effects"),("Auditoria de version","tab_publicacion_pro")]:
             row=tk.Frame(actions,bg="#171d2c"); row.pack(fill="x",padx=10,pady=3)
             tk.Button(row,text=label,command=lambda a=attr:self.voiceicc_open_feature(a),bg="#171d2c",fg="#dbe1f5",activebackground="#242c42",activeforeground="#ffffff",relief="flat",bd=0,anchor="w",pady=7,cursor="hand2").pack(side="left",fill="x",expand=True)
-            tk.Label(row,text="›",bg="#171d2c",fg="#9aa6c2",font=("Segoe UI",12)).pack(side="right",padx=8)
+            tk.Label(row,text=">",bg="#171d2c",fg="#9aa6c2",font=("Segoe UI",12)).pack(side="right",padx=8)
 
         recent=tk.Frame(info,bg="#111725",highlightbackground="#2b3550",highlightthickness=1)
         recent.grid(row=0,column=1,sticky="nsew",padx=5)
-        tk.Label(recent,text="Módulos recientes",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
+        tk.Label(recent,text="Modulos recientes",bg="#111725",fg="#ffffff",font=("Segoe UI",10,"bold"),anchor="w").pack(fill="x",padx=12,pady=(10,6))
         recent_items=[("Soundboard","hace 2 min","tab_sonidos"),("Cadena vocal","hace 15 min","tab_cadena_vocal"),("Efectos","hace 30 min","tab_realistic_effects"),("VoiceLab","ayer","tab_human_realism")]
         for label,when,attr in recent_items:
             row=tk.Frame(recent,bg="#171d2c"); row.pack(fill="x",padx=10,pady=3)
