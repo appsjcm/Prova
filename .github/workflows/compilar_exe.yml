@@ -28,6 +28,9 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt pyinstaller
 
+      - name: Validar modulos
+        run: python validar_voiceicc.py
+
       - name: Generar icono .ico desde el branding
         run: |
           python -m pip install pillow
