@@ -19405,7 +19405,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         if hasattr(self, "home_favorites_frame"):
             for child in self.home_favorites_frame.winfo_children():
                 child.destroy()
-            ttk.Label(self.home_favorites_frame, text="Favoritos", style="Card.TLabel", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 4))
+            ttk.Label(self.home_favorites_frame, text="FAVORITOS", style="Card.TLabel", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 2))
+            ttk.Label(self.home_favorites_frame, text="Tus accesos fijos para preparar la sesion mas rapido.", style="Card.TLabel", font=("Segoe UI", 8)).pack(anchor="w", pady=(0, 6))
             favs = getattr(self, "favorite_tabs", []) or ["tab_test_voz", "tab_voice_characters"]
             row = ttk.Frame(self.home_favorites_frame, style="Card.TFrame")
             row.pack(fill="x")
@@ -19418,12 +19419,14 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         if hasattr(self, "home_recents_frame"):
             for child in self.home_recents_frame.winfo_children():
                 child.destroy()
-            ttk.Label(self.home_recents_frame, text="Recientes", style="Card.TLabel", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 4))
+            ttk.Label(self.home_recents_frame, text="RECIENTES", style="Card.TLabel", font=("Segoe UI", 10, "bold")).pack(anchor="w", pady=(0, 2))
+            ttk.Label(self.home_recents_frame, text="Continua donde estabas o vuelve a un modulo clave.", style="Card.TLabel", font=("Segoe UI", 8)).pack(anchor="w", pady=(0, 6))
             row = ttk.Frame(self.home_recents_frame, style="Card.TFrame")
             row.pack(fill="x")
             recents = getattr(self, "recent_tabs", [])[:6]
             if not recents:
-                ttk.Label(row, text="Todavía no has abierto módulos recientes.", style="Card.TLabel").pack(anchor="w")
+                ttk.Label(row, text="Aun no hay modulos recientes.", style="Card.TLabel").pack(anchor="w", pady=(0, 6))
+                ttk.Button(row, text="Abrir test de voz", style="Accent.TButton", command=lambda: self.open_tab_by_attr("tab_test_voz")).pack(anchor="w")
             else:
                 for idx, attr in enumerate(recents):
                     ttk.Button(row, text=self.label_for_tab_attr(attr), command=lambda a=attr: self.open_tab_by_attr(a)).grid(row=idx // 3, column=idx % 3, sticky="ew", padx=4, pady=4)
