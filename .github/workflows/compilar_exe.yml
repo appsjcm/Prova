@@ -34,13 +34,7 @@ jobs:
           python -c "from PIL import Image; Image.open('assets/voiceicc_icon_source.png').convert('RGBA').save('assets/app_icon.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)]); print('app_icon.ico generado')"
 
       - name: Compilar EXE
-        run: >
-          python -m PyInstaller --noconsole --onefile
-          --name VoiceICC
-          --icon assets/app_icon.ico
-          --add-data "assets;assets"
-          --collect-all onnxruntime
-          src/voiceicc.py
+        run: python compilar_voiceicc.py
 
       - name: Instalar Inno Setup
         run: choco install innosetup --no-progress -y
