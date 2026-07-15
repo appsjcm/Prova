@@ -463,6 +463,7 @@ class PremiumApp:
         self.rvc_index = tk.DoubleVar(value=50)
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
         self.ai_diagnostic_status = tk.StringVar(value="Diagnostico IA: pulsa 'Diagnostico rapido' para revisar la instalacion.")
+        self.rvc_library_status = tk.StringVar(value="Biblioteca de voces IA: sin revisar.")
         # Texto a voz (TTS).
         self.tts_voice = tk.StringVar(value="")
         self.tts_status = tk.StringVar(value="Texto a voz: comprobando…")
@@ -9563,6 +9564,9 @@ class PremiumApp:
         ttk.Button(fila, text="🔄 Actualizar", command=self._rvc_refresh_models).pack(side="left", padx=(0, 8))
         ttk.Button(fila, text="🧪 Probar voz IA", command=self._rvc_selftest).pack(side="left", padx=(0, 8))
 
+        ttk.Label(lib, textvariable=self.rvc_library_status, style="Card.TLabel",
+                  wraplength=760, justify="left").pack(anchor="w", pady=(8, 0))
+
         # Descargar modelo desde una URL directa (p. ej. HuggingFace .../resolve/...).
         url1 = ttk.Frame(lib, style="Card.TFrame")
         url1.pack(fill="x", pady=(8, 2))
@@ -9975,7 +9979,8 @@ class PremiumApp:
         self.rvc_status.set(("✅ " if ok else "⚠ ") + informe)
 
     def _rvc_refresh_models(self):
-        modelos = [m["name"] for m in self.rvc.list_models()]
+        modelos_info = self.rvc.list_models()
+        modelos = [m["name"] for m in modelos_info]
         try:
             self._rvc_model_combo["values"] = modelos
         except Exception:
@@ -9986,6 +9991,56 @@ class PremiumApp:
             self.rvc_model.set("")
             if self.rvc.detect()[0]:
                 self.rvc_status.set("✅ Motor listo. Aún no hay modelos: importa un .pth para empezar.")
+        self._rvc_update_library_status(modelos_info)
+
+    def _rvc_model_state(self, model):
+        """Devuelve (estado, detalle) para un modelo RVC/ONNX de la biblioteca."""
+        try:
+            if model.get("onnx"):
+                onnx_ok, provs = self.rvc.onnx_info()
+                if onnx_ok:
+                    provider = self.rvc._best_onnx_provider(provs).replace("ExecutionProvider", "")
+                    return "Listo", f"ONNX rapido ({provider})"
+                return "Falta motor", "Instala el motor rapido ONNX"
+
+            torch_ok = False
+            rvc_ok = False
+            try:
+                __import__("torch")
+                torch_ok = True
+            except Exception:
+                pass
+            try:
+                __import__("rvc_python")
+                rvc_ok = True
+            except Exception:
+                pass
+            if not (torch_ok and rvc_ok):
+                return "Falta motor", "Instala el motor completo para modelos .pth"
+            faltan_base = self.rvc.base_models_present()
+            if faltan_base:
+                return "Falta base", "Descarga modelos base: " + ", ".join(faltan_base)
+            if not model.get("index"):
+                return "Listo sin index", "Funcionara, pero un .index mejora el timbre"
+            return "Listo", "RVC completo con .index"
+        except Exception as exc:
+            return "Revisar", str(exc)
+
+    def _rvc_update_library_status(self, modelos_info=None):
+        modelos_info = modelos_info if modelos_info is not None else self.rvc.list_models()
+        if not modelos_info:
+            self.rvc_library_status.set("Biblioteca vacia: importa un modelo .onnx recomendado o un .pth.")
+            return
+        lines = ["Biblioteca de voces IA:"]
+        selected = self.rvc_model.get()
+        for model in modelos_info[:8]:
+            state, detail = self._rvc_model_state(model)
+            prefix = "-> " if model.get("name") == selected else "- "
+            kind = "ONNX" if model.get("onnx") else "PTH"
+            lines.append(f"{prefix}{model.get('name')} [{kind}] - {state}: {detail}")
+        if len(modelos_info) > 8:
+            lines.append(f"... y {len(modelos_info) - 8} modelos mas.")
+        self.rvc_library_status.set("\n".join(lines))
 
     def _rvc_download_base(self):
         """Descarga los modelos base de RVC (hubert, rmvpe) en segundo plano."""
@@ -10071,16 +10126,16 @@ class PremiumApp:
     def _rvc_import_model(self):
         try:
             ruta = filedialog.askopenfilename(
-                title="Elige un modelo de voz RVC (.pth)",
-                filetypes=[("Modelo RVC", "*.pth"), ("Todos", "*.*")])
+                title="Elige un modelo de voz IA (.onnx o .pth)",
+                filetypes=[("Modelo de voz IA", "*.onnx *.pth"), ("Todos", "*.*")])
         except Exception:
             ruta = ""
         if not ruta:
             return
         try:
             nombre = self.rvc.import_model(ruta)
-            self._rvc_refresh_models()
             self.rvc_model.set(nombre)
+            self._rvc_refresh_models()
             messagebox.showinfo("Voz IA importada", f"Modelo '{nombre}' añadido a tu biblioteca de voces IA.")
         except Exception as exc:
             messagebox.showerror("No se pudo importar", str(exc))
@@ -10089,6 +10144,7 @@ class PremiumApp:
         nombre = self.rvc_model.get()
         if not nombre:
             return
+        self._rvc_update_library_status()
         ok = self.rvc.load(nombre)
         if ok:
             self.rvc_status.set(f"✅ Voz IA cargada: {nombre} (procesamiento local).")
