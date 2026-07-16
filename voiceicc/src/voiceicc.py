@@ -243,16 +243,16 @@ class PremiumApp:
         self.release_mode = True
         self._release_tab_candidates = {}
         self._release_removed_tabs = []
-        self.release_status = tk.StringVar(value="V1.4 Neon Voicebox UI · navegación verificada")
-        self.current_route = tk.StringVar(value="Inicio · Inicio")
-        self.release_health = tk.StringVar(value="Calidad de versión: comprobando…")
+        self.release_status = tk.StringVar(value="V1.4 Neon Voicebox UI - navegacion verificada")
+        self.current_route = tk.StringVar(value="Inicio - Inicio")
+        self.release_health = tk.StringVar(value="Calidad de version: comprobando")
         self.release_asset_count = 0
         self.neon_ui_images = {}
         self.vm_sidebar_buttons = {}
         self.vm_sidebar_collapsed = tk.BooleanVar(value=False)
         self.favorite_tabs = ["tab_test_voz", "tab_voice_characters", "tab_sonidos", "tab_cadena_vocal"]
         self.recent_tabs = []
-        self.creator_hub_status = tk.StringVar(value="VoiceICC Creator Hub listo. Usa favoritos, recientes y búsqueda rápida.")
+        self.creator_hub_status = tk.StringVar(value="VoiceICC Creator Hub listo. Usa favoritos, recientes y busqueda rapida.")
         self.voiceicc_brand_images = {}
         self.start_with_windows = tk.BooleanVar(value=False)
         self.monitor_var = tk.BooleanVar(value=False)
@@ -260,7 +260,7 @@ class PremiumApp:
         self.ptt_key = tk.StringVar(value="v")
         self._ptt_hooks = []
         self.voiceicc_setup_progress = tk.DoubleVar(value=0)
-        self.voiceicc_setup_text = tk.StringVar(value="Configuración VoiceICC · 0%")
+        self.voiceicc_setup_text = tk.StringVar(value="Configuracion VoiceICC - 0%")
         self.voiceicc_featured_cards = {}
         self.session_profile = tk.StringVar(value="Streaming")
         self.last_session_summary = tk.StringVar(value="Streaming - voz clara - latencia ultra baja")
@@ -271,10 +271,10 @@ class PremiumApp:
         self.home_voice_state = tk.StringVar(value="Voz: Luna Vega")
         self.pc_fix_status = tk.StringVar(value="Ajuste de pantalla listo.")
         self.start_minimized = tk.BooleanVar(value=False)
-        self.startup_windows_status = tk.StringVar(value="Comprobando inicio con Windows…")
-        self.voiceicc_brand_status = tk.StringVar(value="VoiceICC Dashboard Pro · Your voice. Your identity.")
+        self.startup_windows_status = tk.StringVar(value="Comprobando inicio con Windows")
+        self.voiceicc_brand_status = tk.StringVar(value="VoiceICC Dashboard Pro - Your voice. Your identity.")
         self.voiceicc_right_rail_visible = tk.BooleanVar(value=True)
-        self.voiceicc_dashboard_status = tk.StringVar(value="Sistema listo · Voz natural · Baja latencia")
+        self.voiceicc_dashboard_status = tk.StringVar(value="Sistema listo - Voz natural - Baja latencia")
         self.workspace_density = tk.StringVar(value="Equilibrado")
         self.workspace_focus_mode = tk.BooleanVar(value=False)
         self.workspace_status = tk.StringVar(value="Workspace equilibrado listo.")
@@ -284,16 +284,16 @@ class PremiumApp:
         self.experience_tip_text = tk.StringVar(value="Consejo: completa micrófono, salida, voz, test e inicio con Windows.")
         self.experience_step_states = {}
         self.voiceicc_current_voice_name = tk.StringVar(value="Luna Vega")
-        self.voiceicc_current_voice_role = tk.StringVar(value="Creadora cálida · Natural")
+        self.voiceicc_current_voice_role = tk.StringVar(value="Creadora calida - Natural")
         self.voiceicc_current_voice_badge = tk.StringVar(value="PRO")
         self.voiceicc_cpu_text = tk.StringVar(value="CPU 12%")
         self.voiceicc_ram_text = tk.StringVar(value="RAM 28%")
         self.voiceicc_latency_text = tk.StringVar(value="LATENCIA 8.3 ms")
-        self.voiceicc_quality_text = tk.StringVar(value="CALIDAD ÓPTIMA")
-        self.voiceicc_edition_text = tk.StringVar(value="VOICEICC PRO · LICENCIA COMERCIAL")
+        self.voiceicc_quality_text = tk.StringVar(value="CALIDAD OPTIMA")
+        self.voiceicc_edition_text = tk.StringVar(value="VOICEICC PRO - LICENCIA COMERCIAL")
         self.voiceicc_commercial_status = tk.StringVar(value="Producto preparado para marca, venta y distribución profesional.")
-        self.voiceicc_onboarding_text = tk.StringVar(value="CONFIGURACIÓN 85% COMPLETA")
-        self.voiceicc_support_text = tk.StringVar(value="Soporte · Actualizaciones · Identidad propia")
+        self.voiceicc_onboarding_text = tk.StringVar(value="CONFIGURACION 85% COMPLETA")
+        self.voiceicc_support_text = tk.StringVar(value="Soporte - Actualizaciones - Identidad propia")
         self.vm_search_var = tk.StringVar(value="")
         self.vm_voice_changer_enabled = tk.BooleanVar(value=False)
         self.vm_background_fx_enabled = tk.BooleanVar(value=True)
@@ -1104,11 +1104,11 @@ class PremiumApp:
         }
         self.release_audit_last = report
         if status == "PASS":
-            self.release_health.set(f"Calidad de versión: OK · {report['active_modules']} módulos")
-            self.release_status.set(f"VoiceICC {VERSION_TAG} · {report['active_modules']} módulos verificados")
+            self.release_health.set(f"Calidad de version: OK - {report['active_modules']} modulos")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} - {report['active_modules']} modulos verificados")
         else:
-            self.release_health.set(f"Calidad de versión: revisar {critical} punto(s)")
-            self.release_status.set(f"VoiceICC {VERSION_TAG} · auditoría pendiente")
+            self.release_health.set(f"Calidad de version: revisar {critical} punto(s)")
+            self.release_status.set(f"VoiceICC {VERSION_TAG} - auditoria pendiente")
 
         if export:
             folder = Path.home() / "ModuladorVozPremium" / "Informes"
@@ -1749,7 +1749,7 @@ class PremiumApp:
             score = 72
         score = max(0, min(100, score))
         self.voiceicc_setup_progress.set(score)
-        self.voiceicc_setup_text.set(f"Configuración VoiceICC · {score}%")
+        self.voiceicc_setup_text.set(f"Configuracion VoiceICC - {score}%")
         if hasattr(self, "voiceicc_setup_bar"):
             self.voiceicc_setup_bar["value"] = score
 
