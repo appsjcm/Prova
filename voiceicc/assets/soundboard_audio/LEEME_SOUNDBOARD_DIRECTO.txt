@@ -1,0 +1,4 @@
+VoiceICC Soundboard Directo
+
+Pack original para directos: explosion, memes, alertas, gaming, suspense y ambiente.
+Los WAV son los usados por la app. Los MP3 se incluyen cuando ya existe equivalente codificado en el proyecto.

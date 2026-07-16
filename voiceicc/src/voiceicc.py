@@ -12109,7 +12109,8 @@ class PremiumApp:
         controls = self.make_card(right, "Controles")
         controls.pack(fill="x", pady=(0, 10))
         ttk.Button(controls, text="Parar sonidos", style="Danger.TButton", command=self.stop_sfx).pack(fill="x", pady=3)
-        ttk.Button(controls, text="Cargar WAV personalizado", command=self.add_custom_wav).pack(fill="x", pady=3)
+        ttk.Button(controls, text="Cargar WAV/MP3 personalizado", command=self.add_custom_wav).pack(fill="x", pady=3)
+        ttk.Button(controls, text="Abrir pack WAV/MP3", command=lambda: open_folder(self.soundboard_audio_dir())).pack(fill="x", pady=3)
         ttk.Button(controls, text="Abrir mesa clásica", command=lambda: self.select_tab(self.tab_sonidos)).pack(fill="x", pady=3)
         ttk.Button(controls, text="Abrir Directo Pro", command=lambda: self.select_tab(self.tab_directo_pro)).pack(fill="x", pady=3)
 
@@ -12134,8 +12135,8 @@ class PremiumApp:
     def sonidos_mesa(self):
         return {
             "reacciones": [
-                ("Aplausos", "aplausos"),
-                ("Risas", "risas"),
+                ("Aplausos reales", "aplausos"),
+                ("Risas meme", "risas"),
                 ("Sorpresa", "suspense"),
                 ("Beep", "beep"),
             ],
@@ -12143,12 +12144,12 @@ class PremiumApp:
                 ("Victoria", "victoria"),
                 ("Error", "error"),
                 ("Power Up", "powerup"),
-                ("Impacto", "impacto"),
+                ("Explosión", "impacto"),
             ],
             "directo": [
                 ("Alerta", "alerta"),
                 ("Redoble", "redoble"),
-                ("Impacto", "impacto"),
+                ("Explosión", "impacto"),
                 ("Beep", "beep"),
             ],
             "ambiente": [
@@ -20382,8 +20383,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         grid.pack(fill="x", pady=(4, 12))
 
         sounds = [
-            ("👏 Aplausos", "aplausos", "applause"),
-            ("😂 Risas", "risas", "laugh"),
+            ("👏 Aplausos reales", "aplausos", "applause"),
+            ("😂 Risas meme", "risas", "laugh"),
             ("🏆 Victoria", "victoria", "victory"),
             ("❌ Error", "error", "error"),
             ("😱 Suspense", "suspense", "magic"),
@@ -20392,7 +20393,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             ("🎮 Power Up", "powerup", "victory"),
             ("📢 Alerta", "alerta", "sound"),
             ("🥁 Redoble", "redoble", "sound"),
-            ("💥 Impacto", "impacto", "error"),
+            ("💥 Explosión", "impacto", "error"),
             ("🌧️ Lluvia suave", "lluvia", "magic"),
         ]
 
@@ -20418,8 +20419,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         ttk.Scale(control, from_=0, to=120, variable=self.sfx_volume_var, orient="horizontal", command=lambda _=None: update_sfx_volume()).pack(side="left", fill="x", expand=True, padx=8)
         ttk.Button(control, text="Parar sonidos", command=self.stop_sfx).pack(side="left", padx=8)
+        ttk.Button(control, text="Abrir pack WAV/MP3", command=lambda: open_folder(self.soundboard_audio_dir())).pack(side="left", padx=8)
 
-        custom = self.make_card(self.tab_sonidos, "Sonidos personalizados WAV")
+        custom = self.make_card(self.tab_sonidos, "Sonidos personalizados WAV/MP3")
         custom.pack(fill="x", pady=(12, 0))
 
         custom_row = ttk.Frame(custom, style="Card.TFrame")
@@ -20441,7 +20443,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         custom_buttons = ttk.Frame(custom_row, style="Card.TFrame")
         custom_buttons.pack(side="right", fill="y")
-        ttk.Button(custom_buttons, text="Cargar WAV", command=self.add_custom_wav).pack(fill="x", pady=3)
+        ttk.Button(custom_buttons, text="Cargar WAV/MP3", command=self.add_custom_wav).pack(fill="x", pady=3)
         ttk.Button(custom_buttons, text="Reproducir", command=self.play_selected_custom_sfx).pack(fill="x", pady=3)
         ttk.Button(custom_buttons, text="Quitar", command=self.remove_selected_custom_sfx).pack(fill="x", pady=3)
 
@@ -20452,7 +20454,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             text=(
                 "• Usa los sonidos con moderación para no molestar en partidas o llamadas.\n"
                 "• Para Discord/Fortnite/OBS, el modulador debe estar en directo y usando salida virtual.\n"
-                "• Los sonidos son generados por el programa, sin depender de archivos con copyright."
+                "• Incluye un pack original WAV/MP3 para directos; si falta un archivo, la app genera un respaldo."
             ),
             style="Card.TLabel",
             justify="left"
@@ -20464,7 +20466,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.state.set("Estado: efectos detenidos" if not self.engine.running else "Estado: voz en directo activa")
 
     def play_sfx(self, name):
-        samples = self.generate_sfx(name)
+        samples = self.load_soundboard_sfx(name)
+        if samples is None:
+            samples = self.generate_sfx(name)
         self.engine.add_sfx(samples)
         pretty = {
             "aplausos": "Aplausos",
@@ -20481,6 +20485,37 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             "lluvia": "Lluvia suave",
         }.get(name, name)
         self.state.set(f"Estado: sonido lanzado · {pretty}")
+
+    def soundboard_audio_dir(self):
+        return Path(BASE_DIR) / "assets" / "soundboard_audio"
+
+    def soundboard_sfx_files(self):
+        return {
+            "aplausos": "aplausos_stream",
+            "risas": "risas_meme",
+            "victoria": "victoria_arcade",
+            "error": "error_buzzer",
+            "suspense": "suspense_cine",
+            "beep": "beep_moderno",
+            "magia": "magia_chispa",
+            "powerup": "powerup_gaming",
+            "alerta": "alerta_stream",
+            "redoble": "redoble_drum",
+            "impacto": "explosion_impacto",
+            "lluvia": "lluvia_suave",
+        }
+
+    def load_soundboard_sfx(self, name):
+        stem = self.soundboard_sfx_files().get(name)
+        if not stem:
+            return None
+        wav = self.soundboard_audio_dir() / f"{stem}.wav"
+        if not wav.exists():
+            return None
+        try:
+            return self.load_wav_as_samples(str(wav))
+        except Exception:
+            return None
 
     def tone(self, freq, dur, amp=0.4, wave="sine"):
         rate = self.engine.rate
@@ -20673,14 +20708,45 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             messagebox.showerror("Error WAV", f"No se pudo cargar el WAV:\n{e}")
             return None
 
+    def load_audio_file_as_samples(self, path):
+        suffix = Path(path).suffix.lower()
+        if suffix == ".wav":
+            return self.load_wav_as_samples(path)
+        if suffix == ".mp3":
+            if not shutil.which("ffmpeg"):
+                messagebox.showwarning(
+                    "MP3 requiere FFmpeg",
+                    "Para cargar MP3 personalizados instala FFmpeg o usa el WAV equivalente."
+                )
+                return None
+            try:
+                import tempfile
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                    tmp_path = tmp.name
+                subprocess.run(
+                    ["ffmpeg", "-y", "-loglevel", "error", "-i", path, "-ac", "1", "-ar", str(self.engine.rate), tmp_path],
+                    check=True
+                )
+                samples = self.load_wav_as_samples(tmp_path)
+                try:
+                    os.remove(tmp_path)
+                except Exception:
+                    pass
+                return samples
+            except Exception as e:
+                messagebox.showerror("Error MP3", f"No se pudo cargar el MP3:\n{e}")
+                return None
+        messagebox.showwarning("Formato no compatible", "Carga un sonido WAV o MP3.")
+        return None
+
     def add_custom_wav(self):
         path = filedialog.askopenfilename(
-            title="Cargar sonido WAV personalizado",
-            filetypes=[("Archivos WAV", "*.wav")]
+            title="Cargar sonido personalizado",
+            filetypes=[("Audio WAV/MP3", "*.wav *.mp3"), ("WAV", "*.wav"), ("MP3", "*.mp3")]
         )
         if not path:
             return
-        samples = self.load_wav_as_samples(path)
+        samples = self.load_audio_file_as_samples(path)
         if samples is None:
             return
         name = os.path.splitext(os.path.basename(path))[0]
