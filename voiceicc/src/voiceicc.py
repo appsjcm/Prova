@@ -310,6 +310,7 @@ class PremiumApp:
         self.voice_characters_images = {}
         self.voice_characters_status = tk.StringVar(value="Voice Characters Pro listo. Elige un personaje con nombre e imagen.")
         self.voice_character_selected = tk.StringVar(value="Luna Vega")
+        self.voice_characters_filter = tk.StringVar(value="Todas")
         self.visual_overhaul_images = {}
         self.visual_overhaul_status = tk.StringVar(value="Visual Overhaul Pro listo. Elige un tema y aplícalo.")
         self.visual_overhaul_theme = tk.StringVar(value="Aurora Glass")
@@ -3949,6 +3950,32 @@ class PremiumApp:
             {"name": "Mujer real sutil HD", "image": "", "avatar": "custom_mujer", "role_es": "Personalizable mujer", "role_en": "Custom woman", "age": "Adulta", "tone": "Base limpia para ajustar", "color": "#ff74aa"},
         ]
 
+    def voice_character_group(self, character):
+        text = self._normalizar(" ".join([
+            character.get("name", ""),
+            character.get("role_es", ""),
+            character.get("age", ""),
+            character.get("avatar", ""),
+        ]))
+        if any(k in text for k in ("nino", "nina", "infantil")):
+            return "Ninos"
+        if any(k in text for k in ("abuelo", "abuela", "mayor")):
+            return "Mayores"
+        if any(k in text for k in ("robot", "ia_", "cyborg", "sintetica")):
+            return "IA"
+        if any(k in text for k in ("demonio", "alien", "fantasma", "monstruo", "ninja", "angel", "fantasia", "heroe", "sombra")):
+            return "Fantasia"
+        if any(k in text for k in ("gaming", "hacker", "gamer")):
+            return "Gaming"
+        return "Humanos"
+
+    def filtered_voice_characters(self):
+        filtro = self.voice_characters_filter.get()
+        characters = self.voice_characters_data()
+        if filtro == "Todas":
+            return characters
+        return [item for item in characters if self.voice_character_group(item) == filtro]
+
     def select_voice_character(self, name):
         self.voice_character_selected.set(name)
         try:
@@ -4076,10 +4103,59 @@ class PremiumApp:
             command=lambda: self.select_tab(self.tab_test_voz)
         ).pack(side="right")
 
+        filters = tk.Frame(main, bg=COLORS["bg"])
+        filters.pack(fill="x", pady=(0, 8))
+        for label, value, color in [
+            ("Todas", "Todas", "#00e5ff"),
+            ("Humanos", "Humanos", "#62ffb4"),
+            ("Ninos", "Ninos", "#ffcb57"),
+            ("Mayores", "Mayores", "#ff965a"),
+            ("IA", "IA", "#a65cff"),
+            ("Fantasia", "Fantasia", "#ff5c8a"),
+            ("Gaming", "Gaming", "#5d8dff"),
+        ]:
+            tk.Button(
+                filters,
+                text=label,
+                command=lambda v=value: self.set_voice_character_filter(v),
+                bg="#171d2c",
+                fg=color,
+                activebackground="#242c42",
+                activeforeground="#ffffff",
+                relief="flat",
+                bd=0,
+                padx=12,
+                pady=6,
+                font=("Segoe UI", 9, "bold"),
+                cursor="hand2"
+            ).pack(side="left", padx=(0, 6))
+
         gallery = ttk.Frame(main)
         gallery.pack(fill="both", expand=True)
+        self.voice_characters_gallery = gallery
+        self.populate_voice_characters_gallery()
 
-        for index, character in enumerate(self.voice_characters_data()):
+    def set_voice_character_filter(self, filtro):
+        self.voice_characters_filter.set(filtro)
+        self.populate_voice_characters_gallery()
+
+    def populate_voice_characters_gallery(self):
+        gallery = getattr(self, "voice_characters_gallery", None)
+        if gallery is None:
+            return
+        for child in gallery.winfo_children():
+            child.destroy()
+        characters = self.filtered_voice_characters()
+        if not characters:
+            ttk.Label(gallery, text="No hay personajes en este filtro.", style="Card.TLabel").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+            return
+        try:
+            self.voice_characters_status.set(
+                f"Mostrando {len(characters)} de {len(self.voice_characters_data())} personajes - filtro: {self.voice_characters_filter.get()}"
+            )
+        except Exception:
+            pass
+        for index, character in enumerate(characters):
             row = index // 4
             column = index % 4
             card = ttk.Frame(gallery, style="VMCard.TFrame", padding=8)
