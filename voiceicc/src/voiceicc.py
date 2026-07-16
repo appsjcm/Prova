@@ -4105,6 +4105,7 @@ class PremiumApp:
 
         filters = tk.Frame(main, bg=COLORS["bg"])
         filters.pack(fill="x", pady=(0, 8))
+        self.voice_character_filter_buttons = {}
         for label, value, color in [
             ("Todas", "Todas", "#00e5ff"),
             ("Humanos", "Humanos", "#62ffb4"),
@@ -4114,7 +4115,7 @@ class PremiumApp:
             ("Fantasia", "Fantasia", "#ff5c8a"),
             ("Gaming", "Gaming", "#5d8dff"),
         ]:
-            tk.Button(
+            btn = tk.Button(
                 filters,
                 text=label,
                 command=lambda v=value: self.set_voice_character_filter(v),
@@ -4128,16 +4129,33 @@ class PremiumApp:
                 pady=6,
                 font=("Segoe UI", 9, "bold"),
                 cursor="hand2"
-            ).pack(side="left", padx=(0, 6))
+            )
+            btn.pack(side="left", padx=(0, 6))
+            self.voice_character_filter_buttons[value] = (btn, color)
 
         gallery = ttk.Frame(main)
         gallery.pack(fill="both", expand=True)
         self.voice_characters_gallery = gallery
+        self.refresh_voice_character_filter_buttons()
         self.populate_voice_characters_gallery()
 
     def set_voice_character_filter(self, filtro):
         self.voice_characters_filter.set(filtro)
+        self.refresh_voice_character_filter_buttons()
         self.populate_voice_characters_gallery()
+
+    def refresh_voice_character_filter_buttons(self):
+        active = self.voice_characters_filter.get()
+        for value, (btn, color) in getattr(self, "voice_character_filter_buttons", {}).items():
+            selected = value == active
+            btn.configure(
+                bg=color if selected else "#171d2c",
+                fg="#10131e" if selected else color,
+                activebackground=color,
+                activeforeground="#10131e" if selected else "#ffffff",
+                relief="solid" if selected else "flat",
+                bd=1 if selected else 0,
+            )
 
     def populate_voice_characters_gallery(self):
         gallery = getattr(self, "voice_characters_gallery", None)
