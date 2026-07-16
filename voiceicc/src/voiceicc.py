@@ -285,7 +285,7 @@ class PremiumApp:
         self.experience_step_states = {}
         self.voiceicc_current_voice_name = tk.StringVar(value="Luna Vega")
         self.voiceicc_current_voice_role = tk.StringVar(value="Creadora calida - Natural")
-        self.voiceicc_current_voice_badge = tk.StringVar(value="PRO")
+        self.voiceicc_current_voice_badge = tk.StringVar(value="AVATAR PRO")
         self.voiceicc_cpu_text = tk.StringVar(value="CPU 12%")
         self.voiceicc_ram_text = tk.StringVar(value="RAM 28%")
         self.voiceicc_latency_text = tk.StringVar(value="LATENCIA 8.3 ms")
@@ -1713,6 +1713,7 @@ class PremiumApp:
                 item = next((x for x in self.voice_characters_data() if x.get("name") == name), None)
                 if item:
                     self.voiceicc_current_voice_role.set(f"{item.get('role_es', 'Voz premium')} - {item.get('age', 'Natural')}")
+                    self.voiceicc_current_voice_badge.set(self.voice_character_group(item).upper())
                     if hasattr(self, "voiceicc_current_voice_image_label"):
                         key = item.get("image", "")
                         neon_key = f"voice_{key}"
@@ -16344,9 +16345,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             tk.Button(card,text="Abrir",command=lambda a=attr:self.voiceicc_open_feature(a),bg="#20273a",fg="#ffffff",activebackground=color,activeforeground="#ffffff",relief="flat",bd=0,pady=7,cursor="hand2").pack(fill="x",padx=12,pady=(0,12))
             access.columnconfigure(idx,weight=1)
 
-        current = tk.Frame(top,bg="#111725",highlightbackground="#8c52ff",highlightthickness=1,width=190)
+        current = tk.Frame(top,bg="#111725",highlightbackground="#8c52ff",highlightthickness=1,width=220)
         current.pack(side="right",fill="y",padx=(10,0)); current.pack_propagate(False)
-        tk.Label(current,text="VOZ ACTUAL",bg="#111725",fg="#ffffff",font=("Segoe UI",8,"bold")).pack(pady=(10,5))
+        tk.Label(current,text="VOZ ACTUAL",bg="#111725",fg="#ffffff",font=("Segoe UI",8,"bold")).pack(pady=(10,3))
+        tk.Label(current,textvariable=self.voiceicc_current_voice_badge,bg="#241a3d",fg="#d9c6ff",font=("Segoe UI",8,"bold"),padx=9,pady=3).pack(pady=(0,7))
         self.voiceicc_current_voice_image_label = tk.Label(current,bg="#111725",bd=0)
         if "voice_luna_vega" in self.neon_ui_images:
             self.voiceicc_current_voice_image_label.configure(image=self.neon_ui_images["voice_luna_vega"])
@@ -16360,7 +16362,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         except Exception:
             pass
         self.voiceicc_current_voice_label=tk.Label(current,textvariable=self.voiceicc_current_voice_name,bg="#111725",fg="#ffffff",font=("Segoe UI",13,"bold")); self.voiceicc_current_voice_label.pack()
-        tk.Label(current,textvariable=self.voiceicc_current_voice_role,bg="#111725",fg="#9da6c0",font=("Segoe UI",8),wraplength=160,justify="center").pack(pady=(2,7))
+        tk.Label(current,textvariable=self.voiceicc_current_voice_role,bg="#111725",fg="#9da6c0",font=("Segoe UI",8),wraplength=185,justify="center").pack(pady=(2,7))
+        actions_current=tk.Frame(current,bg="#111725"); actions_current.pack(fill="x",padx=12,pady=(0,6))
+        tk.Button(actions_current,text="Personajes",command=lambda:self.select_tab(self.tab_voice_characters),bg="#20283d",fg="#ffffff",activebackground="#00e5ff",activeforeground="#10131e",relief="flat",bd=0,pady=6,font=("Segoe UI",8,"bold"),cursor="hand2").pack(side="left",fill="x",expand=True,padx=(0,3))
+        tk.Button(actions_current,text="Probar",command=lambda:self.select_tab(self.tab_test_voz),bg="#20283d",fg="#ffffff",activebackground="#62ffb4",activeforeground="#10131e",relief="flat",bd=0,pady=6,font=("Segoe UI",8,"bold"),cursor="hand2").pack(side="left",fill="x",expand=True,padx=(3,0))
         tk.Button(current,text="Editar voz",command=lambda:self.select_tab(self.tab_cadena_vocal),bg="#241a3d",fg="#d9c6ff",activebackground="#7c3cff",activeforeground="#ffffff",relief="flat",bd=0,pady=7,font=("Segoe UI",8,"bold"),cursor="hand2").pack(fill="x",padx=12,pady=(0,12))
 
         featured = tk.Frame(main,bg="#0d121e")
@@ -19778,9 +19783,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             tk.Button(card,text="Abrir",command=lambda a=attr:self.voiceicc_open_feature(a),bg="#20273a",fg="#ffffff",activebackground=color,activeforeground="#ffffff",relief="flat",bd=0,pady=7,cursor="hand2").pack(fill="x",padx=12,pady=(0,12))
             access.columnconfigure(idx,weight=1)
 
-        current = tk.Frame(top,bg="#111725",highlightbackground="#8c52ff",highlightthickness=1,width=190)
+        current = tk.Frame(top,bg="#111725",highlightbackground="#8c52ff",highlightthickness=1,width=220)
         current.pack(side="right",fill="y",padx=(10,0)); current.pack_propagate(False)
-        tk.Label(current,text="VOZ ACTUAL",bg="#111725",fg="#ffffff",font=("Segoe UI",8,"bold")).pack(pady=(10,5))
+        tk.Label(current,text="VOZ ACTUAL",bg="#111725",fg="#ffffff",font=("Segoe UI",8,"bold")).pack(pady=(10,3))
+        tk.Label(current,textvariable=self.voiceicc_current_voice_badge,bg="#241a3d",fg="#d9c6ff",font=("Segoe UI",8,"bold"),padx=9,pady=3).pack(pady=(0,7))
         self.voiceicc_current_voice_image_label = tk.Label(current,bg="#111725",bd=0)
         if "voice_luna_vega" in self.neon_ui_images:
             self.voiceicc_current_voice_image_label.configure(image=self.neon_ui_images["voice_luna_vega"])
@@ -19790,7 +19796,10 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.voiceicc_current_voice_image_label.image=self.voice_characters_images["luna_vega"]
         self.voiceicc_current_voice_image_label.pack(pady=(0,4))
         self.voiceicc_current_voice_label=tk.Label(current,textvariable=self.voiceicc_current_voice_name,bg="#111725",fg="#ffffff",font=("Segoe UI",13,"bold")); self.voiceicc_current_voice_label.pack()
-        tk.Label(current,textvariable=self.voiceicc_current_voice_role,bg="#111725",fg="#9da6c0",font=("Segoe UI",8),wraplength=160,justify="center").pack(pady=(2,7))
+        tk.Label(current,textvariable=self.voiceicc_current_voice_role,bg="#111725",fg="#9da6c0",font=("Segoe UI",8),wraplength=185,justify="center").pack(pady=(2,7))
+        actions_current=tk.Frame(current,bg="#111725"); actions_current.pack(fill="x",padx=12,pady=(0,6))
+        tk.Button(actions_current,text="Personajes",command=lambda:self.select_tab(self.tab_voice_characters),bg="#20283d",fg="#ffffff",activebackground="#00e5ff",activeforeground="#10131e",relief="flat",bd=0,pady=6,font=("Segoe UI",8,"bold"),cursor="hand2").pack(side="left",fill="x",expand=True,padx=(0,3))
+        tk.Button(actions_current,text="Probar",command=lambda:self.select_tab(self.tab_test_voz),bg="#20283d",fg="#ffffff",activebackground="#62ffb4",activeforeground="#10131e",relief="flat",bd=0,pady=6,font=("Segoe UI",8,"bold"),cursor="hand2").pack(side="left",fill="x",expand=True,padx=(3,0))
         tk.Button(current,text="Editar voz",command=lambda:self.select_tab(self.tab_cadena_vocal),bg="#241a3d",fg="#d9c6ff",activebackground="#7c3cff",activeforeground="#ffffff",relief="flat",bd=0,pady=7,font=("Segoe UI",8,"bold"),cursor="hand2").pack(fill="x",padx=12,pady=(0,12))
 
         featured = tk.Frame(main,bg="#0d121e")
