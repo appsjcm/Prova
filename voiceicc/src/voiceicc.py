@@ -3993,12 +3993,24 @@ class PremiumApp:
             )
 
             source_folder = Path(resource_path("assets/voice_characters"))
+            avatar_folder = Path(resource_path("assets/avatars"))
+            portraits_dir = pack_folder / "retratos"
+            avatars_dir = pack_folder / "avatares"
+            portraits_dir.mkdir(exist_ok=True)
+            avatars_dir.mkdir(exist_ok=True)
             copied = 0
+            copied_avatars = 0
             for character in data["characters"]:
                 image_file = source_folder / f"{character['image']}.png"
                 if image_file.exists():
-                    shutil.copy2(image_file, pack_folder / image_file.name)
+                    shutil.copy2(image_file, portraits_dir / image_file.name)
                     copied += 1
+                avatar_key = character.get("avatar", "")
+                if avatar_key:
+                    avatar_file = avatar_folder / f"avatar_{avatar_key}.png"
+                    if avatar_file.exists():
+                        shutil.copy2(avatar_file, avatars_dir / avatar_file.name)
+                        copied_avatars += 1
 
             zip_path = folder / f"voice_characters_pack_{timestamp}.zip"
             with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
@@ -4007,8 +4019,8 @@ class PremiumApp:
 
             self.voice_characters_status.set(
                 self.language_text(
-                    f"Pack exportado: {copied} retratos y {len(data['characters'])} personajes.",
-                    f"Pack exported: {copied} portraits and {len(data['characters'])} characters."
+                    f"Pack exportado: {copied} retratos, {copied_avatars} avatares y {len(data['characters'])} personajes.",
+                    f"Pack exported: {copied} portraits, {copied_avatars} avatars and {len(data['characters'])} characters."
                 )
             )
             messagebox.showinfo(
@@ -4021,6 +4033,12 @@ class PremiumApp:
     def build_voice_characters_tab(self):
         main = ttk.Frame(self.tab_voice_characters)
         main.pack(fill="both", expand=True)
+        try:
+            self.voice_characters_status.set(
+                f"Voice Characters Pro listo: {len(self.voice_characters_data())} personajes y {len(self.avatar_images)} avatares."
+            )
+        except Exception:
+            pass
 
         header = self.make_card(main)
         header.pack(fill="x", pady=(0, 8))
