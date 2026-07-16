@@ -467,6 +467,7 @@ class PremiumApp:
         self.rvc_pitch = tk.IntVar(value=0)
         self.rvc_index = tk.DoubleVar(value=50)
         self.rvc_status = tk.StringVar(value="Voces IA: motor local no detectado.")
+        self.ai_readiness_status = tk.StringVar(value="Preparacion IA: revisando motor, modelos y voces TTS.")
         self.ai_diagnostic_status = tk.StringVar(value="Diagnostico IA: pulsa 'Diagnostico rapido' para revisar la instalacion.")
         self.rvc_library_status = tk.StringVar(value="Biblioteca de voces IA: sin revisar.")
         self.ai_event_log_status = tk.StringVar(value="Eventos IA: sin eventos todavia.")
@@ -9747,6 +9748,11 @@ class PremiumApp:
                               "Sin Internet, sin enviar tu voz a servidores, sin costes por uso.",
                   style="Card.TLabel", wraplength=760, justify="left").pack(anchor="w", pady=(4, 0))
 
+        ready = self.make_card(cont, "Preparacion IA")
+        ready.pack(fill="x", pady=(0, 10))
+        ttk.Label(ready, textvariable=self.ai_readiness_status, style="Card.TLabel",
+                  wraplength=760, justify="left").pack(anchor="w")
+
         diag = self.make_card(cont, "Diagnostico rapido")
         diag.pack(fill="x", pady=(0, 10))
         ttk.Label(diag, textvariable=self.ai_diagnostic_status, style="Card.TLabel",
@@ -9888,6 +9894,7 @@ class PremiumApp:
         ttk.Button(logrow, text="Copiar informe", command=self._ai_copy_report).pack(side="left", padx=(0, 8))
         ttk.Button(logrow, text="Limpiar eventos", command=self._ai_clear_events).pack(side="left", padx=(0, 8))
 
+        self._ai_refresh_readiness()
         self._rvc_refresh_status()
         self._rvc_refresh_models()
         self._tts_refresh()
@@ -9906,11 +9913,37 @@ class PremiumApp:
         self.ai_event_log = []
         self.ai_event_log_status.set("Eventos IA: sin eventos todavia.")
 
+    def _ai_refresh_readiness(self):
+        """Resumen corto de lo que esta listo y lo que falta en la ruta IA."""
+        try:
+            r = self.rvc.readiness()
+            tts_ok, _tts_msg = self.tts.available()
+            tts_count = len(self.tts.list_voices())
+            motor = r.get("provider") if r.get("motor_ok") else "pendiente"
+            modelos = int(r.get("modelos") or 0)
+            seleccion = self.rvc_model.get() or "ninguna"
+            rvc_ready = bool(r.get("listo"))
+            tts_ready = bool(tts_ok and tts_count)
+            lines = [
+                "IA local incluida: conversion RVC/ONNX, TTS Piper, diagnostico y modo seguro.",
+                f"Voces IA: {'lista' if rvc_ready else 'pendiente'} · motor: {motor} · modelos: {modelos} · seleccion: {seleccion}.",
+                f"Texto a voz: {'listo' if tts_ready else 'pendiente'} · voces Piper: {tts_count}.",
+                "Siguiente paso: " + str(r.get("siguiente") or "Ejecuta el diagnostico rapido."),
+            ]
+            if modelos == 0:
+                lines.append("Nota: los modelos de voz no van embebidos; se importan o descargan por separado.")
+            self.ai_readiness_status.set("\n".join(lines))
+        except Exception as exc:
+            self.ai_readiness_status.set("Preparacion IA: no se pudo revisar todavia. Ejecuta el diagnostico rapido.\nDetalle: " + str(exc))
+
     def _ai_copy_report(self):
         try:
             snap = self._ai_diagnostic_snapshot()
             report = [
                 f"VoiceICC {VERSION}",
+                "Preparacion IA:",
+                self.ai_readiness_status.get(),
+                "",
                 "Diagnostico IA:",
                 *snap.get("lines", []),
                 "",
@@ -10012,6 +10045,7 @@ class PremiumApp:
     def _ai_run_diagnostic(self):
         snap = self._ai_diagnostic_snapshot()
         self.ai_diagnostic_status.set("\n".join(snap["lines"]))
+        self._ai_refresh_readiness()
         self._ai_log_event("Diagnostico rapido ejecutado.")
         return snap
 
@@ -10050,6 +10084,7 @@ class PremiumApp:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + " · Importa una voz Piper (.onnx + .onnx.json).")
         else:
             self.tts_status.set(("✅ " if ok else "⚠ ") + motivo + f" · Voces: {len(voces)}.")
+        self._ai_refresh_readiness()
 
     PYTHON_INSTALLER_URL = "https://www.python.org/ftp/python/3.12.7/python-3.12.7-amd64.exe"
 
@@ -10273,6 +10308,7 @@ class PremiumApp:
                 pass
             informe = informe + "\n⚠ " + aviso_seguro
         self.rvc_status.set(("✅ " if ok else "⚠ ") + informe)
+        self._ai_refresh_readiness()
 
     def _rvc_refresh_models(self):
         modelos_info = self.rvc.list_models()
@@ -10288,6 +10324,7 @@ class PremiumApp:
             if self.rvc.detect()[0]:
                 self.rvc_status.set("✅ Motor listo. Aún no hay modelos: importa un .pth para empezar.")
         self._rvc_update_library_status(modelos_info)
+        self._ai_refresh_readiness()
 
     def _rvc_model_state(self, model):
         """Devuelve (estado, detalle) para un modelo RVC/ONNX de la biblioteca."""
