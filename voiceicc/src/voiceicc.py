@@ -16199,7 +16199,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         benefits=tk.Frame(main,bg="#090d16")
         benefits.pack(fill="x",padx=8,pady=(0,6))
-        benefits_data=[("VOCES ULTRA REALISTAS","Perfiles naturales y expresivos"),("EFECTOS PROFESIONALES","Cadenas modernas y editables"),("SOUNDBOARD POTENTE","WAV/MP3 para directos"),("CREA Y COMPARTE","Graba, edita y exporta"),("OPTIMIZADO STREAMERS","Baja latencia"),("100% PERSONALIZABLE","Tu identidad VoiceICC")]
+        benefits_data=[("VOZ EN DIRECTO","Micro, salida y monitor claros"),("BIBLIOTECA IA","Voces y presets listos"),("EFECTOS RAPIDOS","Sonidos para stream"),("GRABACION","Captura y exporta demos"),("ESTABILIDAD","Latencia y cortes visibles"),("TU MARCA","Perfil y estilo propios")]
         for idx,(title,sub) in enumerate(benefits_data):
             card=tk.Frame(benefits,bg="#111725",highlightbackground="#242d45",highlightthickness=1)
             card.grid(row=0,column=idx,sticky="nsew",padx=(0 if idx==0 else 3,0 if idx==5 else 3))
@@ -19626,7 +19626,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         benefits=tk.Frame(main,bg="#090d16")
         benefits.pack(fill="x",padx=8,pady=(0,6))
-        benefits_data=[("VOCES ULTRA REALISTAS","Perfiles naturales y expresivos"),("EFECTOS PROFESIONALES","Cadenas modernas y editables"),("SOUNDBOARD POTENTE","WAV/MP3 para directos"),("CREA Y COMPARTE","Graba, edita y exporta"),("OPTIMIZADO STREAMERS","Baja latencia"),("100% PERSONALIZABLE","Tu identidad VoiceICC")]
+        benefits_data=[("VOZ EN DIRECTO","Micro, salida y monitor claros"),("BIBLIOTECA IA","Voces y presets listos"),("EFECTOS RAPIDOS","Sonidos para stream"),("GRABACION","Captura y exporta demos"),("ESTABILIDAD","Latencia y cortes visibles"),("TU MARCA","Perfil y estilo propios")]
         for idx,(title,sub) in enumerate(benefits_data):
             card=tk.Frame(benefits,bg="#111725",highlightbackground="#242d45",highlightthickness=1)
             card.grid(row=0,column=idx,sticky="nsew",padx=(0 if idx==0 else 3,0 if idx==5 else 3))
