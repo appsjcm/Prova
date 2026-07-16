@@ -3969,6 +3969,16 @@ class PremiumApp:
             return "Gaming"
         return "Humanos"
 
+    def voice_character_group_color(self, group):
+        return {
+            "Humanos": "#62ffb4",
+            "Ninos": "#ffcb57",
+            "Mayores": "#ff965a",
+            "IA": "#a65cff",
+            "Fantasia": "#ff5c8a",
+            "Gaming": "#5d8dff",
+        }.get(group, "#00e5ff")
+
     def filtered_voice_characters(self):
         filtro = self.voice_characters_filter.get()
         characters = self.voice_characters_data()
@@ -4178,6 +4188,9 @@ class PremiumApp:
             column = index % 4
             card = ttk.Frame(gallery, style="VMCard.TFrame", padding=8)
             card.grid(row=row, column=column, sticky="nsew", padx=5, pady=5)
+            group = self.voice_character_group(character)
+            group_color = self.voice_character_group_color(group)
+            tk.Frame(card, bg=group_color, height=3).pack(fill="x", pady=(0, 7))
 
             image_key = character["image"]
             neon_key = f"voice_{image_key}"
@@ -4199,6 +4212,14 @@ class PremiumApp:
                 style="Card.TLabel",
                 font=("Segoe UI", 12, "bold")
             ).pack(anchor="center", pady=(4, 0))
+
+            tk.Label(
+                card,
+                text=group.upper(),
+                bg="#17171f",
+                fg=group_color,
+                font=("Segoe UI", 8, "bold")
+            ).pack(anchor="center", pady=(1, 2))
 
             role = character["role_es"] if self.app_language.get() == "Español" else character["role_en"]
             ttk.Label(
