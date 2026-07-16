@@ -1,0 +1,11 @@
+CAMBIOS V7.6 - Version Visible
+
+- La cabecera de la pestana Voces IA muestra ahora la version (VoiceICC
+  vX.Y.Z). Asi, de un vistazo (o en una captura), se sabe que build es y si
+  tiene ya los botones de "Instalar motor" (7.2+).
+
+Contexto: las capturas recibidas eran de un build anterior a la 7.2 (mensaje
+viejo "pip install piper-tts", sin botones de instalar motor). Todos los
+builds 6.8-7.6 estan en verde; basta descargar el ultimo artefacto.
+
+Verificado: py_compile OK y simulacion de arranque sin errores.

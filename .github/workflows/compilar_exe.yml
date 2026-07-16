@@ -1,0 +1,60 @@
+name: Compilar Modulador EXE
+
+on:
+  push:
+    branches: ["claude/new-session-94jxsw"]
+    paths:
+      - "voiceicc/**"
+      - ".github/workflows/compilar_exe.yml"
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: voiceicc
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+
+      - name: Validar modulos
+        run: python validar_voiceicc.py
+
+      - name: Generar icono .ico desde el branding
+        run: |
+          python -m pip install pillow
+          python -c "from PIL import Image; Image.open('assets/voiceicc_icon_source.png').convert('RGBA').save('assets/app_icon.ico', sizes=[(16,16),(32,32),(48,48),(64,64),(128,128),(256,256)]); print('app_icon.ico generado')"
+
+      - name: Compilar EXE
+        run: python compilar_voiceicc.py
+
+      - name: Instalar Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Crear instalador de Windows
+        run: iscc instalador\VoiceICC.iss
+
+      - name: Publicar EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceICC-EXE
+          path: voiceicc/dist/VoiceICC.exe
+          retention-days: 30
+
+      - name: Publicar instalador
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceICC-Instalador
+          path: voiceicc/salida_instalador/VoiceICC_Setup.exe
+          retention-days: 30

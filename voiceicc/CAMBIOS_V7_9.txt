@@ -1,0 +1,10 @@
+CAMBIOS V7.9 - Mas Contraste (revision visual)
+
+- Aclarados los grises de texto mas oscuros, que costaban de leer sobre el
+  fondo negro:
+  · Etiqueta "MODES" y encabezados de seccion del lateral: #626270 ->
+    #8a8a9c.
+  · Subtitulo del logo lateral ("PREMIUM VOICE LAB"): #5b5b6b -> #8a8a9c.
+  · Subtitulo/ruta del titulo superior: #898999 -> #a2a2b6.
+
+Verificado: py_compile OK y simulacion de arranque sin errores.

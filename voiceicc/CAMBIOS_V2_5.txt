@@ -1,0 +1,14 @@
+VOICEICC 2.5 · BARRA DE CONTROL
+
+- Nueva barra inferior de control en toda la app (como el diseño):
+  · Botón de encendido ⏻: empieza/para el directo y cambia de color
+    (morado apagado, verde en directo).
+  · Interruptores VOICE CHANGER (modulador on/off), FX FONDO
+    (reducción de ruido) y SILENCIAR.
+  · Medidores de micro y salida en vivo, siempre visibles.
+  · Estado actual y botón ⛔ STOP ALL.
+- STOP ALL unificado y completo: para el directo, el karaoke, vacía
+  la cola de sonidos, apaga el modulador y quita el silencio.
+- El botón de encendido se sincroniza solo si el directo se para por
+  otra vía (reconexión, cambio de dispositivo, atajos…).
+- Instalador con nombre estable (VoiceICC_Setup.exe) y versión 2.5.

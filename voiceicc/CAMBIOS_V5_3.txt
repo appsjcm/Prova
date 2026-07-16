@@ -1,0 +1,23 @@
+CAMBIOS V5.3 - Realismo al Maximo
+
+Se lleva la cadena de naturalidad a las voces de uso diario, no solo a las
+Personas, para exprimir al maximo el motor DSP.
+
+- Gaming / Discord (avatar hacker): Gaming limpio, Discord claro, Discord
+  nitido, Streamer y Comentarista eSports estrenan claridad, de-esser,
+  foco vocal, proximidad y nivelado -> voz humana nitida y presente para
+  comunicarse en juego, sin robotizar.
+- Epicas (avatar narrador): Narrador epico, Cine trailer y Heroe final
+  ganan presencia, calidez y claridad -> voz grande de trailer pero
+  limpia, no embarrada.
+- Radio (avatar locutor): Locutor espanol con presencia y calidez de
+  locutor real.
+- Limpias: Voz clara, Podcast, Nocturna suave y Voz calida estrenan la
+  cadena completa (realismo, calidez, aliento, de-esser, claridad,
+  presencia) -> suenan a voz de estudio natural.
+- Junto con las Personas de la 5.2, ya son 25 voces con cadena de
+  naturalidad afinada por tipo.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba de que las voces
+de uso diario empujan la cadena de naturalidad al motor.

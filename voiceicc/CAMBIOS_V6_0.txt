@@ -1,0 +1,14 @@
+CAMBIOS V6.0 - Micro Auto-Enrutado
+
+- El enrutado del microfono virtual es ahora mas listo: si tu ENTRADA esta
+  puesta en un dispositivo virtual (o vacia), VoiceICC la cambia sola al
+  primer MICROFONO REAL disponible, evitando el bucle/eco sin que tengas
+  que tocar nada. Si no hay micro real, sigue avisando con claridad.
+- Nuevo ayudante _first_real_microphone() que ignora los dispositivos
+  virtuales (cable, voicemeeter, vb-audio, virtual).
+- Robustez: la busqueda del instalador de datos de IA ya no depende de
+  __file__ (protegida), para no fallar nunca en el .exe empaquetado.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba de auto-correccion
+(entrada en el cable -> se cambia sola al micro real y queda listo).

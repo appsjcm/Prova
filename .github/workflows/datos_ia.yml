@@ -1,0 +1,79 @@
+name: Empaquetar Datos IA (RVC)
+
+# Genera el .zip de DATOS de Voces IA (motor + modelos base) que el instalador
+# puede añadir. Se lanza a mano para no descargar varios GB en cada push.
+on:
+  workflow_dispatch:
+    inputs:
+      incluir_wheels:
+        description: "Incluir el motor (torch + rvc-python) como wheels offline"
+        type: boolean
+        default: true
+      voz_ejemplo_pth_url:
+        description: "URL de un modelo de voz RVC de ejemplo (.pth). Opcional."
+        type: string
+        default: ""
+      voz_ejemplo_index_url:
+        description: "URL del .index de la voz de ejemplo. Opcional."
+        type: string
+        default: ""
+      voz_ejemplo_nombre:
+        description: "Nombre de la voz de ejemplo (sin extensión)."
+        type: string
+        default: "Voz_Ejemplo"
+
+jobs:
+  empaquetar:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: voiceicc
+    steps:
+      - name: Descargar código
+        uses: actions/checkout@v4
+
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Crear estructura de datos_ia
+        run: |
+          New-Item -ItemType Directory -Force -Path datos_ia\base | Out-Null
+          New-Item -ItemType Directory -Force -Path datos_ia\voces | Out-Null
+          New-Item -ItemType Directory -Force -Path datos_ia\wheels | Out-Null
+          Copy-Item requirements_ia.txt datos_ia\requirements_ia.txt -Force
+        shell: pwsh
+
+      - name: Descargar modelos base de RVC
+        run: |
+          curl -L -o datos_ia\base\hubert_base.pt https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/hubert_base.pt
+          curl -L -o datos_ia\base\rmvpe.pt https://huggingface.co/lj1995/VoiceConversionWebUI/resolve/main/rmvpe.pt
+        shell: cmd
+        continue-on-error: true
+
+      - name: Descargar voz de ejemplo (opcional)
+        if: ${{ inputs.voz_ejemplo_pth_url != '' }}
+        run: |
+          curl -L -o "datos_ia\voces\${{ inputs.voz_ejemplo_nombre }}.pth" "${{ inputs.voz_ejemplo_pth_url }}"
+          if not "${{ inputs.voz_ejemplo_index_url }}"=="" curl -L -o "datos_ia\voces\${{ inputs.voz_ejemplo_nombre }}.index" "${{ inputs.voz_ejemplo_index_url }}"
+        shell: cmd
+        continue-on-error: true
+
+      - name: Descargar wheels del motor (offline)
+        if: ${{ inputs.incluir_wheels }}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip download -r requirements_ia.txt --dest datos_ia\wheels
+        continue-on-error: true
+
+      - name: Comprimir datos_ia
+        run: Compress-Archive -Path datos_ia\* -DestinationPath VoiceICC-DatosIA.zip -Force
+        shell: pwsh
+
+      - name: Publicar datos IA
+        uses: actions/upload-artifact@v4
+        with:
+          name: VoiceICC-DatosIA
+          path: voiceicc/VoiceICC-DatosIA.zip
+          retention-days: 30

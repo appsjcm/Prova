@@ -1,0 +1,14 @@
+CAMBIOS V6.2 - Arranque Rapido Plus
+
+- Las 73 miniaturas de voces (el mayor coste de imagen que quedaba) ya no
+  se cargan en el arranque: pasan a la fase diferida en segundo plano. Solo
+  las usan la rejilla de favoritos y la vista previa, que se refrescan
+  automaticamente al terminar de cargarlas.
+- Con la carga en dos fases de la 6.1, el arranque sincrono ahora procesa
+  muchas menos imagenes; el resto (packs ocultos + miniaturas de voces)
+  llega en segundo plano tras pintar la ventana.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque (fase rapida) sin errores, y prueba de
+que en el arranque rapido hay 0 miniaturas y tras el pase diferido se
+cargan las 73 y se refrescan las rejillas.

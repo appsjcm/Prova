@@ -1,0 +1,13 @@
+CAMBIOS V7.8 - Buscador Legible (revision visual)
+
+- El icono de la caja de busqueda usaba "⌕" (U+2315), que muchas fuentes
+  de Windows no dibujan y salia como "?". Cambiado por la lupa 🔍, que si
+  se ve.
+- La caja de busqueda muestra ahora un texto de ayuda ("Buscar modulos y
+  voces…") cuando esta vacia, y lo ignora al enviar.
+
+Nota: se revisaron otros simbolos (power ⏻, teclado ⌨, ≡, controles de
+media) y SI renderizan en Windows 10/11, asi que no se tocan.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas y simulacion de arranque sin errores.

@@ -1,0 +1,13 @@
+CAMBIOS V5.9 - Micro sin Bucle
+
+- Al enrutar el microfono virtual, VoiceICC ahora detecta el error clasico:
+  si la ENTRADA (tu micro) esta puesta en un dispositivo virtual (CABLE
+  Output / VoiceMeeter Output), se realimenta y produce eco/bucle. En ese
+  caso el estado avisa claramente de cambiar la Entrada a tu MICROFONO REAL,
+  en vez de dar por bueno el enrutado.
+- Cuando la entrada es tu micro real, el estado confirma "Entrada: tu micro
+  real - Salida enrutada a CABLE Input" para que quede claro el flujo.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba del guardia de
+bucle (micro real -> listo; entrada en el cable -> aviso de bucle).

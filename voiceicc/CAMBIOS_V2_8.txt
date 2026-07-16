@@ -1,0 +1,14 @@
+VOICEICC 2.8 · ESCUCHARME
+
+- Nuevo interruptor 🎧 ESCUCHARME en la barra inferior: oye tu propia
+  voz transformada por tus auriculares (la salida predeterminada de
+  Windows) mientras el directo sigue mandando la voz al cable virtual
+  para Discord/Fortnite/OBS. Hasta ahora hablabas "a ciegas".
+- Es una segunda salida de audio independiente: no toca la principal
+  ni añade latencia al juego.
+- Anti-eco integrado: si el monitor se retrasa, recorta el buffer solo
+  para que nunca se acumule retardo.
+- Se apaga y reenciende solo con el directo (incluida la reconexión
+  automática al desconectar dispositivos).
+- Aviso claro si se activa sin directo o si la salida no se puede
+  abrir.

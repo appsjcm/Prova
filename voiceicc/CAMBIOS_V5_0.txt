@@ -1,0 +1,16 @@
+CAMBIOS V5.0 - Avatares HQ Completo
+
+- Integrado el lote 5 (256 px): Fantasma y Monstruo -> con esto los 18
+  personajes ya estan en alta calidad (ilustraciones cuadradas RGBA con
+  transparencia circular, sin textos).
+- Ademas se anaden 2 avatares personalizables: custom_hombre y
+  custom_mujer, pensados para las voces del usuario (Mis voces / creador).
+- avatar_for_voice ahora asigna el avatar personalizable (custom_mujer) a
+  las voces propias del usuario cuando no coinciden con un personaje.
+
+Los 18 personajes en HQ: Hombre Joven, Mujer Joven, Nino, Nina, IA
+Femenina, IA Masculina, Abuelo, Abuela, Robot, Narrador, Locutor, Demonio,
+Angel, Alienigena, Hacker, Ninja, Fantasma y Monstruo.
+
+Verificado: PNGs 256x256 validos, py_compile OK y simulacion de arranque
+sin errores.

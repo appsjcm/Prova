@@ -1,0 +1,16 @@
+CAMBIOS V7.4 - Guia del Micro (paso a paso)
+
+- Nuevo boton "Guia paso a paso" en la tarjeta Microfono VoiceICC (Cable
+  Virtual). Abre una ventana visual con:
+  · Un DIAGRAMA del flujo de audio: Tu micro -> VoiceICC -> CABLE Input ->
+    CABLE Output -> Discord/Juego/OBS.
+  · Pestanas con pasos concretos para Resumen, Discord, OBS, Juegos
+    (Fortnite), Windows y Problemas, indicando siempre el dispositivo a
+    elegir: "CABLE Output (VB-Audio Virtual Cable)".
+  · Botones directos para instalar el microfono virtual y comprobar/enrutar.
+- Objetivo: que el microfono virtual se sienta parte de VoiceICC y el
+  usuario sepa exactamente que elegir en cada app.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de que la ventana de guia se
+construye sin errores.

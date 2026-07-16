@@ -1,0 +1,18 @@
+VOICEICC 3.8 · NUEVO ASPECTO
+
+Integrado el pack de imágenes premium de VoiceICC:
+- Nuevo ICONO de la aplicación (el logo de ondas VoiceICC): se ve en
+  la barra de tareas, la ventana, el .exe y el instalador. El .ico se
+  genera automáticamente al compilar desde el logo en alta resolución.
+- Nuevo BANNER de cabecera y LOGO en la pantalla de carga.
+- AVATARES de personaje para las voces: cada voz muestra ahora un
+  retrato acorde en la tarjeta "Voz actual" (mujer, hombre, niño,
+  niña, abuelo, abuela, robot, alien, monstruo, hacker, narrador…),
+  que cambia solo al cambiar de voz.
+- 18 avatares del pack incluidos en la app.
+- Verificado: el mapa voz→avatar acierta en las 12 voces de prueba
+  (Titán→monstruo, Fortnite→hacker, Robot→robot, etc.) y la app
+  arranca sin errores con los assets nuevos.
+
+Nota: quedan más imágenes del pack (fondos, iconos de navegación,
+medidores) que se pueden integrar en próximas versiones.

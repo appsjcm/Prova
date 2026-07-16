@@ -1,0 +1,21 @@
+VOICEICC 3.9 · ASPECTO COMPLETO
+
+Integrado el resto del pack de imágenes premium:
+- ICONOS en el menú lateral (sidebar): Inicio, Voces, Soundboard,
+  Studio y Ajustes con sus iconos del pack en vez de símbolos.
+- PANTALLA DE CARGA con la imagen premium lista del pack.
+- FONDO premium (partículas moradas) detrás del Inicio.
+- BANNER del pack en el asistente de instalación de Windows.
+- Cargadas todas las familias del pack para uso en la app: iconos de
+  navegación, de plataformas (Discord, OBS, Twitch, YouTube, Kick,
+  TikTok), de dispositivos (micro, auriculares, altavoz…), fondos,
+  tarjetas de personaje y soundboard.
+- Retirado el acceso muerto "Publicar" que quedaba en el sidebar.
+
+Ya integrado antes (3.8): icono de la app, banner de cabecera, logo y
+avatares de voz.
+
+Nota: algunas imágenes del pack son "paneles completos" de diseño
+(tiras con todos los botones/medidores juntos) que sirven de
+referencia visual; los controles reales de la app ya cumplen esa
+función, así que no se pegan como imagen.

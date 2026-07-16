@@ -1,0 +1,27 @@
+CAMBIOS V4.0 - Controles Reales (pack de UI funcional)
+
+- Integrado el pack de UI funcional tipo VoiceMod: interruptores,
+  flotante y controles del dock con imagen real en lugar de texto.
+- Nuevos grupos de imagenes cargados en load_visual_assets:
+  · ui_toggles  -> interruptores anchos ON/OFF (voice_changer,
+    background_fx, noise_reduction, autotune, ai_voice,
+    floating_button, windows_startup).
+  · ui_floating -> estados del boton flotante (voiceicc_on/off/muted
+    y las barras floating_bar_on/off).
+  · ui_dock     -> controles del dock (voice_changer, mute,
+    background_fx, stop_all, voice_test activos/inactivos y la
+    onda dock_waveform_0..5).
+- Nuevo ayudante _img_toggle(parent, base, var, command): crea un
+  interruptor con imagen enlazado a un BooleanVar. Intercambia la
+  imagen ON/OFF al pulsar y tambien cuando la variable cambia desde
+  otro sitio (trace). Si faltan las imagenes, el llamador cae a los
+  interruptores de texto de siempre (sin romper nada).
+- La barra inferior usa ahora interruptores con imagen para
+  VOICE CHANGER (motor de efectos) y FX FONDO (reduccion de ruido),
+  con respaldo de texto automatico.
+- El boton de encendido del panel flotante usa las imagenes del pack:
+  encendido, apagado y silenciado, sincronizado con el estado real
+  del motor y del mute en _float_refresh.
+- Verificado: py_compile OK, analisis AST sin metodos duplicados ni
+  llamadas a self indefinidas, y simulacion de arranque completada
+  sin errores. El instalador y el .exe se generan igual en GitHub.

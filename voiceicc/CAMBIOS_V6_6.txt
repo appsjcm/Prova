@@ -1,0 +1,19 @@
+CAMBIOS V6.6 - Ruta IA Guiada
+
+Pulida la experiencia de Voces IA para que sea clara y guiada.
+
+- Nuevo estado en forma de CHECKLIST con el siguiente paso:
+  "Motor IA (acelerador) - Modelos de voz - Base - siguiente paso".
+  RVCBackend.readiness() calcula que falta y que hacer.
+- ONNX ya no exige modelos base: los modelos base (hubert/rmvpe) solo son
+  necesarios para la via .pth (PyTorch). Con un modelo .onnx o con
+  onnxruntime, el checklist no pide base y no bloquea.
+- Muestra el acelerador activo (CUDA / DirectML / CPU o PyTorch).
+- Nuevo boton "Probar voz IA": comprueba la ruta de punta a punta (motor,
+  modelos, base) y, si hay modelo cargado, hace una inferencia de prueba
+  sobre 200 ms de tono y mide cuanto tarda, sin necesitar audio en directo.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de readiness en 3 estados (sin
+motor, con ONNX sin modelos, con modelo .onnx listo) con el checklist y el
+siguiente paso correctos.

@@ -1,0 +1,24 @@
+CAMBIOS V5.2 - Voces de Persona Reales
+
+Las voces humanas de cada avatar/personaje ahora suenan mucho mas a
+persona real, no a simple cambio de tono.
+
+- Las 12 voces de la categoria Personas (Mujer Lucia/Sofia, Hombre
+  Diego/Marcos, Nino Leo/Nico, Nina Luna/Emma, Abuelo Paco/Jose, Abuela
+  Carmen/Lola) estrenan cadena de naturalidad completa: realismo humano,
+  calidez, aliento, de-esser, claridad, transitorios, foco vocal,
+  proximidad y nivelado inteligente, ademas del tono y los formantes.
+- Ajustes por tipo de voz:
+  · Mujer/Nina: mas de-esser (evita el "seseo" al subir el tono) y aliento.
+  · Hombre: mas calidez y cuerpo, menos de-esser, mas presencia.
+  · Nino/Nina: de-esser y aliento altos para que no suene a ardilla.
+  · Abuelo/Abuela: mas calidez y aliento, con su vibrato caracteristico.
+- Eco casi a cero en todas (una voz real no reverbera), para que suenen
+  cercanas y limpias.
+- apply_preset ahora tambien resetea foco vocal, proximidad y nivelado al
+  cambiar de voz, para que la cadena de una voz no se arrastre a otra.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores y prueba especifica de que
+la cadena de naturalidad llega al motor en cada persona y se resetea al
+cambiar a una voz limpia.

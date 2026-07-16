@@ -1,0 +1,21 @@
+CAMBIOS V7.7 - ONNX Incluido (voz IA en el .exe sin instalar nada)
+
+El problema de fondo: un .exe de PyInstaller no puede importar paquetes
+instalados con pip, asi que RVC no se activaba en el ejecutable aunque
+instalaras el motor. Solucion:
+
+- onnxruntime se INCLUYE ahora dentro del .exe (requirements.txt +
+  --collect-all onnxruntime en la compilacion). Con esto, las voces RVC en
+  formato .onnx funcionan en el .exe SIN instalar nada.
+- El checklist de la ruta IA es ahora exacto segun el modelo:
+  · .onnx -> usa onnxruntime (incluido): listo al instante.
+  · .pth  -> necesita el motor completo (rvc-python + torch) + modelos base;
+    el checklist te lo dice y te manda al boton "Instalar motor completo".
+- Recomendacion en la app: usa modelos .onnx (funcionan ya en el .exe).
+
+Coste: el .exe pesa algo mas (onnxruntime incluido). torch NO se incluye
+(demasiado grande); los modelos .pth siguen necesitando el motor completo.
+
+Verificado: py_compile OK, YAML del workflow valido, simulacion de arranque
+sin errores y prueba de readiness: con onnxruntime presente, un .onnx queda
+"listo" y un .pth sin torch avisa de instalar el motor completo.

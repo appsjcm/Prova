@@ -1,0 +1,12 @@
+CAMBIOS V6.5 - Aviso por Carga
+
+- El vigilante ahora usa la CPU del DSP medida (6.4) para avisar ANTES de
+  que haya cortes, no solo cuando ya han ocurrido:
+  · Carga >= 90%: aviso de que probablemente habra cortes, con consejo
+    (desactivar Realismo Maximo si esta activo, o subir la latencia).
+  · Carga 75-90%: aviso de que vas justo de margen.
+  · Carga baja: no molesta (no toca el estado).
+- Se apoya en la media movil ya suavizada, asi que no parpadea.
+
+Verificado: py_compile OK, simulacion de arranque sin errores y prueba de
+que con carga 90% avisa "muy alta" y con carga baja no cambia el estado.

@@ -1,0 +1,247 @@
+{
+  "Gaming": {
+    "slug": "gaming",
+    "title": "PACK GAMING",
+    "subtitle": "Fortnite · Discord · Directos",
+    "colors": [
+      [
+        24,
+        33,
+        65
+      ],
+      [
+        45,
+        111,
+        255
+      ],
+      [
+        0,
+        229,
+        255
+      ]
+    ],
+    "icon": "G",
+    "voices": [
+      "Gaming limpio",
+      "Discord claro",
+      "Fortnite grave",
+      "Streamer",
+      "Comentarista eSports",
+      "Tryhard oscuro"
+    ]
+  },
+  "Épicas": {
+    "slug": "epicas",
+    "title": "PACK ÉPICO",
+    "subtitle": "Narrador · Tráiler · Jefe final",
+    "colors": [
+      [
+        40,
+        18,
+        52
+      ],
+      [
+        132,
+        64,
+        255
+      ],
+      [
+        255,
+        203,
+        87
+      ]
+    ],
+    "icon": "E",
+    "voices": [
+      "Narrador épico",
+      "Cine tráiler",
+      "Héroe final",
+      "Titán",
+      "Jefe final"
+    ]
+  },
+  "Oscuras": {
+    "slug": "oscuras",
+    "title": "PACK OSCURO",
+    "subtitle": "Villano · Demonio · Monstruo",
+    "colors": [
+      [
+        22,
+        16,
+        26
+      ],
+      [
+        110,
+        46,
+        92
+      ],
+      [
+        255,
+        92,
+        138
+      ]
+    ],
+    "icon": "O",
+    "voices": [
+      "Voz grave",
+      "Villano",
+      "Demonio suave",
+      "Monstruo cueva",
+      "Sombra",
+      "Guardián oscuro"
+    ]
+  },
+  "Robots": {
+    "slug": "robots",
+    "title": "PACK ROBOT",
+    "subtitle": "IA · Cyborg · Futurista",
+    "colors": [
+      [
+        15,
+        26,
+        36
+      ],
+      [
+        0,
+        170,
+        220
+      ],
+      [
+        117,
+        255,
+        249
+      ]
+    ],
+    "icon": "R",
+    "voices": [
+      "Robot directo",
+      "Androide",
+      "IA futurista",
+      "Cyborg",
+      "Casco espacial",
+      "Robot roto"
+    ]
+  },
+  "Radio": {
+    "slug": "radio",
+    "title": "PACK RADIO",
+    "subtitle": "Locutor · Walkie · Megáfono",
+    "colors": [
+      [
+        44,
+        26,
+        8
+      ],
+      [
+        255,
+        150,
+        55
+      ],
+      [
+        255,
+        217,
+        123
+      ]
+    ],
+    "icon": "R",
+    "voices": [
+      "Locutor español",
+      "Radio para directo",
+      "Radio antigua",
+      "Walkie Talkie",
+      "Megáfono",
+      "Estadio"
+    ]
+  },
+  "Divertidas": {
+    "slug": "divertidas",
+    "title": "PACK MEME",
+    "subtitle": "Ardilla · Payaso · Mini robot",
+    "colors": [
+      [
+        40,
+        18,
+        18
+      ],
+      [
+        255,
+        94,
+        117
+      ],
+      [
+        255,
+        208,
+        76
+      ]
+    ],
+    "icon": "D",
+    "voices": [
+      "Voz aguda",
+      "Ardilla",
+      "Duende",
+      "Payaso gamer",
+      "Mini robot",
+      "Caricatura"
+    ]
+  },
+  "Fantasía": {
+    "slug": "fantasia",
+    "title": "PACK FANTASÍA",
+    "subtitle": "Alien · Mago · Dragón",
+    "colors": [
+      [
+        18,
+        26,
+        40
+      ],
+      [
+        131,
+        84,
+        255
+      ],
+      [
+        98,
+        255,
+        180
+      ]
+    ],
+    "icon": "F",
+    "voices": [
+      "Alien",
+      "Fantasma",
+      "Eco mágico",
+      "Hechicero",
+      "Criatura mágica",
+      "Dragón suave"
+    ]
+  },
+  "Limpias": {
+    "slug": "limpias",
+    "title": "PACK LIMPIO",
+    "subtitle": "Podcast · Voz clara · Cálida",
+    "colors": [
+      [
+        17,
+        32,
+        36
+      ],
+      [
+        76,
+        166,
+        191
+      ],
+      [
+        194,
+        245,
+        255
+      ]
+    ],
+    "icon": "L",
+    "voices": [
+      "Voz clara",
+      "Podcast",
+      "Nocturna suave",
+      "Voz cálida"
+    ]
+  }
+}

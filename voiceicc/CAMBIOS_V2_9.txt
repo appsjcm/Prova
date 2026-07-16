@@ -1,0 +1,10 @@
+VOICEICC 2.9 · MEMORIA PRO
+
+- El perfil de ruido aprendido SE GUARDA EN DISCO: aprende el ruido de
+  tu habitación una vez y VoiceICC lo recuerda en cada sesión (activa
+  FX FONDO y listo). "Olvidar perfil" borra también el archivo.
+- Nuevo ↔ VOZ ANTERIOR (Ctrl+Shift+X y botón en la barra inferior):
+  alterna al instante entre tus dos últimas voces — personaje ↔ voz
+  normal en mitad de la partida, sin buscar nada.
+- El atajo funciona también en GLOBAL: dentro del juego o Discord.
+- Añadido al Mapa de teclas de Atajos.

@@ -1,0 +1,14 @@
+VOICEICC 2.6 · DASHBOARD VIVO
+
+- Nueva fila en el Inicio (como el diseño): Favoritos · Módulos
+  recientes · Estado del sistema.
+- Revividos los paneles de Favoritos y Recientes: existían en el
+  código desde la V2.x pero nunca se mostraban (los marcos donde
+  pintarse no se creaban). Ahora los módulos que visitas aparecen
+  como accesos y se actualizan en vivo al navegar.
+- Estado del sistema en vivo (cada 2 s), sin dependencias nuevas:
+  · CPU del proceso (medida real, no del sistema entero).
+  · RAM usada por la app (API de Windows, "–" si no disponible).
+  · Latencia real del bloque de audio en ms con el directo activo.
+  · Calidad de voz según los cortes de audio: Óptima / Buena /
+    Revisar.

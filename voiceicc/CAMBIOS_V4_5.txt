@@ -1,0 +1,20 @@
+CAMBIOS V4.5 - Marca Coherente
+
+Pulido de marca y version tras ver la app funcionando en Windows.
+
+- El logo del lateral ya no muestra el nombre heredado "VOICE NEXUS /
+  PREMIUM AUDIO LAB": ahora es una marca de texto limpia "VoiceICC"
+  (con "ICC" en violeta) y el subtitulo "PREMIUM VOICE LAB". En modo
+  colapsado muestra "V".
+- La chapa superior derecha ya no dice "V1.9 ULTRA": muestra la version
+  real (VERSION_TAG, p. ej. "V4.5 ULTRA").
+- La barra de estado ya no dice "VoiceICC V1.7": usa la version real.
+- Arreglado el falso aviso "Calidad de version: revisar 5 punto(s)" en el
+  .exe instalado: la auditoria buscaba los documentos (README, guia,
+  privacidad) dentro del bundle de PyInstaller, pero en la instalacion van
+  junto al .exe. Ahora tambien busca junto al ejecutable y la lista de
+  archivos esperados coincide con lo que instala el instalador -> queda en
+  "Calidad de version: OK".
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, y simulacion de arranque completada sin errores.

@@ -1,0 +1,19 @@
+# Motor de Voces IA (RVC) para VoiceICC — conversion de voz LOCAL.
+# Se instala aparte del programa principal porque pesa varios GB.
+
+# --- Opcion RAPIDA (recomendada): inferencia nativa ONNX ---
+# Ligera y rapida, no necesita PyTorch. Usa modelos de voz .onnx.
+# Para GPU AMD/Intel en Windows: cambia por onnxruntime-directml.
+# Para GPU NVIDIA: onnxruntime-gpu.
+onnxruntime
+
+# --- Opcion COMPLETA: PyTorch + rvc-python (modelos .pth) ---
+# Mas pesada; necesaria si usas modelos .pth en vez de .onnx.
+# Descomenta estas lineas si la quieres:
+# rvc-python
+# torch
+# torchaudio
+
+# --- Texto a Voz (TTS) con modelos Piper (.onnx) ---
+# Para la funcion "Texto a Voz": escribes y lo dice con voz sintetica.
+piper-tts

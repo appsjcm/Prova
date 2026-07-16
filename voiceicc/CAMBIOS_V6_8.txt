@@ -1,0 +1,16 @@
+CAMBIOS V6.8 - Descargar Voz por URL
+
+- Nueva descarga de modelos RVC desde una URL directa (por ejemplo, un .pth
+  de HuggingFace): pegas la URL del modelo (.pth/.onnx) y, si lo tiene, la
+  del .index, y VoiceICC lo baja a tu carpeta de voces en segundo plano.
+- Convierte solo las URLs de HuggingFace de "/blob/" a "/resolve/"
+  (el enlace de descarga directo) automaticamente.
+- El nombre del modelo se toma del propio archivo de la URL.
+- RVCBackend.download_model_from_url(pth_url, index_url, name).
+
+Nota: desde el equipo del usuario si se puede acceder a HuggingFace; el
+modelo se descarga en su PC (local), no pasa por ningun servidor de VoiceICC.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de la descarga por URL (nombre
+desde la URL, .pth + .index y .onnx, y conversion blob->resolve).

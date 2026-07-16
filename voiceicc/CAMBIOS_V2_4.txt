@@ -1,0 +1,21 @@
+VOICEICC 2.4 · VOCES REALES
+
+Revisión completa de la V2.3 Lite con batería de verificación:
+- Arreglados 2 imports que faltaban (winreg y re): "Iniciar con
+  Windows" y el Diseñador FX fallaban al usarse.
+- Creadas 8 variables que el código usaba sin existir (progreso de
+  configuración, tarjetas destacadas, perfil de sesión, estado del
+  Premium Flow…): varios paneles fallaban en silencio o al abrirse.
+- Añadido el método del interruptor "Inicio con Windows" (no existía).
+- Corregido un typo (startup_with_windows) que falseaba la puntuación
+  de configuración.
+- Añadido el helper "Abrir carpeta FX" que faltaba.
+- SELECTORES DE MICRÓFONO Y SALIDA EN EL SIDEBAR (como el diseño):
+  la edición Lite había podado las únicas pestañas donde se podían
+  elegir dispositivos: no había forma de cambiar micro/salida. Ahora
+  están siempre visibles en la barra lateral con botones de prueba.
+- Incorporado el motor de FORMANTES de la 1.1 (no llegó al fork):
+  voces de Personas que suenan a persona, slider "Formantes (voz
+  real)" en el Ecualizador y 19 voces reajustadas.
+- Scripts .bat saneados (apuntaban a archivos de versiones antiguas)
+  e instalador renombrado a VoiceICC_Setup_2.4.

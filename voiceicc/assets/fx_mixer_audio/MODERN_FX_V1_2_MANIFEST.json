@@ -1,0 +1,101 @@
+{
+  "version": "1.2.0",
+  "items": [
+    {
+      "name": "neon_ui_confirm",
+      "wav": "neon_ui_confirm.wav",
+      "mp3": "neon_ui_confirm.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "hologram_open",
+      "wav": "hologram_open.wav",
+      "mp3": "hologram_open.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "cyber_swipe",
+      "wav": "cyber_swipe.wav",
+      "mp3": "cyber_swipe.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "esports_stinger",
+      "wav": "esports_stinger.wav",
+      "mp3": "esports_stinger.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "bass_drop_clean",
+      "wav": "bass_drop_clean.wav",
+      "mp3": "bass_drop_clean.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "digital_riser",
+      "wav": "digital_riser.wav",
+      "mp3": "digital_riser.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "glitch_transition_hd",
+      "wav": "glitch_transition_hd.wav",
+      "mp3": "glitch_transition_hd.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "stream_alert_modern",
+      "wav": "stream_alert_modern.wav",
+      "mp3": "stream_alert_modern.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "unlock_crystal",
+      "wav": "unlock_crystal.wav",
+      "mp3": "unlock_crystal.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "logo_hit_future",
+      "wav": "logo_hit_future.wav",
+      "mp3": "logo_hit_future.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "teleport_soft",
+      "wav": "teleport_soft.wav",
+      "mp3": "teleport_soft.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "synth_pulse",
+      "wav": "synth_pulse.wav",
+      "mp3": "synth_pulse.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "menu_hover_glass",
+      "wav": "menu_hover_glass.wav",
+      "mp3": "menu_hover_glass.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "transition_liquid",
+      "wav": "transition_liquid.wav",
+      "mp3": "transition_liquid.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "notification_orbit",
+      "wav": "notification_orbit.wav",
+      "mp3": "notification_orbit.mp3",
+      "sample_rate": 44100
+    },
+    {
+      "name": "countdown_launch",
+      "wav": "countdown_launch.wav",
+      "mp3": "countdown_launch.mp3",
+      "sample_rate": 44100
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+CAMBIOS V7.9.2 - Modularizacion (fase A.1)
+
+Primer paso de dividir el monolito voiceicc.py en modulos, por fases
+pequenas y verificando cada una.
+
+- Nuevo modulo src/voicebank.py: contiene PACKS_DATA y la clase VoiceBank
+  (catalogo de packs y banco de voces). Son datos puros, sin dependencias
+  de interfaz ni audio, asi que es la extraccion mas segura para empezar.
+- voiceicc.py ahora hace "from voicebank import PACKS_DATA, VoiceBank".
+  Todas las referencias (VoiceBank.all_presets(), etc.) siguen igual.
+
+Proximas fases previstas:
+- A.2: AudioEngine -> audio_engine.py (motor DSP, sin tkinter).
+- A.3: RVCBackend + PiperTTS -> voces_ia.py (IA local).
+- A.4: utilidades comunes -> core_utils.py.
+
+Verificado: py_compile de ambos modulos, analisis AST sin duplicados ni
+llamadas a self indefinidas, simulacion de arranque sin errores y prueba de
+que VoiceBank/PACKS_DATA se importan y funcionan desde el nuevo modulo (138
+voces, 8 packs). El .exe incluira voicebank.py automaticamente (es un import
+directo, PyInstaller lo sigue).

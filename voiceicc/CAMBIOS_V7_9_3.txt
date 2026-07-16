@@ -1,0 +1,15 @@
+CAMBIOS V7.9.3 - Modularizacion (fase A.2)
+
+- Nuevo modulo src/audio_engine.py: contiene la clase AudioEngine (motor
+  DSP en tiempo real: efectos, pitch/formant, autotune, reduccion de ruido,
+  EQ, medidores y perfilado). No depende de tkinter.
+- voiceicc.py hace ahora "from audio_engine import AudioEngine".
+- El monolito baja de ~22.759 a ~21.481 lineas.
+
+audio_engine.py trae sus propios imports (numpy, sounddevice, math,
+threading, time) y una funcion clamp local, asi que es autonomo.
+
+Verificado: py_compile de ambos modulos, analisis AST sin duplicados ni
+llamadas a self indefinidas, simulacion de arranque sin errores y prueba de
+que AudioEngine se instancia desde el nuevo modulo (rate, perf_stats, clamp).
+Siguiente: A.3 (RVCBackend + PiperTTS -> voces_ia.py).

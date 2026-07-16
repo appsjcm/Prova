@@ -1,0 +1,18 @@
+CAMBIOS V6.9 - Voces TTS Faciles
+
+Se hace turnkey tambien la descarga de voces de Texto a Voz (Piper).
+
+- Descarga de voz TTS desde URL directa del .onnx: como en Piper el config
+  .onnx.json esta siempre junto al modelo, VoiceICC lo DERIVA y lo baja solo
+  (basta con la URL del .onnx). Convierte blob->resolve de HuggingFace.
+- Desplegable de voces espanolas conocidas (repo oficial rhasspy/piper-
+  voices): carlfm, davefx, sharvard, mls_10246 (es_ES) y ald, claude (es_MX).
+  Eliges una y "Descargar esta voz" baja modelo + config a la carpeta TTS.
+- PiperTTS.download_voice_from_url() y PiperTTS.ES_VOICES.
+
+Nota: la descarga ocurre en el PC del usuario (que si puede acceder a
+HuggingFace); es local.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores y prueba de la descarga TTS (deriva el
+.onnx.json, convierte blob->resolve y guarda ambos archivos).

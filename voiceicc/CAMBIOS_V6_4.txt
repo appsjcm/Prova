@@ -1,0 +1,27 @@
+CAMBIOS V6.4 - Medicion y ONNX
+
+MEDICION (perfilado real del motor de audio):
+- Cada bloque de audio mide su tiempo de proceso. El motor calcula:
+  media movil (proc ms), peor bloque (pico ms), duracion del bloque
+  (block ms) y CARGA DE CPU DEL DSP = proc/bloque (0-100% sano; >100%
+  significa que no llega a tiempo y habra cortes).
+- Se muestra en vivo en el estado: "Cortes: N - bloques/s: M - CPU DSP: X%
+  (proc A ms / bloque B ms - pico C ms)". Asi se ve si merece la pena
+  optimizar o subir la latencia.
+- AudioEngine.perf_stats() y reset_perf_stats().
+
+ONNX (inferencia de Voces IA acelerada y ligera):
+- El backend detecta onnxruntime y elige el mejor provider: CUDA (NVIDIA),
+  DirectML (AMD/Intel) o CPU. Sin necesidad de PyTorch.
+- Soporta modelos de voz .onnx ademas de .pth: se listan e importan igual.
+  Con un .onnx carga una InferenceSession con el provider mas rapido.
+- La inferencia usa ONNX si hay sesion; si no, cae a rvc-python (.pth) o
+  al motor DSP. Todo local.
+- requirements_ia.txt: opcion RAPIDA (onnxruntime, recomendada) y opcion
+  COMPLETA (rvc-python + torch) para .pth.
+- La pestana Voces IA explica las dos vias.
+
+Verificado: py_compile OK, AST sin duplicados ni llamadas a self indefinidas,
+simulacion de arranque sin errores, prueba de perf_stats (carga 20% con
+proc 4.64 ms sobre bloque 23.22 ms) y prueba de la ruta ONNX (deteccion,
+provider DirectML, listado .onnx, carga de sesion e inferencia).

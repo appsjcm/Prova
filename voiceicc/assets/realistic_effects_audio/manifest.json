@@ -1,0 +1,70 @@
+{
+  "version": "83.0 Realistic Effects Pack Pro",
+  "created_at": "2026-07-10T19:10:16",
+  "formats": [
+    "wav",
+    "mp3"
+  ],
+  "effects": [
+    {
+      "id": "room_small_real",
+      "wav": "room_small_real.wav",
+      "mp3": "room_small_real.mp3"
+    },
+    {
+      "id": "studio_room_tone",
+      "wav": "studio_room_tone.wav",
+      "mp3": "studio_room_tone.mp3"
+    },
+    {
+      "id": "radio_static_real",
+      "wav": "radio_static_real.wav",
+      "mp3": "radio_static_real.mp3"
+    },
+    {
+      "id": "telephone_old_real",
+      "wav": "telephone_old_real.wav",
+      "mp3": "telephone_old_real.mp3"
+    },
+    {
+      "id": "megaphone_exterior_real",
+      "wav": "megaphone_exterior_real.wav",
+      "mp3": "megaphone_exterior_real.mp3"
+    },
+    {
+      "id": "intercom_realistic",
+      "wav": "intercom_realistic.wav",
+      "mp3": "intercom_realistic.mp3"
+    },
+    {
+      "id": "cinematic_whoosh_soft",
+      "wav": "cinematic_whoosh_soft.wav",
+      "mp3": "cinematic_whoosh_soft.mp3"
+    },
+    {
+      "id": "trailer_low_boom",
+      "wav": "trailer_low_boom.wav",
+      "mp3": "trailer_low_boom.mp3"
+    },
+    {
+      "id": "reverb_tail_real",
+      "wav": "reverb_tail_real.wav",
+      "mp3": "reverb_tail_real.mp3"
+    },
+    {
+      "id": "ui_soft_click",
+      "wav": "ui_soft_click.wav",
+      "mp3": "ui_soft_click.mp3"
+    },
+    {
+      "id": "tape_start_stop",
+      "wav": "tape_start_stop.wav",
+      "mp3": "tape_start_stop.mp3"
+    },
+    {
+      "id": "city_ambience_soft",
+      "wav": "city_ambience_soft.wav",
+      "mp3": "city_ambience_soft.mp3"
+    }
+  ]
+}

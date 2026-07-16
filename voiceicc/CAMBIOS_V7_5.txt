@@ -1,0 +1,15 @@
+CAMBIOS V7.5 - Barra Legible
+
+- Interruptores de la barra inferior (VOICE CHANGER / BACKGROUND FX) mas
+  grandes: se cargan a 224x42 px en vez de 155x29, asi el texto horneado
+  se lee mucho mejor.
+- La barra inferior crece de 62 a 72 px de alto para que quepan bien.
+- Los interruptores de texto (SILENCIAR, ESCUCHARME, PUSH-TO-TALK) suben de
+  fuente 9 a 10 para leerse igual de bien.
+
+Nota: la captura enviada era de la 4.4.0 (aun con la marca antigua "VOICE
+NEXUS", "V1.9" y "V38"); eso ya esta corregido desde la 4.5-4.6. Conviene
+actualizar a la ultima.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas y simulacion de arranque sin errores.

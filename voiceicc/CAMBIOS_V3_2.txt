@@ -1,0 +1,17 @@
+VOICEICC 3.2 · AUTOTUNE REAL
+
+- Nuevo AUTOTUNE REAL en la pestaña Autotune: por primera vez detecta
+  el tono de tu voz de verdad (por autocorrelación) y lo CORRIGE a la
+  nota más cercana de la tonalidad y escala que elijas. Ya no es un
+  "color" cantado: afina como el autotune de estudio.
+  · Slider "Autotune real" 0-100%: medio = afinado natural,
+    100% = efecto trap/robótico moderno.
+  · Selector de tonalidad (Do..Si) y escala (Mayor / Menor /
+    Cromática): la voz se pega a las notas de esa escala.
+  · Corrección suave entre bloques (sin clics) y sin tocar el tono
+    cuando hay silencio o ruido.
+- El autotune "de color" clásico se mantiene como efecto aparte.
+- Verificado acústicamente: detección de 220 y 330 Hz con <2% de
+  error, una voz a 227 Hz (desafinada) se corrige a 233 Hz (la nota
+  real más cercana), y en Do mayor las notas fuera de escala se
+  empujan a la escala. Invariante al tamaño de bloque.

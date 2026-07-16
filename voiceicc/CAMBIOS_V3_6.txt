@@ -1,0 +1,22 @@
+VOICEICC 3.6 · ESENCIAL
+
+Segunda pasada de limpieza: la app se queda en lo esencial de un
+cambiador de voz (de 25 a 17 pestañas en 5 secciones claras).
+
+- 🏠 Inicio: Inicio · Configuración · Directo · Test de voz
+- 🎙 Voces: Personajes · Voces · Creador · Favoritos
+- 🎛 Efectos: Voz real · Efectos · Soundboard
+- 🎵 Studio: Grabadora · Autotune
+- ⚙ Ajustes: Audio · Cable virtual · Atajos · Ayuda
+
+Retiradas (seguían accesibles pero secundarias o repetidas):
+Perfiles, Naturalidad, Mezclador FX, Diseñador FX, Cadena vocal,
+Mezclador musical, Master y Biblioteca. Los accesos antiguos a ellas
+redirigen a Inicio sin error.
+
+- Eliminado del repositorio el duplicado del antiguo Modulador V57
+  (carpeta que había quedado suelta): ahora solo hay UNA aplicación,
+  VoiceICC.
+- El motor y sus controles clave intactos: voces con formantes,
+  autotune real, reducción de ruido, EQ, de-esser, clips, escucharme,
+  flotante Pro y push-to-talk.

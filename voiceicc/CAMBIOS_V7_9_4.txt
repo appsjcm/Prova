@@ -1,0 +1,19 @@
+CAMBIOS V7.9.4 - Modularizacion (fase A.3)
+
+- Nuevo modulo src/voces_ia.py: contiene RVCBackend (conversion de voz RVC
+  con onnxruntime/rvc-python) y PiperTTS (texto a voz Piper). Sin
+  dependencias de interfaz.
+- voiceicc.py hace ahora "from voces_ia import RVCBackend, PiperTTS".
+- El monolito baja de ~21.481 a ~20.833 lineas.
+
+Nota: voces_ia.py trae una copia local de find_system_python; en la fase A.4
+se consolidara junto a las demas utilidades en core_utils.py.
+
+Confirmado ademas: los builds multi-modulo de A.1 (voicebank) y A.2
+(audio_engine) compilaron en verde en GitHub -> PyInstaller empaqueta bien
+los modulos nuevos.
+
+Verificado: py_compile de ambos modulos, AST sin duplicados ni llamadas a
+self indefinidas, simulacion de arranque sin errores y prueba de que RVC/TTS
+funcionan desde voces_ia y que voiceicc los reexporta (mismo objeto).
+Siguiente: A.4 (utilidades comunes -> core_utils.py).

@@ -1,0 +1,18 @@
+VOICEICC 3.4 · FLOTANTE PRO
+
+El botón flotante ahora es un control completo (sin abrir la ventana):
+- ⏻ encender/parar el directo (verde en directo).
+- 🎭 VOZ NORMAL / MODULADA en un clic (morado = modulada, gris = normal).
+- 🔇 silenciar · ↔ voz anterior.
+- 🆘 PÁNICO: si algo suena mal en directo, vuelve TODO a voz limpia al
+  instante (sin efectos, sin silencio, sin monitor).
+- Segunda fila con tus 5 VOCES FAVORITAS: cambia de personaje con un
+  clic (si no tienes favoritas, muestra 5 recomendadas).
+- ▢ abrir la ventana · ✕ cerrar. Todo el panel se arrastra.
+
+Nuevos accesos y atajos GLOBALES (funcionan dentro del juego):
+- Ctrl+Shift+N: voz normal / modulada.
+- Ctrl+Shift+Z: PÁNICO a voz limpia.
+- PUSH-TO-TALK: interruptor en la barra inferior; con él activo,
+  mantén la tecla V para hablar y suéltala para silenciar.
+- Todo añadido al Mapa de teclas de Atajos.

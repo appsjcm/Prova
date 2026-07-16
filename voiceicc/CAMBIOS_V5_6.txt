@@ -1,0 +1,21 @@
+CAMBIOS V5.6 - RVC Turnkey (Voces IA mas faciles)
+
+Se deja la ruta de Voces IA (RVC) lista para usar en pocos pasos.
+
+- Nuevo boton "Descargar modelos base" en la pestana Voces IA: descarga
+  en segundo plano los modelos base de RVC (hubert_base.pt, rmvpe.pt) a
+  ~/VoiceICC/base_ia, con estado en vivo. Antes solo se podian obtener con
+  el instalador de datos.
+- RVCBackend.download_base_models(): descarga los modelos base que falten
+  (online), con progreso opcional.
+- RVCBackend apunta rvc-python a los modelos base LOCALES (variables de
+  entorno RVC_MODELDIR / rmvpe_root / hubert_path) al cargar una voz, para
+  que funcione offline sin volver a descargar nada.
+- El empaquetado de datos (workflow "Empaquetar Datos IA") admite ahora una
+  voz de ejemplo opcional: se le pueden pasar las URLs del .pth y el .index
+  y las incluye en datos_ia/voces, para que el .zip traiga una voz lista.
+
+Verificado: py_compile OK, analisis AST sin duplicados ni llamadas a self
+indefinidas, simulacion de arranque sin errores, YAML del workflow valido,
+y pruebas de la capa RVC: deteccion de modelos base, descarga (simulada),
+apuntado a modelos locales e informe de estado.

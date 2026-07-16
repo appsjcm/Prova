@@ -1,0 +1,90 @@
+{
+  "pack": "VoiceICC Soundboard Directo",
+  "version": "1.0",
+  "sounds": [
+    {
+      "id": "aplausos_stream",
+      "name": "Aplausos para directo",
+      "wav": "aplausos_stream.wav",
+      "mp3": null,
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "risas_meme",
+      "name": "Risas meme",
+      "wav": "risas_meme.wav",
+      "mp3": null,
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "victoria_arcade",
+      "name": "Victoria arcade",
+      "wav": "victoria_arcade.wav",
+      "mp3": "victoria_arcade.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "error_buzzer",
+      "name": "Error buzzer",
+      "wav": "error_buzzer.wav",
+      "mp3": "error_buzzer.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "suspense_cine",
+      "name": "Suspense cine",
+      "wav": "suspense_cine.wav",
+      "mp3": "suspense_cine.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "beep_moderno",
+      "name": "Beep moderno",
+      "wav": "beep_moderno.wav",
+      "mp3": "beep_moderno.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "magia_chispa",
+      "name": "Magia chispa",
+      "wav": "magia_chispa.wav",
+      "mp3": "magia_chispa.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "powerup_gaming",
+      "name": "Power up gaming",
+      "wav": "powerup_gaming.wav",
+      "mp3": "powerup_gaming.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "alerta_stream",
+      "name": "Alerta stream",
+      "wav": "alerta_stream.wav",
+      "mp3": "alerta_stream.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "redoble_drum",
+      "name": "Redoble drum",
+      "wav": "redoble_drum.wav",
+      "mp3": "redoble_drum.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "explosion_impacto",
+      "name": "Explosion impacto",
+      "wav": "explosion_impacto.wav",
+      "mp3": "explosion_impacto.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    },
+    {
+      "id": "lluvia_suave",
+      "name": "Lluvia suave",
+      "wav": "lluvia_suave.wav",
+      "mp3": "lluvia_suave.mp3",
+      "license": "Original synthetic VoiceICC sound; MP3 equivalent from existing VoiceICC asset pack when present."
+    }
+  ]
+}
