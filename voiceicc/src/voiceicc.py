@@ -909,6 +909,16 @@ class PremiumApp:
             text = text.replace("__", "_")
         return text.strip("_")
 
+    def voice_card_image(self, voice_name):
+        key = self.voice_image_key(voice_name)
+        img = self.grid_voice_images.get(key)
+        if img is not None:
+            return img
+        avatar_key = self.avatar_for_voice(voice_name) if hasattr(self, "avatar_images") else None
+        if avatar_key:
+            return self.avatar_images.get(avatar_key)
+        return None
+
     def make_card(self, parent, title=None):
         frame = ttk.Frame(parent, style="PremiumCard.TFrame", padding=10)
         if title:
@@ -9233,8 +9243,7 @@ class PremiumApp:
             card = ttk.Frame(self.favoritos_voice_frame, style="Card.TFrame", padding=8)
             card.grid(row=i // cols, column=i % cols, sticky="nsew", padx=6, pady=6)
 
-            key = self.voice_image_key(voice)
-            img = self.grid_voice_images.get(key)
+            img = self.voice_card_image(voice)
             if img is not None:
                 ttk.Label(card, image=img, style="Card.TLabel").pack(anchor="center", pady=(0, 4))
 
@@ -10917,8 +10926,7 @@ class PremiumApp:
             card = ttk.Frame(self.personas_grid_frame, style="Card.TFrame", padding=10)
             card.grid(row=i // cols, column=i % cols, sticky="nsew", padx=8, pady=8)
 
-            key = self.voice_image_key(name)
-            img = self.grid_voice_images.get(key)
+            img = self.voice_card_image(name)
             if img is not None:
                 ttk.Label(card, image=img, style="Card.TLabel").pack(anchor="center", pady=(0, 6))
 
@@ -19255,8 +19263,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             card = ttk.Frame(self.voicebox_grid_frame, style="Card.TFrame", padding=10)
             card.grid(row=i // cols, column=i % cols, sticky="nsew", padx=8, pady=8)
 
-            key = self.voice_image_key(name)
-            img = self.grid_voice_images.get(key)
+            img = self.voice_card_image(name)
             if img is not None:
                 ttk.Label(card, image=img, style="Card.TLabel").pack(anchor="center", pady=(0, 6))
 
