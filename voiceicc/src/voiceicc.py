@@ -383,6 +383,7 @@ class PremiumApp:
         self.creator_name = tk.StringVar(value="Mi voz personalizada")
         self.category = tk.StringVar(value="Todas")
         self.search = tk.StringVar(value="")
+        self.voice_list_status = tk.StringVar(value="Biblioteca de voces lista.")
         self.input_dev = tk.StringVar()
         self.output_dev = tk.StringVar()
         self.latency = tk.StringVar(value="Baja")
@@ -19941,8 +19942,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         search_entry.grid(row=0, column=3, padx=(0, 14), sticky="ew")
         self.search.trace_add("write", lambda *_: self.refresh_voice_list())
 
-        ttk.Button(controls, text="Voz aleatoria", command=self.random_voice).grid(row=0, column=4, padx=4)
-        ttk.Button(controls, text="Recomendadas", command=self.show_recommended).grid(row=0, column=5, padx=4)
+        ttk.Button(controls, text="Limpiar", command=self.clear_voice_search).grid(row=0, column=4, padx=4)
+        ttk.Button(controls, text="Voz aleatoria", command=self.random_voice).grid(row=0, column=5, padx=4)
+        ttk.Button(controls, text="Recomendadas", command=self.show_recommended).grid(row=0, column=6, padx=4)
         controls.columnconfigure(3, weight=1)
 
         body = ttk.Frame(self.tab_voces)
@@ -19965,6 +19967,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.voice_list.pack(fill="both", expand=True)
         self.voice_list.bind("<<ListboxSelect>>", self.on_voice_select)
         self.voice_list.bind("<Double-Button-1>", lambda e: self.apply_selected_voice())
+        ttk.Label(left, textvariable=self.voice_list_status, style="Card.TLabel",
+                  wraplength=520, justify="left").pack(anchor="w", pady=(8, 0))
 
         right = self.make_card(body, "Voz seleccionada")
         right.pack(side="right", fill="y", padx=(8, 0))
@@ -20866,6 +20870,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         self.voice_list.delete(0, tk.END)
         query = self.search.get().strip().lower()
         selected_cat = self.category.get()
+        total = len(VoiceBank.all_presets())
+        shown = 0
 
         for name, (cat, _) in VoiceBank.all_presets().items():
             if selected_cat == "Favoritos" and name not in self.favorites:
@@ -20876,6 +20882,21 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                 continue
             star = "★ " if name in self.favorites else ""
             self.voice_list.insert(tk.END, f"{star}{name}   ·   {cat}")
+            shown += 1
+        details = [f"{shown} de {total} voces"]
+        if selected_cat != "Todas":
+            details.append(f"filtro: {selected_cat}")
+        if query:
+            details.append(f"busqueda: {self.search.get().strip()}")
+        if shown == 0:
+            details.append("sin resultados; limpia la busqueda o cambia el filtro")
+        self.voice_list_status.set(" · ".join(details))
+
+    def clear_voice_search(self):
+        self.search.set("")
+        if self.category.get() == "Favoritos" and not self.favorites:
+            self.category.set("Todas")
+        self.refresh_voice_list()
 
     def on_voice_select(self, event=None):
         if not self.voice_list.curselection():
