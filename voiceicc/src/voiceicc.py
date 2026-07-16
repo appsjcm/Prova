@@ -1695,21 +1695,25 @@ class PremiumApp:
     def voiceicc_apply_featured_voice(self, name):
         try:
             self.select_voice_character(name)
-            self.voiceicc_dashboard_status.set(f"Voz activa: {name} · Perfil aplicado")
+            self.voiceicc_dashboard_status.set(f"Voz activa: {name} - Perfil aplicado")
             self.voiceicc_current_voice_name.set(name)
             try:
                 item = next((x for x in self.voice_characters_data() if x.get("name") == name), None)
                 if item:
-                    self.voiceicc_current_voice_role.set(f"{item.get('role_es', 'Voz premium')} · {item.get('age', 'Natural')}")
+                    self.voiceicc_current_voice_role.set(f"{item.get('role_es', 'Voz premium')} - {item.get('age', 'Natural')}")
                     if hasattr(self, "voiceicc_current_voice_image_label"):
                         key = item.get("image", "")
                         neon_key = f"voice_{key}"
+                        avatar_key = item.get("avatar", "")
                         if neon_key in self.neon_ui_images:
                             self.voiceicc_current_voice_image_label.configure(image=self.neon_ui_images[neon_key])
                             self.voiceicc_current_voice_image_label.image = self.neon_ui_images[neon_key]
                         elif key in self.voice_characters_images:
                             self.voiceicc_current_voice_image_label.configure(image=self.voice_characters_images[key])
                             self.voiceicc_current_voice_image_label.image = self.voice_characters_images[key]
+                        elif avatar_key in self.avatar_images:
+                            self.voiceicc_current_voice_image_label.configure(image=self.avatar_images[avatar_key])
+                            self.voiceicc_current_voice_image_label.image = self.avatar_images[avatar_key]
             except Exception:
                 pass
             if hasattr(self, "voiceicc_current_voice_label"):
@@ -3913,21 +3917,42 @@ class PremiumApp:
             {"name": "Hugo Reed", "image": "hugo_reed", "role_es": "Narrador veterano", "role_en": "Veteran narrator", "age": "Maduro", "tone": "Grave, humana y pausada", "color": "#62ffb4"},
             {"name": "Nico Spark", "image": "nico_spark", "role_es": "Voz juvenil", "role_en": "Youth voice", "age": "Joven", "tone": "Ligera, energética y natural", "color": "#ff965a"},
             {"name": "Eva Bloom", "image": "eva_bloom", "role_es": "Voz juvenil dulce", "role_en": "Soft youth voice", "age": "Joven", "tone": "Clara, suave y expresiva", "color": "#ff74aa"},
+            {"name": "Mujer Lucía", "image": "", "avatar": "mujer", "role_es": "Mujer natural", "role_en": "Natural woman", "age": "Adulta", "tone": "Cercana, clara y estable", "color": "#ff74aa"},
+            {"name": "Hombre Diego", "image": "", "avatar": "hombre", "role_es": "Hombre natural", "role_en": "Natural man", "age": "Adulto", "tone": "Grave, cercano y limpio", "color": "#62ffb4"},
+            {"name": "Niño Leo", "image": "", "avatar": "nino", "role_es": "Niño expresivo", "role_en": "Expressive boy", "age": "Infantil", "tone": "Ligera, joven y suave", "color": "#ffcb57"},
+            {"name": "Niña Luna", "image": "", "avatar": "nina", "role_es": "Niña expresiva", "role_en": "Expressive girl", "age": "Infantil", "tone": "Clara, dulce y joven", "color": "#ff74aa"},
+            {"name": "Abuelo Paco", "image": "", "avatar": "abuelo", "role_es": "Abuelo narrador", "role_en": "Grandfather narrator", "age": "Mayor", "tone": "Calmada, veterana y profunda", "color": "#ff965a"},
+            {"name": "Abuela Carmen", "image": "", "avatar": "abuela", "role_es": "Abuela cuento", "role_en": "Grandmother story", "age": "Mayor", "tone": "Calida, tranquila y amable", "color": "#ffcb57"},
+            {"name": "Robot directo", "image": "", "avatar": "robot", "role_es": "Robot directo", "role_en": "Live robot", "age": "Sintetica", "tone": "Metalica, clara y futurista", "color": "#00e5ff"},
+            {"name": "IA futurista", "image": "", "avatar": "ia_femenina", "role_es": "IA femenina", "role_en": "Female AI", "age": "Sintetica", "tone": "Digital, limpia y moderna", "color": "#a65cff"},
+            {"name": "Cyborg", "image": "", "avatar": "ia_masculina", "role_es": "IA masculina", "role_en": "Male AI", "age": "Sintetica", "tone": "Robusta, digital y seria", "color": "#5d8dff"},
+            {"name": "Narrador épico", "image": "", "avatar": "narrador", "role_es": "Narrador epico", "role_en": "Epic narrator", "age": "Adulto", "tone": "Profunda, intensa y cinematica", "color": "#ff965a"},
+            {"name": "Locutor español", "image": "", "avatar": "locutor", "role_es": "Locutor radio", "role_en": "Radio host", "age": "Adulto", "tone": "Clara, radiofonica y firme", "color": "#ffcb57"},
+            {"name": "Demonio suave", "image": "", "avatar": "demonio", "role_es": "Demonio suave", "role_en": "Soft demon", "age": "Fantasia", "tone": "Oscura, grave y dramatica", "color": "#ff5c8a"},
+            {"name": "Alien", "image": "", "avatar": "alien", "role_es": "Alienigena", "role_en": "Alien", "age": "Fantasia", "tone": "Extraña, espacial y brillante", "color": "#62ffb4"},
+            {"name": "Fantasma", "image": "", "avatar": "fantasma", "role_es": "Fantasma", "role_en": "Ghost", "age": "Fantasia", "tone": "Etérea, misteriosa y con eco", "color": "#a65cff"},
+            {"name": "Monstruo cueva", "image": "", "avatar": "monstruo", "role_es": "Monstruo", "role_en": "Monster", "age": "Fantasia", "tone": "Grande, oscura y cavernosa", "color": "#ff5c8a"},
+            {"name": "Gaming limpio", "image": "", "avatar": "hacker", "role_es": "Hacker gamer", "role_en": "Gamer hacker", "age": "Joven", "tone": "Rapida, clara y de directo", "color": "#00e5ff"},
+            {"name": "Sombra", "image": "", "avatar": "ninja", "role_es": "Ninja sombra", "role_en": "Shadow ninja", "age": "Fantasia", "tone": "Sigilosa, grave y agil", "color": "#7c5cff"},
+            {"name": "Héroe final", "image": "", "avatar": "angel", "role_es": "Angel heroico", "role_en": "Heroic angel", "age": "Fantasia", "tone": "Luminosa, epica y amplia", "color": "#ffd166"},
+            {"name": "Hombre real sutil HD", "image": "", "avatar": "custom_hombre", "role_es": "Personalizable hombre", "role_en": "Custom man", "age": "Adulto", "tone": "Base limpia para ajustar", "color": "#62ffb4"},
+            {"name": "Mujer real sutil HD", "image": "", "avatar": "custom_mujer", "role_es": "Personalizable mujer", "role_en": "Custom woman", "age": "Adulta", "tone": "Base limpia para ajustar", "color": "#ff74aa"},
         ]
 
     def select_voice_character(self, name):
         self.voice_character_selected.set(name)
         try:
-            self.preset.set(name)
+            data = next((item for item in self.voice_characters_data() if item["name"] == name), None)
+            preset_name = data.get("preset", name) if data else name
+            self.preset.set(preset_name)
             self.apply_preset()
             self.refresh_voice_list()
-            data = next((item for item in self.voice_characters_data() if item["name"] == name), None)
             if data:
                 role = data["role_es"] if self.app_language.get() == "Español" else data["role_en"]
                 self.voice_characters_status.set(
                     self.language_text(
-                        f"Personaje aplicado: {name} · {role} · {data['tone']}",
-                        f"Character applied: {name} · {role} · {data['tone']}"
+                        f"Personaje aplicado: {name} - {role} - {data['tone']}",
+                        f"Character applied: {name} - {role} - {data['tone']}"
                     )
                 )
             else:
@@ -4034,6 +4059,7 @@ class PremiumApp:
 
             image_key = character["image"]
             neon_key = f"voice_{image_key}"
+            avatar_key = character.get("avatar", "")
             if neon_key in self.neon_ui_images:
                 ttk.Label(card, image=self.neon_ui_images[neon_key], style="VMCard.TLabel").pack(anchor="center")
             elif image_key in self.voice_characters_images:
@@ -4042,6 +4068,8 @@ class PremiumApp:
                     image=self.voice_characters_images[image_key],
                     style="Card.TLabel"
                 ).pack(anchor="center")
+            elif avatar_key in self.avatar_images:
+                ttk.Label(card, image=self.avatar_images[avatar_key], style="Card.TLabel").pack(anchor="center")
 
             ttk.Label(
                 card,
@@ -16145,7 +16173,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(head,text="Voces destacadas",bg="#0d121e",fg="#ffffff",font=("Segoe UI",10,"bold")).pack(side="left")
         tk.Button(head,text="Ver todas >",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
         voice_row=tk.Frame(featured,bg="#0d121e"); voice_row.pack(fill="x",padx=8,pady=(2,10))
-        names=["Luna Vega","Nora Pulse","Leo Nova","Bruno Atlas","Mia Echo","Kai Flux","Zoe Neon","Axel Noir"]
+        names=["Luna Vega","Hombre Diego","Niño Leo","Niña Luna","Abuelo Paco","Abuela Carmen","Robot directo","Alien"]
         data={item["name"]:item for item in self.voice_characters_data()}
         for idx,name in enumerate(names):
             item=data.get(name,{"image":"","tone":"Premium"})
@@ -16153,11 +16181,13 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             cell=tk.Frame(voice_row,bg="#17152a" if selected else "#0d121e",highlightbackground="#a65cff" if selected else "#20283b",highlightthickness=2 if selected else 1)
             cell.grid(row=0,column=idx,sticky="nsew",padx=4)
             self.voiceicc_featured_cards[name] = cell
-            key=item.get("image",""); neon_key=f"voice_{key}"
+            key=item.get("image",""); neon_key=f"voice_{key}"; avatar_key=item.get("avatar","")
             if neon_key in self.neon_ui_images:
                 tk.Button(cell,image=self.neon_ui_images[neon_key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
             elif key in self.voice_characters_images:
                 tk.Button(cell,image=self.voice_characters_images[key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
+            elif avatar_key in self.avatar_images:
+                tk.Button(cell,image=self.avatar_images[avatar_key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
             else:
                 tk.Button(cell,text=name[:1],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#211b3e",fg="#ffffff",font=("Segoe UI",18,"bold"),width=4,height=2,relief="flat",bd=0,cursor="hand2").pack()
             tk.Label(cell,text=name.split()[0],bg="#0d121e",fg="#ffffff",font=("Segoe UI",8,"bold")).pack()
@@ -19574,17 +19604,19 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(head,text="Voces destacadas",bg="#0d121e",fg="#ffffff",font=("Segoe UI",10,"bold")).pack(side="left")
         tk.Button(head,text="Ver todas >",command=lambda:self.select_tab(self.tab_voice_characters),bg="#0d121e",fg="#8f99b4",activebackground="#0d121e",activeforeground="#ffffff",relief="flat",bd=0,cursor="hand2").pack(side="right")
         voice_row=tk.Frame(featured,bg="#0d121e"); voice_row.pack(fill="x",padx=8,pady=(2,10))
-        names=["Luna Vega","Nora Pulse","Leo Nova","Bruno Atlas","Mia Echo","Kai Flux","Zoe Neon","Axel Noir"]
+        names=["Luna Vega","Hombre Diego","Niño Leo","Niña Luna","Abuelo Paco","Abuela Carmen","Robot directo","Alien"]
         data={item["name"]:item for item in self.voice_characters_data()}
         for idx,name in enumerate(names):
             item=data.get(name,{"image":"","tone":"Premium"})
             cell=tk.Frame(voice_row,bg="#0d121e",highlightbackground="#7c3cff" if idx==0 else "#0d121e",highlightthickness=1 if idx==0 else 0)
             cell.grid(row=0,column=idx,sticky="nsew",padx=4)
-            key=item.get("image",""); neon_key=f"voice_{key}"
+            key=item.get("image",""); neon_key=f"voice_{key}"; avatar_key=item.get("avatar","")
             if neon_key in self.neon_ui_images:
                 tk.Button(cell,image=self.neon_ui_images[neon_key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
             elif key in self.voice_characters_images:
                 tk.Button(cell,image=self.voice_characters_images[key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
+            elif avatar_key in self.avatar_images:
+                tk.Button(cell,image=self.avatar_images[avatar_key],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#0d121e",activebackground="#1d2340",relief="flat",bd=0,cursor="hand2").pack()
             else:
                 tk.Button(cell,text=name[:1],command=lambda n=name:self.voiceicc_apply_featured_voice(n),bg="#211b3e",fg="#ffffff",font=("Segoe UI",18,"bold"),width=4,height=2,relief="flat",bd=0,cursor="hand2").pack()
             tk.Label(cell,text=name.split()[0],bg="#0d121e",fg="#ffffff",font=("Segoe UI",8,"bold")).pack()
