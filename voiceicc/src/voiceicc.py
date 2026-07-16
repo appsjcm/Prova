@@ -15941,7 +15941,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self._sys_prev = (ahora, cpu_ahora)
             if previo is not None and ahora > previo[0]:
                 pct = 100.0 * (cpu_ahora - previo[1]) / (ahora - previo[0])
-                self.sys_cpu_text.set(f"CPU proceso  ·  {min(100, pct):.0f}%")
+                self.sys_cpu_text.set(f"CPU proceso - {min(100, pct):.0f}%")
             ram_mb = None
             try:
                 import ctypes
@@ -15959,25 +15959,25 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
                     ram_mb = pmc.WorkingSetSize / (1024 * 1024)
             except Exception:
                 pass
-            self.sys_ram_text.set(f"RAM  ·  {ram_mb:.0f} MB" if ram_mb else "RAM  ·  –")
+            self.sys_ram_text.set(f"RAM - {ram_mb:.0f} MB" if ram_mb else "RAM - pendiente")
             if self.engine.running and self.engine.stream is not None:
                 bloque = getattr(self.engine.stream, "blocksize", 0) or 256
-                self.sys_lat_text.set(f"Latencia  ·  {1000.0 * bloque / self.engine.rate:.1f} ms")
+                self.sys_lat_text.set(f"Latencia - {1000.0 * bloque / self.engine.rate:.1f} ms")
             else:
-                self.sys_lat_text.set("Latencia  ·  directo parado")
+                self.sys_lat_text.set("Latencia - directo parado")
             cortes = self.engine.xrun_count
             if not self.engine.running:
-                calidad = "–"
+                calidad = "Pendiente"
             elif cortes == 0:
-                calidad = "Óptima ✅"
+                calidad = "Optima"
             elif cortes < 5:
-                calidad = f"Buena · {cortes} cortes"
+                calidad = f"Buena - {cortes} cortes"
             else:
-                calidad = f"Revisar · {cortes} cortes"
-            self.sys_quality_text.set(f"Calidad de voz  ·  {calidad}")
+                calidad = f"Revisar - {cortes} cortes"
+            self.sys_quality_text.set(f"Calidad de voz - {calidad}")
             if hasattr(self, "_spark_data"):
                 valores = {
-                    "cpu": float(str(self.sys_cpu_text.get()).split("·")[-1].replace("%", "").strip() or 0) if "%" in self.sys_cpu_text.get() else 0.0,
+                    "cpu": float(str(self.sys_cpu_text.get()).split("-")[-1].replace("%", "").strip() or 0) if "%" in self.sys_cpu_text.get() else 0.0,
                     "ram": ram_mb or 0.0,
                     "lat": (1000.0 * (getattr(self.engine.stream, "blocksize", 0) or 256) / self.engine.rate) if (self.engine.running and self.engine.stream is not None) else 0.0,
                     "calidad": float(max(0, 20 - cortes)),
@@ -16219,11 +16219,12 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
         estado_sys = tk.Frame(panels, bg="#111725", highlightbackground="#242d45", highlightthickness=1)
         estado_sys.grid(row=0, column=2, sticky="nsew", padx=(4, 0), ipadx=8, ipady=8)
-        tk.Label(estado_sys, text="ESTADO DEL SISTEMA", bg="#111725", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 4))
-        self.sys_cpu_text = tk.StringVar(value="CPU  ·  –")
-        self.sys_ram_text = tk.StringVar(value="RAM  ·  –")
-        self.sys_lat_text = tk.StringVar(value="Latencia  ·  –")
-        self.sys_quality_text = tk.StringVar(value="Calidad de voz  ·  –")
+        tk.Label(estado_sys, text="ESTADO DEL SISTEMA", bg="#111725", fg="#777b91", font=("Segoe UI", 9, "bold"), anchor="w").pack(fill="x", padx=10, pady=(8, 2))
+        tk.Label(estado_sys, text="Monitor rapido de rendimiento y directo.", bg="#111725", fg="#8e98b2", font=("Segoe UI", 8), anchor="w").pack(fill="x", padx=10, pady=(0, 6))
+        self.sys_cpu_text = tk.StringVar(value="CPU - pendiente")
+        self.sys_ram_text = tk.StringVar(value="RAM - pendiente")
+        self.sys_lat_text = tk.StringVar(value="Latencia - pendiente")
+        self.sys_quality_text = tk.StringVar(value="Calidad de voz - pendiente")
         self._spark_data = {"cpu": [], "ram": [], "lat": [], "calidad": []}
         self._spark_canvas = {}
         for clave, var, color in (("cpu", self.sys_cpu_text, "#00dff5"), ("ram", self.sys_ram_text, "#a65cff"), ("lat", self.sys_lat_text, "#ffd166"), ("calidad", self.sys_quality_text, "#62ffb4")):
