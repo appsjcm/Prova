@@ -9751,7 +9751,17 @@ class PremiumApp:
         ready = self.make_card(cont, "Preparacion IA")
         ready.pack(fill="x", pady=(0, 10))
         ttk.Label(ready, textvariable=self.ai_readiness_status, style="Card.TLabel",
-                  wraplength=760, justify="left").pack(anchor="w")
+                  wraplength=760, justify="left").pack(anchor="w", pady=(0, 8))
+        ready_actions = ttk.Frame(ready, style="Card.TFrame")
+        ready_actions.pack(anchor="w")
+        ttk.Button(ready_actions, text="Preparar siguiente paso", style="Accent.TButton",
+                   command=self._ai_repair_next_step).pack(side="left", padx=(0, 8))
+        ttk.Button(ready_actions, text="Importar voz IA",
+                   command=self._rvc_import_model).pack(side="left", padx=(0, 8))
+        ttk.Button(ready_actions, text="Descargar voz TTS",
+                   command=self._tts_download_catalog).pack(side="left", padx=(0, 8))
+        ttk.Button(ready_actions, text="Carpeta de modelos",
+                   command=lambda: open_folder(self.rvc.models_dir)).pack(side="left", padx=(0, 8))
 
         diag = self.make_card(cont, "Diagnostico rapido")
         diag.pack(fill="x", pady=(0, 10))
@@ -9924,11 +9934,15 @@ class PremiumApp:
             seleccion = self.rvc_model.get() or "ninguna"
             rvc_ready = bool(r.get("listo"))
             tts_ready = bool(tts_ok and tts_count)
+            base_ready = bool(r.get("base_ok"))
+            score = sum([bool(r.get("motor_ok")), modelos > 0, base_ready, tts_ready])
+            status = "lista para probar" if rvc_ready or tts_ready else "pendiente de preparar"
             lines = [
-                "IA local incluida: conversion RVC/ONNX, TTS Piper, diagnostico y modo seguro.",
-                f"Voces IA: {'lista' if rvc_ready else 'pendiente'} · motor: {motor} · modelos: {modelos} · seleccion: {seleccion}.",
-                f"Texto a voz: {'listo' if tts_ready else 'pendiente'} · voces Piper: {tts_count}.",
-                "Siguiente paso: " + str(r.get("siguiente") or "Ejecuta el diagnostico rapido."),
+                f"Estado general: IA {status} ({score}/4 puntos listos).",
+                f"Voces IA: {'lista' if rvc_ready else 'pendiente'} · motor: {motor} · modelos: {modelos} · voz: {seleccion}.",
+                f"TTS Piper: {'listo' if tts_ready else 'pendiente'} · voces instaladas: {tts_count}.",
+                "Incluido: conversion RVC/ONNX local, texto a voz Piper, diagnostico, informe y modo seguro.",
+                "Siguiente accion recomendada: " + str(r.get("siguiente") or "Ejecuta el diagnostico rapido."),
             ]
             if modelos == 0:
                 lines.append("Nota: los modelos de voz no van embebidos; se importan o descargan por separado.")
