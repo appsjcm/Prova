@@ -263,8 +263,8 @@ class PremiumApp:
         self.voiceicc_setup_text = tk.StringVar(value="Configuración VoiceICC · 0%")
         self.voiceicc_featured_cards = {}
         self.session_profile = tk.StringVar(value="Streaming")
-        self.last_session_summary = tk.StringVar(value="")
-        self.premium_flow_status = tk.StringVar(value="Premium Flow listo.")
+        self.last_session_summary = tk.StringVar(value="Streaming - voz clara - latencia ultra baja")
+        self.premium_flow_status = tk.StringVar(value="Premium Flow listo para preparar el directo.")
         self.broadcast_ready = tk.StringVar(value="")
         self.home_live_state = tk.StringVar(value="Directo: parado")
         self.home_audio_state = tk.StringVar(value="Audio: pendiente")
@@ -16056,6 +16056,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
         tk.Label(title_wrap, text="Bienvenido a VoiceICC", bg="#090d16", fg="#ffffff", font=("Segoe UI", 28, "bold"), anchor="w").pack(anchor="w")
         tk.Label(title_wrap, text="Tu estudio de voz profesional todo en uno.", bg="#090d16", fg="#919bb8", font=("Segoe UI", 10), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Label(title_wrap, textvariable=self.voiceicc_dashboard_status, bg="#090d16", fg="#00dff5", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(6, 0))
+        tk.Label(title_wrap, textvariable=self.premium_flow_status, bg="#090d16", fg="#ffd166", font=("Segoe UI", 9, "bold"), anchor="w").pack(anchor="w", pady=(3, 0))
+        tk.Label(title_wrap, textvariable=self.last_session_summary, bg="#090d16", fg="#7f8aa5", font=("Segoe UI", 8), anchor="w").pack(anchor="w", pady=(2, 0))
         tk.Button(hero, text="ULTRA PREMIUM", command=self.voiceicc_open_pro_panel, bg="#251342", fg="#e5d6ff", activebackground="#7c3cff", activeforeground="#ffffff", relief="flat", bd=0, font=("Segoe UI", 9, "bold"), padx=14, pady=7, cursor="hand2").pack(side="right", padx=8)
 
         start_panel = tk.Frame(main, bg="#0d121e", highlightbackground="#2b3550", highlightthickness=1)
@@ -19472,8 +19474,8 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.refresh_voice_list()
         except Exception:
             pass
-        self.last_session_summary.set(f"{name} · {profile['voice']} · {profile['latency']}")
-        self.premium_flow_status.set(f"Perfil aplicado: {name}")
+        self.last_session_summary.set(f"{name} - {profile['voice']} - {profile['latency']}")
+        self.premium_flow_status.set(f"Perfil aplicado: {name}. Listo para revisar audio y directo.")
         self.update_broadcast_ready()
         try:
             self.save_config(silent=True)
@@ -19481,9 +19483,9 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             pass
 
     def save_current_session_snapshot(self):
-        summary = f"{self.session_profile.get()} · {self.preset.get()} · {self.latency.get()}"
+        summary = f"{self.session_profile.get()} - {self.preset.get()} - {self.latency.get()}"
         self.last_session_summary.set(summary)
-        self.premium_flow_status.set("Sesión guardada correctamente")
+        self.premium_flow_status.set("Sesion guardada. Puedes reanudar este ajuste despues.")
         try:
             self.save_config(silent=True)
         except Exception:
@@ -19491,7 +19493,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
 
     def resume_last_session(self):
         self.apply_session_profile(self.session_profile.get())
-        self.premium_flow_status.set(f"Sesión recuperada: {self.last_session_summary.get()}")
+        self.premium_flow_status.set(f"Sesion recuperada: {self.last_session_summary.get()}")
 
     def update_broadcast_ready(self):
         checks = []
@@ -20835,7 +20837,7 @@ p{{font-size:18px;line-height:1.65;color:#ffffffd8;max-width:760px}}
             self.favorite_tabs = data.get("favorite_tabs", ["tab_test_voz", "tab_voice_characters", "tab_sonidos", "tab_cadena_vocal"])
             self.recent_tabs = data.get("recent_tabs", [])[:8]
             self.session_profile.set(data.get("session_profile", "Streaming"))
-            self.last_session_summary.set(data.get("last_session_summary", "Sin sesión guardada"))
+            self.last_session_summary.set(data.get("last_session_summary", "Streaming - voz clara - latencia ultra baja"))
             try:
                 self.vm_sidebar_collapsed.set(bool(data.get("vm_sidebar_collapsed", False)))
                 self.workspace_density.set(data.get("workspace_density", "Equilibrado"))
