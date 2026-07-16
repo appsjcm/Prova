@@ -311,6 +311,7 @@ class PremiumApp:
         self.voice_characters_status = tk.StringVar(value="Voice Characters Pro listo. Elige un personaje con nombre e imagen.")
         self.voice_character_selected = tk.StringVar(value="Luna Vega")
         self.voice_characters_filter = tk.StringVar(value="Todas")
+        self.voice_characters_search = tk.StringVar(value="")
         self.visual_overhaul_images = {}
         self.visual_overhaul_status = tk.StringVar(value="Visual Overhaul Pro listo. Elige un tema y aplícalo.")
         self.visual_overhaul_theme = tk.StringVar(value="Aurora Glass")
@@ -3982,9 +3983,22 @@ class PremiumApp:
     def filtered_voice_characters(self):
         filtro = self.voice_characters_filter.get()
         characters = self.voice_characters_data()
-        if filtro == "Todas":
-            return characters
-        return [item for item in characters if self.voice_character_group(item) == filtro]
+        if filtro != "Todas":
+            characters = [item for item in characters if self.voice_character_group(item) == filtro]
+        query = self._normalizar(self.voice_characters_search.get().strip())
+        if query:
+            characters = [
+                item for item in characters
+                if query in self._normalizar(" ".join([
+                    item.get("name", ""),
+                    item.get("role_es", ""),
+                    item.get("role_en", ""),
+                    item.get("age", ""),
+                    item.get("tone", ""),
+                    item.get("avatar", ""),
+                ]))
+            ]
+        return characters
 
     def select_voice_character(self, name):
         self.voice_character_selected.set(name)
@@ -4113,6 +4127,42 @@ class PremiumApp:
             command=lambda: self.select_tab(self.tab_test_voz)
         ).pack(side="right")
 
+        search_row = tk.Frame(main, bg=COLORS["bg"])
+        search_row.pack(fill="x", pady=(0, 8))
+        tk.Label(
+            search_row,
+            text="Buscar personaje",
+            bg=COLORS["bg"],
+            fg="#9ca8c6",
+            font=("Segoe UI", 9, "bold")
+        ).pack(side="left", padx=(0, 8))
+        search_entry = tk.Entry(
+            search_row,
+            textvariable=self.voice_characters_search,
+            bg="#111725",
+            fg="#ffffff",
+            insertbackground="#00e5ff",
+            relief="flat",
+            bd=0,
+            font=("Segoe UI", 10)
+        )
+        search_entry.pack(side="left", fill="x", expand=True, ipady=7)
+        tk.Button(
+            search_row,
+            text="Limpiar",
+            command=self.clear_voice_character_search,
+            bg="#20283d",
+            fg="#ffffff",
+            activebackground="#00e5ff",
+            activeforeground="#10131e",
+            relief="flat",
+            bd=0,
+            padx=12,
+            pady=6,
+            cursor="hand2"
+        ).pack(side="right", padx=(8, 0))
+        self.voice_characters_search.trace_add("write", lambda *_: self.populate_voice_characters_gallery())
+
         filters = tk.Frame(main, bg=COLORS["bg"])
         filters.pack(fill="x", pady=(0, 8))
         self.voice_character_filter_buttons = {}
@@ -4154,6 +4204,10 @@ class PremiumApp:
         self.refresh_voice_character_filter_buttons()
         self.populate_voice_characters_gallery()
 
+    def clear_voice_character_search(self):
+        self.voice_characters_search.set("")
+        self.populate_voice_characters_gallery()
+
     def refresh_voice_character_filter_buttons(self):
         active = self.voice_characters_filter.get()
         for value, (btn, color) in getattr(self, "voice_character_filter_buttons", {}).items():
@@ -4175,11 +4229,12 @@ class PremiumApp:
             child.destroy()
         characters = self.filtered_voice_characters()
         if not characters:
-            ttk.Label(gallery, text="No hay personajes en este filtro.", style="Card.TLabel").grid(row=0, column=0, padx=10, pady=10, sticky="w")
+            ttk.Label(gallery, text="No hay personajes con ese filtro o busqueda.", style="Card.TLabel").grid(row=0, column=0, padx=10, pady=10, sticky="w")
             return
         try:
+            extra = f" - busqueda: {self.voice_characters_search.get().strip()}" if self.voice_characters_search.get().strip() else ""
             self.voice_characters_status.set(
-                f"Mostrando {len(characters)} de {len(self.voice_characters_data())} personajes - filtro: {self.voice_characters_filter.get()}"
+                f"Mostrando {len(characters)} de {len(self.voice_characters_data())} personajes - filtro: {self.voice_characters_filter.get()}{extra}"
             )
         except Exception:
             pass
